@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <options hostArchitectures="i386" customize="never"/>
+    <title>SU_TITLE</title>
+    <script/>
+    <volume-check script="VolumeCheck()"/>
+    <installation-check script="InstallationCheck()"/>
+    <script>
+function InstallationCheck(prefix) {
+	if (system.compareVersions(system.version.ProductVersion, '10.10') &lt; 0 || system.compareVersions(system.version.ProductVersion, '10.11') &gt;= 0) {
+		my.result.message = system.localizedStringWithFormat('ERROR_0', '10.10');
+		my.result.type = 'Fatal';
+		return false;
+	}
+	return true;
+}
+function VolumeCheck(prefix) {
+	if (system.env.OS_INSTALL == 1) return true;
+	var hasOS = system.files.fileExistsAtPath(my.target.mountpoint + "/System/Library/CoreServices/SystemVersion.plist");
+	if (!hasOS || system.compareVersions(my.target.systemVersion.ProductVersion, '10.10') &lt; 0 || system.compareVersions(my.target.systemVersion.ProductVersion, '10.11') &gt;= 0) {
+		my.result.message = system.localizedStringWithFormat('ERROR_0', '10.10');
+		my.result.type = 'Fatal';
+		return false;
+	}
+	return true;
+}
+</script>
+    <readme file="EFILIPO_ReadMe.html"/>
+    <choices-outline>
+        <line choice="manual"/>
+    </choices-outline>
+    <choice id="manual" title="SU_TITLE">
+        <pkg-ref id="com.AnV.Software.pkg.efilipo.1.0" auth="Root">#efilipo-1.0-apple.pkg</pkg-ref>
+    </choice>
+    <pkg-ref id="com.AnV.Software.pkg.efilipo.1.0" installKBytes="22" version="1.0"/>
+</installer-gui-script>
