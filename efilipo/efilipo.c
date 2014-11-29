@@ -286,33 +286,30 @@ int main(int argc, char **argv)
 
 		if (dosstub->e_magic != EFI_IMAGE_DOS_SIGNATURE)
 		{
-			printf("ERROR: File %s (nr %d) has bad DOS header magic", argv[curfile+2], (curfile+1));
-
-			return -3;
-		}
-
-		dosstub->e_csum = 0;
-		dosstub->e_csum = create_ms_dos_stub_checksum((uint16_t *)outbuffer[curfile], dosstub->e_lfanew);
-
-		pemagic = (uint32_t *)(outbuffer[curfile] + dosstub->e_lfanew);
-
-		if (pemagic[0] != EFI_IMAGE_NT_SIGNATURE)
-		{
-			if ((uint16_t)pemagic[0] == EFI_IMAGE_TE_SIGNATURE)
+			if (dosstub->e_magic != EFI_IMAGE_TE_SIGNATURE)
 			{
-				isTE[curfile] = 1;
+				printf("ERROR: File %s (nr %d) has bad DOS header magic", argv[curfile+2], (curfile+1));
 
-				tehdr = (tehdr_t *)pemagic;
-				filemachine = tehdr->Machine;
+				return -3;
 			} else {
-				printf("ERROR: File %s (nr %d) has bad PE/TE magic (%X)", argv[curfile+2], (curfile+1), pemagic[0]);
-
-				return -4;
+				isTE[curfile] = 1;
 			}
 		}
 
 		if (isTE[curfile] == 0)
 		{
+			dosstub->e_csum = 0;
+			dosstub->e_csum = create_ms_dos_stub_checksum((uint16_t *)outbuffer[curfile], dosstub->e_lfanew);
+
+			pemagic = (uint32_t *)(outbuffer[curfile] + dosstub->e_lfanew);
+
+			if (pemagic[0] != EFI_IMAGE_NT_SIGNATURE)
+			{
+				printf("ERROR: File %s (nr %d) has bad PE/TE magic (%X)", argv[curfile+2], (curfile+1), pemagic[0]);
+
+				return -4;
+			}
+
 			pehdr = (filehdr_t *)(pemagic + 1);
 			pehdr32 = (aouthdr_t *)(pehdr + 1);
 			pehdr64 = (aouthdr_64_t *)(pehdr + 1);
