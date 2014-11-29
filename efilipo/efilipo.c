@@ -293,6 +293,9 @@ int main(int argc, char **argv)
 				return -3;
 			} else {
 				isTE[curfile] = 1;
+
+				tehdr = (tehdr_t *)outbuffer[curfile];
+				filemachine = tehdr->Machine;
 			}
 		}
 
