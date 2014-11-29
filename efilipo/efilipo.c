@@ -6,13 +6,13 @@
 
 uint32_t __OSSwapInt32(uint32_t x);
 
-#if defined(__ppc__) || defined(__ppc64__)
+#if !defined(__ppc__) && !defined(__ppc64__)
 #define ARCHSWAP(x) (x)
-#define PPCSWAP(x) __OSSwapInt32(x)
 #else
 #define ARCHSWAP(x) __OSSwapInt32(x)
-#define PPCSWAP(x) x
 #endif
+
+#define PPCSWAP(x) ARCHSWAP(x)
 
 typedef struct filehdr
 {
@@ -132,6 +132,12 @@ typedef struct ms_dos_stub
   uint32_t e_lfanew;	/* File address of new exe header, usually 0x80.  */
 } ms_dos_stub_t;
 
+#if defined(__ppc__) || defined(__ppc64__)
+#define FAT_EFI_MAGIC 0xB9FAF10E
+#else
+#define FAT_EFI_MAGIC 0x0EF1FAB9
+#endif
+
 #define IMAGE_FILE_MACHINE_UNKNOWN           0
 #define IMAGE_FILE_MACHINE_ARM               0x01c0
 #define IMAGE_FILE_MACHINE_THUMB             0x01c2
@@ -244,12 +250,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-#if defined(__ppc__) || defined(__ppc64__)
-	fathdr.magic = FAT_MAGIC;
-#else
-	fathdr.magic = FAT_CIGAM;
-#endif
-
+	fathdr.magic = FAT_EFI_MAGIC;
 	fathdr.nfat_arch = (uint32_t)ARCHSWAP(argc - 2);
 	headerskip = sizeof(struct fat_header) + ((argc - 2) * sizeof(struct fat_arch));
 	curoffset = headerskip;
