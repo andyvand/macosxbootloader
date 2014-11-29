@@ -8,8 +8,10 @@ uint32_t __OSSwapInt32(uint32_t x);
 
 #if defined(__ppc__) || defined(__ppc64__)
 #define ARCHSWAP(x) (x)
+#define PPCSWAP(x) __OSSwapInt32(x)
 #else
 #define ARCHSWAP(x) __OSSwapInt32(x)
+#define PPCSWAP(x) x
 #endif
 
 typedef struct filehdr
@@ -93,6 +95,19 @@ typedef struct aouthdr_64
 	uint32_t DataDirectory[16][2]; /* 16 entries, 2 elements/entry, */
 } aouthdr_64_t;
 
+typedef struct tehdr
+{
+	uint16_t Signature;        // signature for TE format = "VZ"
+	uint16_t Machine;          // from the original file header
+	uint8_t NumberOfSections;  // from the original file header
+	uint8_t Subsystem;         // from original optional header
+	uint16_t StrippedSize;     // how many bytes we removed from the header
+	uint32_t AddressOfEntryPoint; // offset to entry point -- from original optional header
+	uint32_t BaseOfCode;       // from original image -- required for ITP debug
+	uint64_t ImageBase;        // from original file header
+	uint32_t DataDirectory[16][2]; // only base relocation and debug directory
+} tehdr_t;
+
 typedef struct ms_dos_stub
 {
   /* DOS header fields - always at offset zero in the EXE file.  */
@@ -125,20 +140,41 @@ typedef struct ms_dos_stub
 #define IMAGE_FILE_MACHINE_POWERPC           0x01F0
 #define IMAGE_FILE_MACHINE_POWERPCFP         0x01f1
 #define IMAGE_FILE_MACHINE_I386              0x014c
+#define IMAGE_FILE_MACHINE_R3000             0x0162
+#define IMAGE_FILE_MACHINE_R4000             0x0166
+#define IMAGE_FILE_MACHINE_R10000            0x0168
+#define IMAGE_FILE_MACHINE_WCEMIPSV2         0x0169
+#define IMAGE_FILE_MACHINE_ALPHA             0x0184
 #define IMAGE_FILE_MACHINE_IA64              0x0200
-#define IMAGE_FILE_MACHINE_AMD64             0x8664
+#define IMAGE_FILE_MACHINE_MIPS16            0x0266
+#define IMAGE_FILE_MACHINE_ALPHA64           0x0284
+#define IMAGE_FILE_MACHINE_MIPSFPU           0x0366
+#define IMAGE_FILE_MACHINE_MIPSFPU16         0x0466
+#define IMAGE_FILE_MACHINE_CEE               0x0CEE
+#define IMAGE_FILE_MACHINE_CEF               0x0CEF
 #define IMAGE_FILE_MACHINE_EBC               0x0EBC
+#define IMAGE_FILE_MACHINE_SPARC             0x2000
+#define IMAGE_FILE_MACHINE_AMD64             0x8664
 
+#if defined(__ppc__) && defined(__ppc64__)
+#define EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC 0xb01
+#define EFI_IMAGE_NT_OPTIONAL_HDR64_MAGIC 0xb02
+
+#define EFI_IMAGE_DOS_SIGNATURE     0x4D5A  // ZM
+#define EFI_IMAGE_NT_SIGNATURE      0x50450000  // PE
+#define EFI_IMAGE_TE_SIGNATURE      0x565A  // ZV
+#else
 #define EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC 0x10b
 #define EFI_IMAGE_NT_OPTIONAL_HDR64_MAGIC 0x20b
 
-#if defined(__ppc__) && defined(__ppc64__)
-#define EFI_IMAGE_DOS_SIGNATURE     0x4D5A  // ZM
-#define EFI_IMAGE_NT_SIGNATURE      0x50450000  // PE
-#else
 #define EFI_IMAGE_DOS_SIGNATURE	    0x5A4D  // MZ
 #define EFI_IMAGE_NT_SIGNATURE      0x4550  // PE
+#define EFI_IMAGE_TE_SIGNATURE      0x5A56  // VZ
 #endif
+
+#define CPU_TYPE_MIPS	((cpu_type_t) 8)
+#define CPU_TYPE_SPARC	((cpu_type_t) 14)
+#define CPU_TYPE_ALPHA	((cpu_type_t) 16)
 
 void Usage(char *name)
 {
@@ -147,16 +183,51 @@ void Usage(char *name)
 	printf("Usage: %s <output> <efi_file1> <efi_file2> [...]\n", name);
 }
 
+uint16_t create_ms_dos_stub_checksum(uint16_t *buffer, int len)
+{
+	uint16_t checksum = 0;
+	int donecnt = 0;
+
+	while (donecnt < (len / 2))
+	{
+		checksum += buffer[donecnt];
+
+		++donecnt;
+	}
+
+	return (0x10000 - checksum);
+}
+
+uint32_t create_pe_checksum(unsigned char *buf, int output_size)
+{
+	uint32_t i, v, t = 0;
+
+	for(i = 0; i < output_size; i += 2)
+	{
+		if(output_size - i == 1)
+			v = buf[i];
+		else
+			v = buf[i] + (buf[i+1] << 8);
+
+		t += v;
+		t = 0xffff & (t + (t >> 0x10));
+	}
+
+	return(0xffff & (t + (t >> 0x10)));
+}
+
 int main(int argc, char **argv)
 {
-  	unsigned char *outbuffer[10];
-	struct fat_arch fatarch[10];
-	int filesize[10];
+  	unsigned char *outbuffer[13];
+	struct fat_arch fatarch[13];
+	int filesize[13];
+	char isTE[13];
 	ms_dos_stub_t *dosstub = NULL;
 	filehdr_t *pehdr = NULL;
 	uint32_t *pemagic = NULL;
 	aouthdr_t *pehdr32 = NULL;
 	aouthdr_64_t *pehdr64 = NULL;
+	tehdr_t *tehdr = NULL;
 	struct fat_header fathdr;
 	FILE *fout = NULL;
 	FILE *fin = NULL;
@@ -164,6 +235,7 @@ int main(int argc, char **argv)
 	int checksize = 0;
 	int headerskip = 0;
 	int curoffset = 0;
+	uint16_t filemachine = 0;
 
 	if (argc < 3)
 	{
@@ -183,7 +255,7 @@ int main(int argc, char **argv)
 	curoffset = headerskip;
 
 	curfile = 0;
-	while (curfile < (argc - 2))
+	while ((curfile < (argc - 2)) && (curfile <= 13))
 	{
 		fin = fopen(argv[curfile+2], "rb");
 
@@ -197,6 +269,7 @@ int main(int argc, char **argv)
 		fseek(fin, 0, SEEK_END);
 		filesize[curfile] = ftell(fin);
 		fseek(fin, 0, SEEK_SET);
+
 
 		outbuffer[curfile] = malloc(filesize[curfile]);
 		checksize = fread(outbuffer[curfile], 1, filesize[curfile], fin);
@@ -218,18 +291,47 @@ int main(int argc, char **argv)
 			return -3;
 		}
 
+		dosstub->e_csum = 0;
+		dosstub->e_csum = create_ms_dos_stub_checksum((uint16_t *)outbuffer[curfile], dosstub->e_lfanew);
+
 		pemagic = (uint32_t *)(outbuffer[curfile] + dosstub->e_lfanew);
 
 		if (pemagic[0] != EFI_IMAGE_NT_SIGNATURE)
 		{
-            printf("ERROR: File %s (nr %d) has bad PE magic (%X)", argv[curfile+2], (curfile+1), pemagic[0]);
+			if ((uint16_t)pemagic[0] == EFI_IMAGE_TE_SIGNATURE)
+			{
+				isTE[curfile] = 1;
 
-            return -4;
+				tehdr = (tehdr_t *)pemagic;
+				filemachine = tehdr->Machine;
+			} else {
+				printf("ERROR: File %s (nr %d) has bad PE/TE magic (%X)", argv[curfile+2], (curfile+1), pemagic[0]);
+
+				return -4;
+			}
 		}
 
-		pehdr = (filehdr_t *)(pemagic + 1);
+		if (isTE[curfile] == 0)
+		{
+			pehdr = (filehdr_t *)(pemagic + 1);
+			pehdr32 = (aouthdr_t *)(pehdr + 1);
+			pehdr64 = (aouthdr_64_t *)(pehdr + 1);
+			filemachine = pehdr->f_magic;
 
-		switch (pehdr->f_magic)
+			if (pehdr32->magic == EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+			{
+				pehdr32->CheckSum = 0;
+				pehdr32->CheckSum = create_pe_checksum((unsigned char *)pehdr32, (filesize[curfile] - dosstub->e_lfanew));
+			}
+
+			if (pehdr64->magic == EFI_IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+			{
+				pehdr64->CheckSum = 0;
+				pehdr64->CheckSum = create_pe_checksum((unsigned char *)pehdr64, (filesize[curfile] - dosstub->e_lfanew));
+			}
+		}
+
+		switch (PPCSWAP(filemachine))
 		{
 			case IMAGE_FILE_MACHINE_ARM:
 				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_ARM);
@@ -238,7 +340,7 @@ int main(int argc, char **argv)
 
 			case IMAGE_FILE_MACHINE_THUMB:
 				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_ARM);
-				fatarch[curfile].cpusubtype = ARCHSWAP(CPU_SUBTYPE_ARM_ALL);
+				fatarch[curfile].cpusubtype = ARCHSWAP(CPU_SUBTYPE_ARM_V7);
 				break;
 
 			case IMAGE_FILE_MACHINE_ARMV7:
@@ -271,10 +373,43 @@ int main(int argc, char **argv)
 				fatarch[curfile].cpusubtype = ARCHSWAP(CPU_SUBTYPE_I386_ALL);
 				break;
 
+			case IMAGE_FILE_MACHINE_R3000:
+			case IMAGE_FILE_MACHINE_R4000:
+			case IMAGE_FILE_MACHINE_MIPS16:
+			case IMAGE_FILE_MACHINE_MIPSFPU:
+			case IMAGE_FILE_MACHINE_MIPSFPU16:
+				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_MIPS);
+				fatarch[curfile].cpusubtype = 0;
+				break;
+
+			case IMAGE_FILE_MACHINE_R10000:
+			case IMAGE_FILE_MACHINE_WCEMIPSV2:
+				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_MIPS | CPU_ARCH_ABI64);
+				fatarch[curfile].cpusubtype = 0;
+				break;
+
+			case IMAGE_FILE_MACHINE_ALPHA:
+				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_ALPHA);
+				fatarch[curfile].cpusubtype = 0;
+				break;
+
+			case IMAGE_FILE_MACHINE_ALPHA64:
+				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_ALPHA | CPU_ARCH_ABI64);
+				fatarch[curfile].cpusubtype = 0;
+				break;
+
+			case IMAGE_FILE_MACHINE_SPARC:
+				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_SPARC);
+				fatarch[curfile].cpusubtype = 0;
+				break;
+
+			case IMAGE_FILE_MACHINE_UNKNOWN:
 			case IMAGE_FILE_MACHINE_IA64:
+			case IMAGE_FILE_MACHINE_CEE:
+			case IMAGE_FILE_MACHINE_CEF:
 			case IMAGE_FILE_MACHINE_EBC:
 			default:
-				printf("ERROR: Unsupported PE machine type 0x%X\n", pehdr->f_magic);
+				printf("ERROR: Unsupported PE machine type 0x%X\n", PPCSWAP(filemachine));
 
 				return -5;
 		}
@@ -320,3 +455,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
