@@ -12,8 +12,6 @@ uint32_t __OSSwapInt32(uint32_t x);
 #define ARCHSWAP(x) __OSSwapInt32(x)
 #endif
 
-#define PPCSWAP(x) ARCHSWAP(x)
-
 typedef struct filehdr
 {
 	uint16_t f_magic;		/* Magic number.		*/
@@ -332,7 +330,7 @@ int main(int argc, char **argv)
 			}
 		}
 
-		switch (PPCSWAP(filemachine))
+		switch (ARCHSWAP(filemachine))
 		{
 			case IMAGE_FILE_MACHINE_ARM:
 				fatarch[curfile].cputype = ARCHSWAP(CPU_TYPE_ARM);
@@ -410,7 +408,7 @@ int main(int argc, char **argv)
 			case IMAGE_FILE_MACHINE_CEF:
 			case IMAGE_FILE_MACHINE_EBC:
 			default:
-				printf("ERROR: Unsupported PE machine type 0x%X\n", PPCSWAP(filemachine));
+				printf("ERROR: Unsupported PE machine type 0x%X\n", ARCHSWAP(filemachine));
 
 				return -5;
 		}
