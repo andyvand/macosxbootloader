@@ -70,7 +70,13 @@ typedef UINT64 EFI_LBA;
 // Modifiers to absract standard types to aid in debug of problems
 //
 #define CONST     const
+
+#ifdef APPLEEXTRA
+#define STATIC
+#else
 #define STATIC    static
+#endif
+
 #define VOID      void
 #define VOLATILE  volatile
 

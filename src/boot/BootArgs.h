@@ -10,7 +10,13 @@
 //
 // video
 //
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define PACKGNU
+#else
+#define PACKGNU __attribute__((packed))
+#endif
+
 typedef struct _BOOT_VIDEO
 {
 	//
@@ -42,7 +48,7 @@ typedef struct _BOOT_VIDEO
 	// color depth
 	//
 	UINT32																	ColorDepth;
-}BOOT_VIDEO;
+} PACKGNU BOOT_VIDEO;
 
 //
 // boot arg
@@ -208,8 +214,11 @@ typedef struct _BOOT_ARGS
 	// padding
 	//
 	UINT32																	Reserved3[730];
-}BOOT_ARGS;
+} PACKGNU BOOT_ARGS;
+
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // add memory range

@@ -5,7 +5,7 @@
 //	purpose:	compiler stub
 //********************************************************************
 
-#include "stdafx.h"
+#include "../stdafx.h"
 
 //
 // 64bit right shift
@@ -273,22 +273,22 @@ extern "C" void __declspec(naked) _allshl()
 	__asm
 	{
 		cmp			cl, 64
-		jae			RETZERO
+		jae			RETZEROB
 
 		cmp			cl, 32
-		jae			MORE32
+		jae			MORE32B
 		shld		edx, eax, cl
 		shl			eax, cl
 		ret
 
-	MORE32:
+	MORE32B:
 		mov			edx, eax
 		xor			eax, eax
 		and			cl, 31
 		shl			edx, cl
 		ret
 
-	RETZERO:
+	RETZEROB:
 		xor			eax, eax
 		xor			edx, edx
 		ret
@@ -433,22 +433,22 @@ extern "C" void	__declspec(naked) _allshr()
 	__asm
 	{
 		cmp			cl, 64
-		jae			RETSIGN
+		jae			RETSIGNC
 
 		cmp			cl, 32
-		jae			MORE32
+		jae			MORE32C
 		shrd		eax, edx, cl
 		sar			edx, cl
 		ret
 
-	MORE32:
+	MORE32C:
 		mov			eax, edx
 		sar			edx, 31
 		and			cl, 31
 		sar			eax, cl
 		ret
 
-	RETSIGN:
+	RETSIGNC:
 		sar			edx, 31
 		mov			eax, edx
 		ret

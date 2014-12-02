@@ -10,7 +10,11 @@
 //
 // arch define
 //
-#include "ArchDefine.h"
+#if defined(_M_AMD64) || defined(_AMD64_) || defined(__x86_64__)
+#include "x64/ArchDefine.h"
+#else
+#include "x86/ArchDefine.h"
+#endif
 
 //
 // typedef
@@ -297,6 +301,19 @@ typedef struct _EXCEPTION_RECORD64
 	UINT64																	ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS];
 }EXCEPTION_RECORD64;
 
+typedef struct _SECTION_CHECKSUM
+{
+    //
+    // section pointer
+    //
+    VOID*															SectionPointer;
+    
+    //
+    // checksum
+    //
+    UINT32															CheckSum;
+}SECTION_CHECKSUM;
+
 //
 // loader data table entry
 //
@@ -368,18 +385,7 @@ typedef struct _LDR_DATA_TABLE_ENTRY
 		//
 		// section and checksum
 		//
-		struct _SECTION_CHECKSUM
-		{
-			//
-			// section pointer
-			//
-			VOID*															SectionPointer;
-
-			//
-			// checksum
-			//
-			UINT32															CheckSum;
-		}SectionAndCheckSum;
+		SECTION_CHECKSUM SectionAndCheckSum;
 	};
 
 	union

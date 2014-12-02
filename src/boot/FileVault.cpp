@@ -5,11 +5,27 @@
 //	purpose:	FileVault
 //********************************************************************
 
-#include "StdAfx.h"
-#include "rijndael/aes.h"
-#include "rijndael/aesxts.h"
+#ifdef __APPLE__
+#define _INT8_T 1
+#endif
 
+#include "StdAfx.h"
+#include "../rijndael/aes.h"
+#include "../rijndael/aesxts.h"
+
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 typedef struct _CORE_STORAGE_VOLUME_HEADER
 {
 	//
@@ -76,7 +92,7 @@ typedef struct _CORE_STORAGE_VOLUME_HEADER
 	// 0xc0
 	//
 	UINT8																	OffsetC0[0x200 - 0xc0];
-}CORE_STORAGE_VOLUME_HEADER;
+} GNUPACK CORE_STORAGE_VOLUME_HEADER;
 
 //
 // key sign data
@@ -107,7 +123,7 @@ typedef struct _KEY_SIGN_DATA
 	// sign part3
 	//
 	UINT8																	SignPart3[0x20];
-}KEY_SIGN_DATA;
+} GNUPACK KEY_SIGN_DATA;
 
 //
 // key wrapped data
@@ -133,7 +149,7 @@ typedef struct _KEY_WRAPPED_DATA
 	// sign
 	//
 	KEY_SIGN_DATA															SignData;
-}KEY_WRAPPED_DATA;
+} GNUPACK KEY_WRAPPED_DATA;
 
 //
 // key unwrapped data
@@ -154,7 +170,7 @@ typedef struct _KEY_UNWRAPPED_DATA
 	// data buffer
 	//
 	UINT8																	DataBuffer[0x80];
-}KEY_UNWRAPPED_DATA;
+} GNUPACK KEY_UNWRAPPED_DATA;
 
 //
 // passphase wrapped data
@@ -205,7 +221,7 @@ typedef struct _PASSPHASE_WRAPPED_DATA
 	// sign
 	//
 	KEY_SIGN_DATA															SignData;
-}PASSPHASE_WRAPPED_DATA;
+} GNUPACK PASSPHASE_WRAPPED_DATA;
 
 //
 // passphase unwrapped data
@@ -221,7 +237,7 @@ typedef struct _PASSPHASE_UNWRAPPED_DATA
 	// key
 	//
 	UINT8																	DataBuffer[0x80];
-}PASSPHASE_UNWRAPPED_DATA;
+} GNUPACK PASSPHASE_UNWRAPPED_DATA;
 
 //
 // key store data
@@ -257,8 +273,11 @@ typedef struct _KEY_STORE_DATA_HEADER
 	// data length
 	//
 	UINT32																	DataLength;
-}KEY_STORE_DATA_HEADER;
+} GNUPACK KEY_STORE_DATA_HEADER;
+
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // volume key info
@@ -829,7 +848,7 @@ STATIC VOID FvpReadInput(CHAR8** inputBuffer, UINTN* inputLength, UINTN maxLengt
 
 		if(inputKey.UnicodeChar == CHAR_CARRIAGE_RETURN)
 		{
-			EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING(L"\r\n"));
+			EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING((VOID *)L"\r\n"));
 			break;
 		}
 		else if(inputKey.UnicodeChar == CHAR_BACKSPACE)
@@ -850,7 +869,7 @@ STATIC VOID FvpReadInput(CHAR8** inputBuffer, UINTN* inputLength, UINTN maxLengt
 						curRow												-= 1;
 				}
 				EfiSystemTable->ConOut->SetCursorPosition(EfiSystemTable->ConOut, curColumn, curRow);
-				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING(L" "));
+				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING((VOID *)L" "));
 				EfiSystemTable->ConOut->SetCursorPosition(EfiSystemTable->ConOut, curColumn, curRow);
 			}
 		}
@@ -870,7 +889,7 @@ STATIC VOID FvpReadInput(CHAR8** inputBuffer, UINTN* inputLength, UINTN maxLengt
 			inputBuffer16[inputLength16]									= inputKey.UnicodeChar;
 			inputLength16													+= 1;
 
-			CHAR16 outputString[2]											= {echoInput ? inputKey.UnicodeChar : L'*', 0};
+			CHAR16 outputString[2]											= {echoInput ? inputKey.UnicodeChar : (CHAR16)L'*', 0};
 			EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, outputString);
 		}
 	}

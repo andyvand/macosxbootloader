@@ -14,7 +14,19 @@
 //
 // compressed header
 //
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 typedef struct _COMPRESSED_KERNEL_CACHE_HEADER
 {
 	//
@@ -61,8 +73,11 @@ typedef struct _COMPRESSED_KERNEL_CACHE_HEADER
 	// efi device path
 	//
 	CHAR8																	RootPath[256];
-}COMPRESSED_KERNEL_CACHE_HEADER;
+} GNUPACK COMPRESSED_KERNEL_CACHE_HEADER;
+
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // global

@@ -20,7 +20,12 @@ Abstract:
 #ifndef _EFI_COMMON_H_
 #define _EFI_COMMON_H_
 
-#include "EfiBind.h"
+#if defined(_M_AMD64) || defined(_AMD64_) || defined(__x86_64__)
+#include "x64/EfiBind.h"
+#else
+#include "x86/EfiBind.h"
+#endif
+
 #include "EfiTypes.h"
 #include "EfiStdArg.h"
 #include "EfiError.h"
@@ -29,8 +34,8 @@ Abstract:
 // Define macros for including Protocols and Guids.
 //
 #define EFI_STRINGIZE(a)            #a
-#define EFI_PROTOCOL_DEFINITION(a)  EFI_STRINGIZE (Protocol/a/a.h)
-#define EFI_GUID_DEFINITION(a)      EFI_STRINGIZE (Guid/a/a.h)
+#define EFI_PROTOCOL_DEFINITION(a)  EFI_STRINGIZE (../../sdk/include/Protocol/a/a.h)
+#define EFI_GUID_DEFINITION(a)      EFI_STRINGIZE (../../sdk/include/Guid/a/a.h)
 
 //
 // These should be used to include protocols.  If they are followed,

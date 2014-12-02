@@ -8,7 +8,19 @@
 #include "StdAfx.h"
 #include "PanicDialog.h"
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
 typedef struct _PANIC_INFO_LOG
 {
 	//
@@ -30,8 +42,11 @@ typedef struct _PANIC_INFO_LOG
 	// reboot time
 	//
 	EFI_TIME																RebootTime[5];
-}PANIC_INFO_LOG;
+} GNUPACK PANIC_INFO_LOG;
+
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // panic info name
@@ -85,7 +100,7 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		//
 		PANIC_INFO_LOG panicInfoLog											= {0};
 		dataSize															= sizeof(panicInfoLog);
-		EFI_STATUS status													= EfiRuntimeServices->GetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &panicInfoLog);
+		EFI_STATUS status													= EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &panicInfoLog);
 		if(status == EFI_NOT_FOUND)
 		{
 			memset(&panicInfoLog, 0, sizeof(panicInfoLog));
@@ -93,12 +108,12 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 			panicInfoLog.RebootTime[0]										= nowEfiTime;
 			panicInfoLog.WriteIndex											= 0;
 			panicInfoLog.CheckSum											= checkSum;
-			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog);
+			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog);
 			try_leave(NOTHING);
 		}
 		else if(EFI_ERROR(status) || panicInfoLog.Signature != 0x1234)
 		{
-			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
+			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
 			try_leave(NOTHING);
 		}
 
@@ -125,7 +140,7 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		panicInfoLog.CheckSum												= checkSum;
 		panicInfoLog.WriteIndex												= (panicInfoLog.WriteIndex + 1) % ARRAYSIZE(panicInfoLog.RebootTime);
 		panicInfoLog.RebootTime[panicInfoLog.WriteIndex]					= nowEfiTime;
-		if(EFI_ERROR(EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog)))
+		if(EFI_ERROR(EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog)))
 			try_leave(NOTHING);
 
 		//
@@ -143,7 +158,7 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		//
 		// clear old record
 		//
-		EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
+		EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
 
 		//
 		// setup display
@@ -198,7 +213,7 @@ VOID BlShowPanicDialog(CHAR8** kernelCommandLine)
 		//
 		UINT8 systemVolume													= 0;
 		dataSize															= sizeof(systemVolume);
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"SystemAudioVolume"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &systemVolume)) || !(systemVolume & 0x80))
+		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"SystemAudioVolume"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &systemVolume)) || !(systemVolume & 0x80))
 			try_leave(NOTHING);
 
 		//

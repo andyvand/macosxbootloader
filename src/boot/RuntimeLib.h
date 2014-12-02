@@ -7,6 +7,11 @@
 
 #pragma once
 
+#ifdef __APPLE__
+#undef BOOTAPI
+#define BOOTAPI
+#endif
+
 //
 // define
 //

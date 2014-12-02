@@ -26,9 +26,9 @@ Abstract:
 //
 // Statements that include other files
 //
-#include "EfiFirmwareVolumeHeader.h"
-#include "EfiFirmwareFileSystem.h"
-#include "EfiFirmwareVolume.h"
+#include "../../EfiFirmwareVolumeHeader.h"
+#include "../../EfiFirmwareFileSystem.h"
+#include "../../EfiFirmwareVolume.h"
 //
 // Firmware Volume Protocol GUID definition
 //

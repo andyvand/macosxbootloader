@@ -24,7 +24,7 @@ Abstract:
 #ifndef __GRAPHICS_OUTPUT_H__
 #define __GRAPHICS_OUTPUT_H__
 
-#include EFI_PROTOCOL_DEFINITION (UgaDraw)
+#include "../UgaDraw/UgaDraw.h"
 
 #define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID \
   { \

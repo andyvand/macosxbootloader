@@ -5,10 +5,21 @@
 //	purpose:	debug over usb
 //********************************************************************
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 #include "StdAfx.h"
 #include "DebugUsb.h"
 
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 //
 // global data
@@ -94,7 +105,7 @@ typedef struct _DEBUG_USB_GLOBAL_DATA
 	// debug port number
 	//
 	UINT32																	DebugPortNumber;
-}DEBUG_USB_GLOBAL_DATA;
+} GNUPACK DEBUG_USB_GLOBAL_DATA;
 
 //
 // usb setup packet
@@ -125,9 +136,11 @@ typedef struct _DEBUG_USB_SETUP_PACKET
 	// length
 	//
 	UINT16																	Length;
-}DEBUG_USB_SETUP_PACKET;
+} GNUPACK DEBUG_USB_SETUP_PACKET;
 
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // send buffer
@@ -425,7 +438,7 @@ VOID* BdUsbpLocateDebugPortRegister(DEBUG_USB_GLOBAL_DATA* globalData, EFI_PCI_I
 		return nullptr;
 
 	UINT8 pciCaps[2]														= {0};
-	while(capsOffset && !(capsOffset & 0x03) && capsOffset < 0x100)
+	while(capsOffset && !(capsOffset & 0x03) && (UINT16)capsOffset < 0x100)
 	{
 		if(EFI_ERROR(pciIoProtocol->Pci.Read(pciIoProtocol, EfiPciIoWidthUint16, capsOffset, sizeof(pciCaps), pciCaps)))
 			return nullptr;
@@ -1855,7 +1868,7 @@ STATIC UINT32 BdUsbpReadDebuggerPacket(DEBUG_USB_GLOBAL_DATA* globalData, UINT32
 			if(receiveLength == 5 && !memcmp(&globalData->PacketHeader, "NAME?", 5))
 			{
 				DEBUG_USB_SEND_BUFFER sendBuffer[2];
-				sendBuffer[0].Buffer										= "NAME=";
+				sendBuffer[0].Buffer										= (VOID *)"NAME=";
 				sendBuffer[0].Length										= 5;
 				sendBuffer[1].Buffer										= globalData->TargetName;
 				sendBuffer[1].Length										= globalData->NameLength + 1;

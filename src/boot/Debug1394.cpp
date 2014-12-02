@@ -5,7 +5,13 @@
 //	purpose:	debug over 1394
 //********************************************************************
 
-#include "stdafx.h"
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
+#include "StdAfx.h"
 #include "Debug1394.h"
 
 //
@@ -44,7 +50,12 @@
 //	yes,it is POLL mode,not INTERRUPT mode
 //
 
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 //
 // send buffer
@@ -78,7 +89,7 @@ typedef union _DBG1394_SEND_BUFFER
 	// padding to page size
 	//
 	UINT8																	Padding[EFI_PAGE_SIZE];
-}DBG1394_SEND_BUFFER;
+} GNUPACK DBG1394_SEND_BUFFER;
 
 //
 // receive buffer
@@ -112,7 +123,7 @@ typedef union _DBG1394_RECEIVE_BUFFER
 	// padding to page size
 	//
 	UINT8																	Padding[EFI_PAGE_SIZE];
-}DBG1394_RECEIVE_BUFFER;
+} GNUPACK DBG1394_RECEIVE_BUFFER;
 
 //
 // config info,shared between debuggee and debugger
@@ -153,7 +164,20 @@ typedef struct _DBG1394_DEBUG_CONFIG_INFO
 	// receive buffer physical address
 	//
 	UINT64																	ReceiveBuffer;
-}DBG1394_DEBUG_CONFIG_INFO;
+} GNUPACK DBG1394_DEBUG_CONFIG_INFO;
+
+typedef struct _SAVED_INFO
+{
+				//
+				// saved info length
+				//
+				UINT8														CriSavedInfoLength;
+    
+				//
+				// saved crc length
+				//
+				UINT8														CriSavedCrcLength;
+} GNUPACK SAVED_INFO;
 
 //
 // config rom header
@@ -169,18 +193,7 @@ typedef union _IEEE1394_CONFIG_ROM_INFO
 			//
 			UINT16															CriCrcValue;
 
-			struct _SAVED_INFO
-			{
-				//
-				// saved info length
-				//
-				UINT8														CriSavedInfoLength;
-
-				//
-				// saved crc length
-				//
-				UINT8														CriSavedCrcLength;
-			}SavedInfo;
+			SAVED_INFO SavedInfo;
 		};
 
 		//
@@ -198,7 +211,7 @@ typedef union _IEEE1394_CONFIG_ROM_INFO
 	// whole UINT32
 	//
 	UINT32																	AsULong;
-}IEEE1394_CONFIG_ROM_INFO;
+} GNUPACK IEEE1394_CONFIG_ROM_INFO;
 
 //
 // config rom
@@ -259,7 +272,7 @@ typedef struct _DBG1394_DEBUG_CONFIG_ROM
 	// padding
 	//
 	UINT8																	Padding[212];
-}DBG1394_DEBUG_CONFIG_ROM;
+} GNUPACK DBG1394_DEBUG_CONFIG_ROM;
 
 //
 // debugger data,must be page algined
@@ -285,9 +298,11 @@ typedef struct _DBG1394_GLOBAL_DATA
 	// debug info
 	//
 	DBG1394_DEBUG_CONFIG_INFO												DebugConfigInfo;
-}DBG1394_GLOBAL_DATA;
+} GNUPACK DBG1394_GLOBAL_DATA;
 
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // ohci controller base address

@@ -11,8 +11,8 @@
 
 all: libx86.a
 
-libx86.a: StartKernel.o ThunkCode64.dat ThunkCode32.o ThunkCode64.o ArchUtilsX86.o CompilerX86.o Thunk64.o # DebuggerUtilsX86.o
-	$(AR) cru $@ StartKernel.o ThunkCode32.o ThunkCode64.o ArchUtilsX86.o CompilerX86.o Thunk64.o # DebuggerUtilsX86.o
+libx86.a: ThunkCode64.dat ThunkCode32.o ArchUtilsX86.o CompilerX86.o Thunk64.o DebuggerUtilsX86.o $(EXTRAOBJS)
+	$(AR) cru $@ ThunkCode32.o ArchUtilsX86.o CompilerX86.o Thunk64.o DebuggerUtilsX86.o $(EXTRAOBJS)
 	$(RANLIB) $@
 
 clean:

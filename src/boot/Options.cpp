@@ -7,6 +7,12 @@
 
 #include "stdafx.h"
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 //
 // global
 //
@@ -48,12 +54,12 @@ STATIC BOOLEAN BlpIsTemporaryBoot()
 	UINT32 attribute														= 0;
 	UINT32 value															= 0;
 	UINTN dataSize															= sizeof(value);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"PickerEntryReason"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE))
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"PickerEntryReason"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE))
 		return TRUE;
 
 	attribute																= 0;
 	dataSize																= sizeof(value);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"BootCurrent"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE) && !value)
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"BootCurrent"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE) && !value)
 		return TRUE;
 
 	return FALSE;
@@ -572,7 +578,7 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 			UINT8 dataBuffer[10]											= {0};
 			UINTN dataSize													= sizeof(dataBuffer);
 			UINT32 attribute												= 0;
-			status															= EfiRuntimeServices->GetVariable(CHAR16_STRING(L"recovery-boot-mode"), &AppleNVRAMVariableGuid, &attribute, &dataSize, dataBuffer);
+			status															= EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"recovery-boot-mode"), &AppleNVRAMVariableGuid, &attribute, &dataSize, dataBuffer);
 			if(!EFI_ERROR(status) || status == EFI_BUFFER_TOO_SMALL)
 				BlSetBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE, 0);
 
@@ -586,12 +592,12 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		{
 			UINTN dataSize													= 0;
 			UINT32 attribute												= 0;
-			if(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, nullptr) == EFI_BUFFER_TOO_SMALL)
+			if(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, nullptr) == EFI_BUFFER_TOO_SMALL)
 			{
 				bootArgsVariable											= static_cast<CHAR8*>(MmAllocatePool(dataSize + sizeof(CHAR8)));
 				if(bootArgsVariable)
 				{
-					if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, bootArgsVariable)))
+					if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, bootArgsVariable)))
 						bootArgsVariable[dataSize]							= 0;
 					else
 						MmFreePool(bootArgsVariable), bootArgsVariable = nullptr;

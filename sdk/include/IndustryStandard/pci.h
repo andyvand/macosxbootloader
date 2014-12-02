@@ -26,6 +26,6 @@ Revision History
 #include "pci22.h"
 #include "pci23.h"
 #include "pci30.h"
-#include "EfiPci.h"
+#include "../EfiPci.h"
 
 #endif

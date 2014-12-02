@@ -7,6 +7,12 @@
 
 #include "stdafx.h"
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 //
 // memcpy
 //
@@ -547,7 +553,7 @@ UINTN vsnprintf(CHAR8* dstBuffer, UINTN bufferLength, CHAR8 CONST* formatString,
 				{
 					unicodeString											= VA_ARG(marker, CHAR16*);
 					if(!unicodeString)
-						unicodeString										= CHAR16_STRING(L"<null string>");
+						unicodeString										= CHAR16_STRING((VOID *)L"<null string>");
 
 					for(count = 0; *unicodeString && index < bufferLength - 1; unicodeString ++, count ++)
 					{
@@ -568,7 +574,7 @@ UINTN vsnprintf(CHAR8* dstBuffer, UINTN bufferLength, CHAR8 CONST* formatString,
 				{
 					asciiString												= VA_ARG(marker, CHAR8*);
 					if(!asciiString)
-						asciiString											= CHAR8_STRING("<null string>");
+						asciiString											= CHAR8_STRING((VOID *)"<null string>");
 
 					for(count = 0; *asciiString && index < bufferLength - 1; asciiString ++, count ++)
 					{

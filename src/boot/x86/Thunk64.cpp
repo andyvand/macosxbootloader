@@ -5,7 +5,16 @@
 //	purpose:	64bits thunk
 //********************************************************************
 
-#include "stdafx.h"
+#include "../stdafx.h"
+
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
+extern UINT8* ArchThunk64BufferStart;
+extern UINT8* ArchThunk64BufferEnd;
 
 //
 // 64 bits configuration table
@@ -88,12 +97,12 @@ VOID ArchSetupThunkCode0(UINT64 thunkOffset, MACH_O_LOADED_INFO* loadedInfo)
 	if(loadedInfo)
 	{
 		ArchpKernelIdlePML4													= MachFindSymbolVirtualAddressByName(loadedInfo, CHAR8_CONST_STRING("_IdlePML4")); //0x8c0ac8 + thunkOffset;
-		EfiRuntimeServices->SetVariable(CHAR16_STRING(L"IdlePML4"), &AppleNVRAMVariableGuid, EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS, sizeof(UINT64), &ArchpKernelIdlePML4);
+		EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"IdlePML4"), &AppleNVRAMVariableGuid, EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS, sizeof(UINT64), &ArchpKernelIdlePML4);
 	}
 	else
 	{
 		UINTN dataSize														= sizeof(UINT64);
-		EfiRuntimeServices->GetVariable(CHAR16_STRING(L"IdlePML4"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &ArchpKernelIdlePML4);
+		EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"IdlePML4"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &ArchpKernelIdlePML4);
 	}
 }
 
@@ -207,8 +216,6 @@ EFI_STATUS ArchInitialize1()
 	//
 	// allocate thunk code pages
 	//
-	extern UINT8* ArchThunk64BufferStart;
-	extern UINT8* ArchThunk64BufferEnd;
 	UINTN thunkCodeSize														= ArchConvertPointerToAddress(&ArchThunk64BufferEnd) - ArchConvertPointerToAddress(&ArchThunk64BufferStart);
 	UINT64 physicalAddress													= 4 * 1024 * 1024 * 1024ULL - 1;
 	ArchpThunkCodeStart														= MmAllocatePages(AllocateMaxAddress, EfiRuntimeServicesCode, EFI_SIZE_TO_PAGES(thunkCodeSize), &physicalAddress);

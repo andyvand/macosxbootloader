@@ -7,6 +7,12 @@
 
 #include "stdafx.h"
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 //
 // memory tag
 //
@@ -156,6 +162,11 @@ VOID* MmAllocatePool(UINTN bufferLength)
 	MmpInsertMemoryTag(allocatedBuffer, bufferLength, 0);
 
 	return allocatedBuffer;
+}
+
+VOID* _alloca(UINTN length)
+{
+    return MmAllocatePool(length);
 }
 
 //

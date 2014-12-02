@@ -13,7 +13,19 @@
 //
 // module
 //
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 typedef struct _LDR_EXTENSION_MODULE
 {
 	//
@@ -50,7 +62,7 @@ typedef struct _LDR_EXTENSION_MODULE
 	// driver path length
 	//
 	UINTN																	DriverPathLength;
-}LDR_EXTENSION_MODULE;
+} GNUPACK LDR_EXTENSION_MODULE;
 
 //
 // driver info
@@ -86,8 +98,11 @@ typedef struct _LDR_DRIVER_INFO
 	// path length
 	//
 	UINT32																	DriverPathLength;
-}LDR_DRIVER_INFO;
+} GNUPACK LDR_DRIVER_INFO;
+
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // global

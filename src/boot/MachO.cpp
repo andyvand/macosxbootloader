@@ -33,7 +33,19 @@
 //
 // fat header
 //
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 typedef struct _FAT_HEADER
 {
 	//
@@ -45,7 +57,7 @@ typedef struct _FAT_HEADER
 	// count
 	//
 	UINT32																	ArchHeadersCount;
-}FAT_HEADER;
+} GNUPACK FAT_HEADER;
 
 //
 // fat arch header
@@ -76,7 +88,7 @@ typedef struct _FAT_ARCH_HEADER
 	// align
 	//
 	UINT32																	Align;
-}FAT_ARCH_HEADER;
+} GNUPACK FAT_ARCH_HEADER;
 
 //
 // mach header
@@ -117,7 +129,7 @@ typedef struct _MACH_HEADER
 	// flags
 	//
 	UINT32																	Flags;
-}MACH_HEADER;
+} GNUPACK MACH_HEADER;
 
 //
 // mach header64
@@ -163,7 +175,7 @@ typedef struct _MACH_HEADER64
 	// reserved
 	//
 	UINT32																	Reserved;
-}MACH_HEADER64;
+} GNUPACK MACH_HEADER64;
 
 //
 // command header
@@ -179,7 +191,7 @@ typedef struct _LOAD_COMMAND_HEADER
 	// length
 	//
 	UINT32																	CommandLength;
-}LOAD_COMMAND_HEADER;
+} GNUPACK LOAD_COMMAND_HEADER;
 
 //
 // thread command
@@ -403,7 +415,7 @@ typedef struct _THREAD_COMMAND
 			UINT64															SegGs;
 		}X64;
 	}ThreadState;
-}THREAD_COMMAND;
+} GNUPACK THREAD_COMMAND;
 
 //
 // segment
@@ -439,7 +451,7 @@ typedef struct _SEGMENT_COMMAND
 	// file length
 	//
 	UINT32																	FileSize;
-}SEGMENT_COMMAND;
+} GNUPACK SEGMENT_COMMAND;
 
 //
 // segment
@@ -495,7 +507,7 @@ typedef struct _SEGMENT_COMMAND64
 	// flags
 	//
 	UINT32																	Flags;
-}SEGMENT_COMMAND64;
+} GNUPACK SEGMENT_COMMAND64;
 
 //
 // section 64
@@ -551,7 +563,7 @@ typedef struct _SECTION64
 	// reserved
 	//
 	UINT32																	Reserved[3];
-}SECTION64;
+} GNUPACK SECTION64;
 
 //
 // SYMTAB command
@@ -582,7 +594,7 @@ typedef struct _SYMTAB_COMMAND
 	// string table size
 	//
 	UINT32																	StringTableSize;
-}SYMTAB_COMMAND;
+} GNUPACK SYMTAB_COMMAND;
 
 //
 // SYMTAB entry
@@ -613,7 +625,7 @@ typedef struct _SYMTAB_ENTRY64
 	// value
 	//
 	UINT64																	Value;
-}SYMTAB_ENTRY64;
+} GNUPACK SYMTAB_ENTRY64;
 
 //
 // DYSYMTAB command
@@ -714,7 +726,7 @@ typedef struct _DYSYMTAB_COMMAND
 	// local relocation count
 	//
 	UINT32																	LocalRelocationCount;
-}DYSYMTAB_COMMAND;
+} GNUPACK DYSYMTAB_COMMAND;
 
 //
 // relocation info
@@ -750,8 +762,11 @@ typedef struct _RELOCATION_INFO
 	// type
 	//
 	UINT32																	Type : 4;
-}RELOCATION_INFO;
+} GNUPACK RELOCATION_INFO;
+
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // load thin fat file info

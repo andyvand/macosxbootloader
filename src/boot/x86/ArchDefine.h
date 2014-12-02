@@ -27,7 +27,12 @@
 //
 // byte pack
 //
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 //
 // gdtr and idtr
@@ -48,7 +53,7 @@ typedef struct _DESCRIPTOR
 	// base
 	//
 	UINT32																	Base;
-}KDESCRIPTOR;
+} GNUPACK KDESCRIPTOR;
 
 //
 // idt entry
@@ -74,7 +79,7 @@ typedef struct _KIDTENTRY
 	// extended offset
 	//
 	UINT16																	ExtendedOffset;
-}KIDTENTRY;
+} GNUPACK KIDTENTRY;
 
 //
 // special register
@@ -155,7 +160,7 @@ typedef struct _KSPECIAL_REGISTERS
 	// padding
 	//
 	UINT32																	Reserved[6];
-}KSPECIAL_REGISTERS;
+} GNUPACK KSPECIAL_REGISTERS;
 
 //
 // floating save area
@@ -206,7 +211,7 @@ typedef struct _FLOATING_SAVE_AREA
 	// npx state
 	//
 	UINT32																	Cr0NpxState;
-}FLOATING_SAVE_AREA;
+} GNUPACK FLOATING_SAVE_AREA;
 
 //
 // context
@@ -337,7 +342,7 @@ typedef struct _CONTEXT
 	// extended registers
 	//
 	UINT8																	ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
-}CONTEXT;
+} GNUPACK CONTEXT;
 
 //
 // processor state
@@ -353,7 +358,7 @@ typedef struct _KPROCESSOR_STATE
 	// special register
 	//
 	KSPECIAL_REGISTERS														SpecialRegisters;
-}KPROCESSOR_STATE;
+} GNUPACK KPROCESSOR_STATE;
 
 //
 // trap frame
@@ -545,7 +550,7 @@ typedef struct _KTRAP_FRAME
 	// v86 mode gs
 	//
 	UINT32																	V86Gs;
-}KTRAP_FRAME;
+} GNUPACK KTRAP_FRAME;
 
 //
 // processor control block (PRCB)
@@ -621,7 +626,7 @@ typedef struct _KPRCB
 	// reserved
 	//
 	UINT8																	Reserved1[0xb84];
-}KPRCB;
+} GNUPACK KPRCB;
 
 //
 // pcr
@@ -792,12 +797,14 @@ typedef struct _KPCR
 	// prcb
 	//
 	KPRCB																	PrcbData;
-}KPCR;
+} GNUPACK KPCR;
 
 //
 // restore pack
 //
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // control report

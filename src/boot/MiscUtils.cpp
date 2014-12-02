@@ -7,6 +7,12 @@
 
 #include "stdafx.h"
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 //
 // global
 //
@@ -42,7 +48,7 @@ CHAR8* BlGetBoardId()
 	UINT32 ecxValue															= 0;
 	UINT32 edxValue															= 0;
 	ArchCpuId(1, &eaxValue, &ebxValue, &ecxValue, &edxValue);
-	return ecxValue & 0x80000000 ? CHAR8_STRING("VMM") : BlpBoardId;
+	return ecxValue & 0x80000000 ? CHAR8_STRING((VOID *)"VMM") : BlpBoardId;
 }
 
 //
@@ -255,6 +261,8 @@ EFI_STATUS BlStartPciDevice(EFI_PCI_IO_PROTOCOL* pciIoProtocol, BOOLEAN decodeIo
 	return pciIoProtocol->Attributes(pciIoProtocol, EfiPciIoAttributeOperationEnable, attribute, nullptr);
 }
 
+CONST UINT8 BadIndexStr[]													= "BadIndex";
+
 //
 // get string from smbios table
 //
@@ -263,8 +271,7 @@ UINT8* BlpGetStringFromSMBIOSTable(UINT8* startOfStringTable, UINT8 index)
 	for(UINT8 i = 1; i < index && *startOfStringTable; i ++)
 		startOfStringTable													+= strlen(reinterpret_cast<CHAR8*>(startOfStringTable)) + 1;
 
-	STATIC UINT8 BadIndex[]													= "BadIndex";
-	return *startOfStringTable ? startOfStringTable : BadIndex;
+	return *startOfStringTable ? startOfStringTable : (UINT8 *)BadIndexStr;
 }
 
 //

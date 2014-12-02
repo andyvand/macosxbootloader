@@ -7,6 +7,12 @@
 
 #include "stdafx.h"
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 //
 // booting from net
 //
@@ -20,22 +26,22 @@ STATIC EFI_STATUS IopFindBootDevice(EFI_HANDLE* bootDeviceHandle, EFI_DEVICE_PAT
 {
 	STATIC CHAR16* checkFileName[] = 
 	{
-		CHAR16_STRING(L"\\OS X Install Data"),
-		CHAR16_STRING(L"\\com.apple.recovery.boot"),
-		CHAR16_STRING(L"\\System\\Library\\Kernels\\kernel"),
-		CHAR16_STRING(L"\\com.apple.boot.R"),
-		CHAR16_STRING(L"\\com.apple.boot.P"),
-		CHAR16_STRING(L"\\com.apple.boot.S")
+		CHAR16_STRING((VOID *)L"\\OS X Install Data"),
+		CHAR16_STRING((VOID *)L"\\com.apple.recovery.boot"),
+		CHAR16_STRING((VOID *)L"\\System\\Library\\Kernels\\kernel"),
+		CHAR16_STRING((VOID *)L"\\com.apple.boot.R"),
+		CHAR16_STRING((VOID *)L"\\com.apple.boot.P"),
+		CHAR16_STRING((VOID *)L"\\com.apple.boot.S")
 	};
 
 	STATIC CHAR16* booterName[] = 
 	{
-		CHAR16_STRING(L"\\OS X Install Data\\boot.efi"),
-		CHAR16_STRING(L"\\com.apple.recovery.boot\\boot.efi"),
-		CHAR16_STRING(L"\\System\\Library\\CoreServices\\boot.efi"),
-		CHAR16_STRING(L"\\System\\Library\\CoreServices\\boot.efi"),
-		CHAR16_STRING(L"\\System\\Library\\CoreServices\\boot.efi"),
-		CHAR16_STRING(L"\\System\\Library\\CoreServices\\boot.efi")
+		CHAR16_STRING((VOID *)L"\\OS X Install Data\\boot.efi"),
+		CHAR16_STRING((VOID *)L"\\com.apple.recovery.boot\\boot.efi"),
+		CHAR16_STRING((VOID *)L"\\System\\Library\\CoreServices\\boot.efi"),
+		CHAR16_STRING((VOID *)L"\\System\\Library\\CoreServices\\boot.efi"),
+		CHAR16_STRING((VOID *)L"\\System\\Library\\CoreServices\\boot.efi"),
+		CHAR16_STRING((VOID *)L"\\System\\Library\\CoreServices\\boot.efi")
 	};
 
 	STATIC UINT8 bootFilePathBuffer[256]									= {0};
@@ -123,13 +129,13 @@ STATIC EFI_STATUS IopCheckRPS(EFI_FILE_HANDLE rootFile, EFI_FILE_HANDLE* realRoo
 	*realRootFile															= rootFile;
 
 	EFI_FILE_HANDLE fileR													= nullptr;
-	EFI_STATUS startR														= rootFile->Open(rootFile, &fileR, CHAR16_STRING(L"com.apple.boot.R"), EFI_FILE_MODE_READ, 0);
+	EFI_STATUS startR														= rootFile->Open(rootFile, &fileR, CHAR16_STRING((VOID *)L"com.apple.boot.R"), EFI_FILE_MODE_READ, 0);
 
 	EFI_FILE_HANDLE fileP													= nullptr;
-	EFI_STATUS startP														= rootFile->Open(rootFile, &fileP, CHAR16_STRING(L"com.apple.boot.P"), EFI_FILE_MODE_READ, 0);
+	EFI_STATUS startP														= rootFile->Open(rootFile, &fileP, CHAR16_STRING((VOID *)L"com.apple.boot.P"), EFI_FILE_MODE_READ, 0);
 
 	EFI_FILE_HANDLE fileS													= nullptr;
-	EFI_STATUS startS														= rootFile->Open(rootFile, &fileS, CHAR16_STRING(L"com.apple.boot.S"), EFI_FILE_MODE_READ, 0);
+	EFI_STATUS startS														= rootFile->Open(rootFile, &fileS, CHAR16_STRING((VOID *)L"com.apple.boot.S"), EFI_FILE_MODE_READ, 0);
 
 	if(!EFI_ERROR(startR) && !EFI_ERROR(startP) && !EFI_ERROR(startS))
 		*realRootFile														= fileR;
@@ -189,8 +195,8 @@ STATIC EFI_STATUS IopDetectRoot(EFI_HANDLE deviceHandle, EFI_DEVICE_PATH_PROTOCO
 		//
 		// check kernel in Kernels directory
 		//
-		// if(!EFI_ERROR(status = IopRootFile->Open(IopRootFile, &kernelFile, CHAR16_STRING(L"\\System\\Library\\Kernels\\kernel"), EFI_FILE_MODE_READ, 0)))
-		if(!EFI_ERROR(status = IopRootFile->Open(IopRootFile, &kernelFile, CHAR16_STRING(L"kernel"), EFI_FILE_MODE_READ, 0)))
+		// if(!EFI_ERROR(status = IopRootFile->Open(IopRootFile, &kernelFile, CHAR16_STRING((VOID *)L"\\System\\Library\\Kernels\\kernel"), EFI_FILE_MODE_READ, 0)))
+		if(!EFI_ERROR(status = IopRootFile->Open(IopRootFile, &kernelFile, CHAR16_STRING((VOID *)L"kernel"), EFI_FILE_MODE_READ, 0)))
 			try_leave(NOTHING);
 
 		//
@@ -245,7 +251,7 @@ STATIC EFI_STATUS IopDetectRoot(EFI_HANDLE deviceHandle, EFI_DEVICE_PATH_PROTOCO
 		//
 		// check EncryptedRoot.plist.wipekey
 		//
-		if(!EFI_ERROR(realRootFile->Open(realRootFile, &kernelFile, CHAR16_STRING(L"EncryptedRoot.plist.wipekey"), EFI_FILE_MODE_READ, 0)))
+		if(!EFI_ERROR(realRootFile->Open(realRootFile, &kernelFile, CHAR16_STRING((VOID *)L"EncryptedRoot.plist.wipekey"), EFI_FILE_MODE_READ, 0)))
 			BlSetBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT, 0);
 		else
 			realRootFile->Close(realRootFile), realRootFile = nullptr;

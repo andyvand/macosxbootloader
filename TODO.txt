@@ -16,6 +16,12 @@ Phase 2: Status - Completed!
 3.) Convert all Panic Dialog data from LZSS to LZVN (status: Done).
 
 
-Phase 3: Status - TBD
+Phase 3: Status - Completed!
 
-1.) Add Xcode compiler support.
+1.) Add Xcode compiler support (status: Done).
+
+Phase 4: Status - Completed!
+
+1.) Build universal boot.efi (status: Done).
+
+2.) Add universal build script (status: Done).

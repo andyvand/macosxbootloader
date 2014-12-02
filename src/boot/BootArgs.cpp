@@ -10,7 +10,17 @@
 //
 // ram dmg extent info
 //
+#ifndef __APPLE__
 #include <pshpack1.h>
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
 typedef struct _RAM_DMG_EXTENT_INFO
 {
 	//
@@ -22,7 +32,7 @@ typedef struct _RAM_DMG_EXTENT_INFO
 	// length
 	//
 	UINT64																	Length;
-}RAM_DMG_EXTENT_INFO;
+} GNUPACK RAM_DMG_EXTENT_INFO;
 
 //
 // ram dmg header
@@ -58,8 +68,11 @@ typedef struct _RAM_DMG_HEADER
 	// signature 2
 	//
 	UINT64																	Signature2;
-}RAM_DMG_HEADER;
+} GNUPACK RAM_DMG_HEADER;
+
+#ifndef __APPLE__
 #include <poppack.h>
+#endif
 
 //
 // global

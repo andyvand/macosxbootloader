@@ -13,8 +13,10 @@ but it should work just as well with any other Mac models with a 32-bit only EFI
 PROJECT DEVELOPMENT
 
 This project is maintained by Pike R. Alpha (https://pikeralpha.wordpress.com)
+This project was updated by Andy Vandijck (andyvand@gmail.com)
 
 Bugs can be reported here: https://github.com/Piker-Alpha/macosxbootloader/issues
+Bugs can also be reported here: https://github.com/andyvand/macosxbootloader/issues
 
 The current state is: Completed (OS X 10.10 Yosemite is now fully supported).
 
@@ -32,8 +34,6 @@ There is a whole lot more that could be done, and here are some ideas:
 - Add a GUI for FileVault.
 
 - Implement Internet Recovery.
-
-- Build project with Xcode.
 
 - Cleanup source code.
 

@@ -7,6 +7,13 @@
 
 #pragma once
 
+#ifdef __APPLE__
+#define __leave
+#define __try if (1)
+#define __except(x) if (0 && (x))
+#define __finally if (1)
+#endif
+
 #define NOTHING
 #define BOOTAPI																__cdecl
 #define CHAR8_CONST_STRING(S)												static_cast<CHAR8 CONST*>(static_cast<VOID CONST*>(S))
@@ -33,13 +40,13 @@
 
 #define DEBUG_LDRP_CALL_CSPRINTF											0
 
-#include "EfiCommon.h"
-#include "EfiApi.h"
-#include "EfiImage.h"
-#include "EfiDevicePath.h"
-#include "IndustryStandard/Acpi.h"
-#include "IndustryStandard/pci.h"
-#include "IndustryStandard/SmBios.h"
+#include "../../sdk/include/EfiCommon.h"
+#include "../../sdk/include/EfiApi.h"
+#include "../../sdk/include/EfiImage.h"
+#include "../../sdk/include/EfiDevicePath.h"
+#include "../../sdk/include/IndustryStandard/Acpi.h"
+#include "../../sdk/include/IndustryStandard/pci.h"
+#include "../../sdk/include/IndustryStandard/SmBios.h"
 
 #include "GuidDefine.h"
 #include "RuntimeLib.h"

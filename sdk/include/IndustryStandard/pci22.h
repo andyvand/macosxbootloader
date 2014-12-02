@@ -550,6 +550,6 @@ typedef struct {
 // NOTE: The following header files are included here for
 // compatibility consideration.
 //
-#include "EfiPci.h"
+#include "../EfiPci.h"
 
 #endif

@@ -5,8 +5,14 @@
 //	purpose:	Console
 //********************************************************************
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "PictData.h"
+
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
 
 //
 // global
@@ -619,7 +625,7 @@ EFI_STATUS CsInitialize()
 	// get background clear
 	//
 	UINTN dataSize															= sizeof(CspBackgroundClear);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"BackgroundClear"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &CspBackgroundClear)))
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"BackgroundClear"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &CspBackgroundClear)))
 		CspScreenNeedRedraw													= FALSE;
 	else
 		CspScreenNeedRedraw													= TRUE;
@@ -642,15 +648,15 @@ EFI_STATUS CsInitialize()
 	//
 	UINT8 uiScale															= 0;
 	dataSize																= sizeof(uiScale);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"UIScale"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &uiScale)))
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"UIScale"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &uiScale)))
 	{
 		UINT16 actualDensity												= 0;
 		dataSize															= sizeof(actualDensity);
-		EfiRuntimeServices->GetVariable(CHAR16_STRING(L"ActualDensity"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &actualDensity);
+		EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"ActualDensity"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &actualDensity);
 
 		UINT16 densityThreshold												= 0;
 		dataSize															= sizeof(densityThreshold);
-		EfiRuntimeServices->GetVariable(CHAR16_STRING(L"DensityThreshold"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &densityThreshold);
+		EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"DensityThreshold"), &AppleFirmwareVariableGuid, nullptr, &dataSize, &densityThreshold);
 
 		CspHiDPIMode														= uiScale >= 2;
 	}
@@ -820,11 +826,11 @@ VOID CsPrintf(CHAR8 CONST* printForamt, ...)
 		{
 			if(unicodeBuffer[i] == L'\n')
 			{
-				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING(L"\r\n"));
+				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING((VOID *)L"\r\n"));
 			}
 			else if(unicodeBuffer[i] == L'\t')
 			{
-				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING(L"    "));
+				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING((VOID *)L"    "));
 			}
 			else
 			{
@@ -866,7 +872,7 @@ EFI_STATUS CsConnectDevice(BOOLEAN connectAll, BOOLEAN connectDisplay)
 
 	UINT32 result[sizeof(INTN) / sizeof(UINT32)]							= {0};
 	UINTN dataSize															= sizeof(result);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"gfx-saved-config-restore-status"), &AppleFirmwareVariableGuid, nullptr, &dataSize, result)))
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"gfx-saved-config-restore-status"), &AppleFirmwareVariableGuid, nullptr, &dataSize, result)))
 		CspGfxSavedConfigRestoreStatus										= static_cast<INT32>(result[0] | (result[ARRAYSIZE(result) - 1] & 0x80000000));
 
 	return status;

@@ -37,4 +37,4 @@ rm -f boot.64.efi boot.32.efi
 mkdir -p bin
 mv -f boot.efi bin/boot.efi
 
-echo "Build done :-D"
+echo "Build done, result is in bin :-D"

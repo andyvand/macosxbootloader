@@ -10,7 +10,11 @@
 
 %include "Common.inc"
 
+%ifdef APPLE
+PUBLIC_ROUTINE _Z24ArchTransferRoutineBeginv
+%else
 PUBLIC_ROUTINE ?ArchTransferRoutineBegin@@YAXXZ
+%endif
 									cli
 									lea					rax, [.32bits_code]
 									mov					[.far_jmp_offset], eax
@@ -52,6 +56,10 @@ PUBLIC_ROUTINE ?ArchTransferRoutineBegin@@YAXXZ
 .gdt_code_32:						dd					0ffffh, 0cf9e00h
 .gdt_data_32:						dd					0ffffh, 0cf9200h
 
+%ifdef APPLE
+PUBLIC_ROUTINE _Z22ArchTransferRoutineEndv
+%else
 PUBLIC_ROUTINE ?ArchTransferRoutineEnd@@YAXXZ
+%endif
 									hlt
 									retn
