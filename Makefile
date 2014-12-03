@@ -6,9 +6,9 @@ TOPDIR=$(PWD)
 ### Debug ###
 DEBUG =# 1
 ifeq ("$(DEBUG)", "")
-DEBUGFLAGS=-g0 -DNDEBUG
+DEBUGFLAGS=-g0 -DNDEBUG -fno-standalone-debug
 else
-DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG
+DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG  -fstandalone-debug
 endif
 
 ### Tools ###
@@ -53,17 +53,17 @@ CC=gcc
 CXX=g++
 LD=ld
 AR=ar
+STRIP = strip
 RANLIB=ranlib
-MTOC=mtoc -align 0x20
+MTOC=mtoc -subsystem UEFI_APPLICATION -align 0x20
 
 ### Architecture - Intel 32 bit / Intel 64 bit ###
 ifeq ("$(ARCH)", "i386")
 ARCHDIR = x86
 ARCHFLAGS = -arch i386
-ARCHLDFLAGS = -u __Z7EfiMainPvP17_EFI_SYSTEM_TABLE -e __Z7EfiMainPvP17_EFI_SYSTEM_TABLE
+ARCHLDFLAGS = -u __Z7EfiMainPvP17_EFI_SYSTEM_TABLE -e __Z7EfiMainPvP17_EFI_SYSTEM_TABLE -read_only_relocs suppress
 NASMFLAGS = -f macho -DAPPLEUSE
-STRIP = strip
-ARCHCFLAGS =  -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -DAPPLEEXTRA
+ARCHCFLAGS = -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -DAPPLEEXTRA -DUCHAR_MAX=0xFF -DUSHRT_MAX=0xFFFF -DUINT_MAX=0xFFFFFFFF -DULONG_MAX=0xFFFFFFFF -Duint_8t=unsigned\ char -Duint_16t=unsigned\ short -Duint_32t=unsigned\ int -Duint_64t=unsigned\ long\ long -DBRG_UI8=1 -DBRG_UI16=1 -DBRG_UI32=1 -DBRG_UI64=1 -D__i386__=1 
 EXTRAOBJS="StartKernel.o"
 else
 ARCHDIR = x64
@@ -71,13 +71,43 @@ ARCHFLAGS = -arch x86_64
 ARCHLDFLAGS =  -u ?EfiMain@@YA_KPEAXPEAU_EFI_SYSTEM_TABLE@@@Z -e ?EfiMain@@YA_KPEAXPEAU_EFI_SYSTEM_TABLE@@@Z
 NASMFLAGS = -f macho64 -DARCH64 -DAPPLEUSE
 STRIP = strip
-ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang
+ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -msoft-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -D__x86_64__=1
 EXTRAOBJS=
 endif
 
-CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fborland-extensions $(ARCHCFLAGS) -fPIC -mno-implicit-float -mms-bitfields -msoft-float -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -I/usr/include"
-CXXFLAGS = $(CFLAGS)
-LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -seg1addr 0x240"
+CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -std=gnu11 -I/usr/include -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions" 
+CXXFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions -std=gnu++11 -I/usr/include"
+LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -image_base 0x240 -compatibility_version 1.0 -current_version 2.1 -flat_namespace -print_statistics -map boot.map -sectalign __TEXT __text 0x20  -sectalign __TEXT __eh_frame  0x20 -sectalign __TEXT __ustring 0x20  -sectalign __TEXT __const 0x20   -sectalign __TEXT __ustring 0x20 -sectalign __DATA __data 0x20  -sectalign __DATA __bss 0x20  -sectalign __DATA __common 0x20 -final_output boot.efi"
+endif
+
+ifeq ("$(ARCH)", "i386")
+#AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
+#AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
+#AESASMDEFS=-DASM_X86_V2C=1 -D_ASM_X86_V2C=1 -DNO_ENCRYPTION_TABLE=1 -DNO_DECRYPTION_TABLE=1
+AESASMDEFS=
+
+### define ASM_X86_V1C for this object ###
+#EXTRAAESOBJS=aes_x86_v1.o
+
+### define ASM_X86_V2 or ASM_X86_V2C for this object ###
+#EXTRAAESOBJS=aes_x86_v2.o
+
+### define no ASM_X86_XXX at all for this ###
+EXTRAAESOBJS=
+
+#ASMCOMPFLAGS="$(AESASMDEFS)"
+ASMCOMPFLAGS=
+NASMCOMPFLAGS=
+else
+### define ASM_AMD64_C for this object ###
+EXTRAAESOBJS=aes_amd64.o
+
+### define no ASM_AMD64_C at all for this ###
+#EXTRAAESOBJS=
+
+ASMCOMPFLAGS="-DASM_AMD64_C=1 -D_DASM_AMD64_C=1"
+NASMCOMPFLAGS=-Daes_encrypt=_aes_encrypt -Daes_decrypt=_aes_decrypt
+#ASMCOMPFLAGS=
 endif
 
 NASM=nasm
@@ -87,7 +117,7 @@ NASM=nasm
 all: rijndael $(ARCHDIR) boot efilipo
 
 rijndael:
-	cd src/rijndael && make -f Makefile CC="$(CC)" CFLAGS=$(CFLAGS) AR="$(AR)" RANLIB="$(RANLIB)" && cd ../..
+	cd src/rijndael && make -f Makefile ARCH="$(ARCH)" NASM="$(NASM)" NASMFLAGS="$(NASMFLAGS)" CC="$(CC)" CFLAGS=$(CFLAGS) AR="$(AR)" RANLIB="$(RANLIB)" ASMCOMPFLAGS=$(ASMCOMPFLAGS) NASMCOMPFLAGS="$(NASMCOMPFLAGS)" EXTRAOBJS="$(EXTRAAESOBJS)" && cd ../..
 
 x64:
 	cd src/boot/x64 && make CXX="$(CXX)" CXXFLAGS=$(CXXFLAGS) NASM="$(NASM)" NASMFLAGS="$(NASMFLAGS)" AR="$(AR)" RANLIB="$(RANLIB)" && cd ../../..

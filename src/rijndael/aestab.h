@@ -72,6 +72,10 @@
 extern "C" {
 #endif
 
+#if defined(ASM_X86_V2)
+#define FF_TABLES 1
+#endif 
+
 #define t_dec(m,n) t_##m##n
 #define t_set(m,n) t_##m##n
 #define t_use(m,n) t_##m##n

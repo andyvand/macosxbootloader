@@ -7,8 +7,8 @@
     <installation-check script="InstallationCheck()"/>
     <script>
 function InstallationCheck(prefix) {
-	if (system.compareVersions(system.version.ProductVersion, '10.10') &lt; 0 || system.compareVersions(system.version.ProductVersion, '10.11') &gt;= 0) {
-		my.result.message = system.localizedStringWithFormat('ERROR_0', '10.10');
+	if (system.compareVersions(system.version.ProductVersion, '10.4') &lt; 0 || system.compareVersions(system.version.ProductVersion, '10.11') &gt;= 0) {
+		my.result.message = system.localizedStringWithFormat('ERROR_0', '10.4');
 		my.result.type = 'Fatal';
 		return false;
 	}
@@ -17,20 +17,26 @@ function InstallationCheck(prefix) {
 function VolumeCheck(prefix) {
 	if (system.env.OS_INSTALL == 1) return true;
 	var hasOS = system.files.fileExistsAtPath(my.target.mountpoint + "/System/Library/CoreServices/SystemVersion.plist");
-	if (!hasOS || system.compareVersions(my.target.systemVersion.ProductVersion, '10.10') &lt; 0 || system.compareVersions(my.target.systemVersion.ProductVersion, '10.11') &gt;= 0) {
-		my.result.message = system.localizedStringWithFormat('ERROR_0', '10.10');
+	if (!hasOS || system.compareVersions(my.target.systemVersion.ProductVersion, '10.4') &lt; 0 || system.compareVersions(my.target.systemVersion.ProductVersion, '10.11') &gt;= 0) {
+		my.result.message = system.localizedStringWithFormat('ERROR_0', '10.4');
 		my.result.type = 'Fatal';
 		return false;
 	}
 	return true;
 }
 </script>
+    <background file="background.tiff" alignment="bottomleft" scaling="proportional"/>
     <readme file="EFILIPO_ReadMe.html"/>
     <choices-outline>
         <line choice="manual"/>
     </choices-outline>
     <choice id="manual" title="SU_TITLE">
-        <pkg-ref id="com.AnV.Software.pkg.efilipo.1.0" auth="Root">#efilipo-1.0-apple.pkg</pkg-ref>
+        <pkg-ref id="com.AnV.Software.pkg.efilipo.1.1" auth="Root">#efilipo-1.1-apple.pkg</pkg-ref>
     </choice>
-    <pkg-ref id="com.AnV.Software.pkg.efilipo.1.0" installKBytes="22" version="1.0"/>
+    <pkg-ref id="com.AnV.Software.pkg.efilipo.1.1" installKBytes="98" version="1.1">
+        <bundle-version>
+            <bundle SourceVersion="4" CFBundleShortVersionString="1.1" CFBundleVersion="1.1" id="com.AnV.Software.efilipo" path="usr/bin/efilipo"/>
+        </bundle-version>
+    </pkg-ref>
+    <pkg-ref id="com.AnV.Software.pkg.efilipo.1.1">#efilipo-1.1-apple.pkg</pkg-ref>
 </installer-gui-script>

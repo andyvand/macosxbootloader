@@ -35,7 +35,12 @@ Abstract:
 //
 // Make sure we are useing the correct packing rules per EFI specification
 //
+#ifdef _MSC_VER
 #pragma pack()
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 #if _MSC_EXTENSIONS
 
@@ -95,7 +100,12 @@ Abstract:
   //
  
   #if _MSC_EXTENSIONS 
-    
+
+    #ifdef __APPLE__
+        #define __int64 long long
+        #define __int32 int
+    #endif
+
     //
     // use Microsoft* C complier dependent interger width types 
     //
@@ -215,8 +225,4 @@ typedef int64_t   intn_t;
            warning ( default : 4068 )
 
 #endif
-
-
-
 #endif
-

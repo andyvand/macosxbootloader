@@ -46,6 +46,9 @@ extern "C" {
 #if defined( _MSC_VER ) && ( _MSC_VER >= 1300 )
 #  include <stddef.h>
 #  define ptrint_t intptr_t
+#elif defined( __APPLE__ )
+#  define intptr_t unsigned int
+#  define ptrint_t intptr_t
 #elif defined( __ECOS__ )
 #  define intptr_t unsigned int
 #  define ptrint_t intptr_t
@@ -161,9 +164,12 @@ extern "C" {
 #    else
 #      error Use of the DLL is only available on the Microsoft, Intel and GCC compilers
 #    endif
-#  elif defined( __WATCOMC__ )
 #    define VOID_RETURN  void __cdecl
 #    define INT_RETURN   int  __cdecl
+#  elif defined( __APPLE__ )
+#    define VOID_RETURN  const void
+#    define INT_RETURN const int
+#  elif defined( __WATCOMC__ )
 #  else
 #    define VOID_RETURN  void
 #    define INT_RETURN   int

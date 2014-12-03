@@ -28,7 +28,12 @@ Revision History
 #define PCI_CLASS_MASS_STORAGE_SATADPA   0x06
 #define PCI_CLASS_MASS_STORAGE_AHCI      PCI_CLASS_MASS_STORAGE_SATADPA
 
-#pragma pack(push, 1)
+#ifdef _MSC_VER
+#pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 typedef struct {
   UINT32  Signature;    // "PCIR"
@@ -45,8 +50,10 @@ typedef struct {
   UINT16  MaxRuntimeImageLength;
   UINT16  ConfigUtilityCodeHeaderOffset;
   UINT16  DMTFCLPEntryPointOffset;
-} PCI_3_0_DATA_STRUCTURE;
+} GNUPACK PCI_3_0_DATA_STRUCTURE;
 
+#ifdef _MSC_VER
 #pragma pack(pop)
+#endif
 
 #endif

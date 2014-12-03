@@ -20,5 +20,4 @@ boot.efi: Base64.o BootArgs.o BootDebugger.o Config.o Console.o Crc32.o Debug139
 	rm -f $@.tmp
 
 clean:
-	rm -f *.o *.efi
-
+	rm -f *.o *.efi *.map

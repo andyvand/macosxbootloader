@@ -4,12 +4,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-uint32_t __OSSwapInt32(uint32_t x);
-
-#if !defined(__ppc__) && !defined(__ppc64__)
-#define ARCHSWAP(x) (x)
+#if defined(__ppc__) || defined(__ppc64__)
+#define ARCHSWAP(x) OSSwapInt32(x)
 #else
-#define ARCHSWAP(x) __OSSwapInt32(x)
+#define ARCHSWAP(x) (x)
 #endif
 
 typedef struct filehdr
@@ -180,6 +178,26 @@ typedef struct ms_dos_stub
 #define CPU_TYPE_SPARC	((cpu_type_t) 14)
 #define CPU_TYPE_ALPHA	((cpu_type_t) 16)
 
+#ifndef CPU_TYPE_ARM
+#define CPU_TYPE_ARM	((cpu_type_t) 12)
+#endif
+
+#ifndef CPU_TYPE_ARM64
+#define CPU_TYPE_ARM64        (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+#endif
+
+#ifndef CPU_SUBTYPE_ARM_ALL
+#define CPU_SUBTYPE_ARM_ALL   ((cpu_subtype_t) 0)
+#endif
+
+#ifndef CPU_SUBTYPE_ARM_V7
+#define CPU_SUBTYPE_ARM_V7    ((cpu_subtype_t) 9)
+#endif
+
+#ifndef CPU_SUBTYPE_ARM64_ALL
+#define CPU_SUBTYPE_ARM64_ALL ((cpu_subtype_t) 0)
+#endif
+
 void Usage(char *name)
 {
 	printf("EFI lipo tool\n");
@@ -270,7 +288,7 @@ int main(int argc, char **argv)
 		fseek(fin, 0, SEEK_SET);
 
 
-		outbuffer[curfile] = malloc(filesize[curfile]);
+		outbuffer[curfile] = (unsigned char *)malloc(filesize[curfile]);
 		checksize = fread(outbuffer[curfile], 1, filesize[curfile], fin);
         fclose(fin);
 

@@ -139,7 +139,12 @@ Abstract:
   //
  
   #if _MSC_EXTENSIONS 
-    
+
+    #ifdef __APPLE__
+        #define __int64 long long
+        #define __int32 int
+    #endif
+
     //
     // use Microsoft* C complier dependent interger width types 
     //
@@ -151,6 +156,7 @@ Abstract:
     typedef short               int16_t;
     typedef unsigned char       uint8_t;
     typedef char                int8_t;
+
   #else
 
     //

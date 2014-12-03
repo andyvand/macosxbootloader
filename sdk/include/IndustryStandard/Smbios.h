@@ -48,7 +48,12 @@ Abstract:
 //
 #define SMBIOS_TYPE_END_OF_TABLE     0x007F
 
+#ifdef _MSC_VER
 #pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 typedef UINT8 SMBIOS_TABLE_STRING;
 
@@ -67,13 +72,13 @@ typedef struct {
   UINT32                TableAddress;
   UINT16                NumberOfSmbiosStructures;
   UINT8                 SmbiosBcdRevision;
-} SMBIOS_TABLE_STRUCTURE;
+} GNUPACK SMBIOS_TABLE_STRUCTURE;
 
 typedef struct {
   UINT8                 Type;
   UINT8                 Length;
   UINT16                Handle;
-} SMBIOS_TABLE_HEADER;
+} GNUPACK SMBIOS_TABLE_HEADER;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -88,7 +93,7 @@ typedef struct {
   UINT8                 SystemBiosMinorRelease;
   UINT8                 EmbeddedControllerFirmwareMajorRelease;
   UINT8                 EmbeddedControllerFirmwareMinorRelease;
-} SMBIOS_TABLE_TYPE0;
+} GNUPACK SMBIOS_TABLE_TYPE0;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -100,7 +105,7 @@ typedef struct {
   UINT8                 WakeUpType;
   SMBIOS_TABLE_STRING   SKUNumber;
   SMBIOS_TABLE_STRING   Family;
-} SMBIOS_TABLE_TYPE1;
+} GNUPACK SMBIOS_TABLE_TYPE1;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -115,13 +120,13 @@ typedef struct {
   UINT8                 BoardType;
   UINT8                 NumberOfContainedObjectHandles;
   UINT16                ContainedObjectHandles[1];
-} SMBIOS_TABLE_TYPE2;
+} GNUPACK SMBIOS_TABLE_TYPE2;
 
 typedef struct {
   UINT8                 ContainedElementType;
   UINT8                 ContainedElementMinimum;
   UINT8                 ContainedElementMaximum;
-} CONTAINED_ELEMENT;
+} GNUPACK CONTAINED_ELEMENT;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -140,7 +145,7 @@ typedef struct {
   UINT8                 ContainedElementCount;
   UINT8                 ContainedElementRecordLength;
   CONTAINED_ELEMENT     ContainedElements[1];
-} SMBIOS_TABLE_TYPE3;
+} GNUPACK SMBIOS_TABLE_TYPE3;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -173,7 +178,7 @@ typedef struct {
   // Add for smbios 2.6
   //
   UINT16                ProcessorFamily2;
-} SMBIOS_TABLE_TYPE4;
+} GNUPACK SMBIOS_TABLE_TYPE4;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -188,7 +193,7 @@ typedef struct {
   UINT8                 AssociatedMemorySlotNum;
   UINT16                MemoryModuleConfigHandles[1];
 //  UINT8                 EnableErrCorrectCapabilities;
-} SMBIOS_TABLE_TYPE5;
+} GNUPACK SMBIOS_TABLE_TYPE5;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -199,7 +204,7 @@ typedef struct {
   UINT8                 InstalledSize;
   UINT8                 EnabledSize;
   UINT8                 ErrorStatus;
-} SMBIOS_TABLE_TYPE6;
+} GNUPACK SMBIOS_TABLE_TYPE6;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -213,7 +218,7 @@ typedef struct {
   UINT8                 ErrorCorrectionType;
   UINT8                 SystemCacheType;
   UINT8                 Associativity;
-} SMBIOS_TABLE_TYPE7;
+} GNUPACK SMBIOS_TABLE_TYPE7;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -222,7 +227,7 @@ typedef struct {
   SMBIOS_TABLE_STRING   ExternalReferenceDesignator;
   UINT8                 ExternalConnectorType;
   UINT8                 PortType;
-} SMBIOS_TABLE_TYPE8;
+} GNUPACK SMBIOS_TABLE_TYPE8;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -240,27 +245,27 @@ typedef struct {
   UINT16                SegmentGroupNum;
   UINT8                 BusNum;
   UINT8                 DevFuncNum;
-} SMBIOS_TABLE_TYPE9;
+} GNUPACK SMBIOS_TABLE_TYPE9;
 
 typedef struct {
   UINT8                 DeviceType;
   SMBIOS_TABLE_STRING   DescriptionString;
-} DEVICE_STRUCT;
+} GNUPACK DEVICE_STRUCT;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   DEVICE_STRUCT         Device[1];
-} SMBIOS_TABLE_TYPE10;
+} GNUPACK SMBIOS_TABLE_TYPE10;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   UINT8                 StringCount;
-} SMBIOS_TABLE_TYPE11;
+} GNUPACK SMBIOS_TABLE_TYPE11;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   UINT8                 StringCount;
-} SMBIOS_TABLE_TYPE12;
+} GNUPACK SMBIOS_TABLE_TYPE12;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -268,23 +273,23 @@ typedef struct {
   UINT8                 Flags;
   UINT8                 reserved[15];
   SMBIOS_TABLE_STRING   CurrentLanguages;
-} SMBIOS_TABLE_TYPE13;
+} GNUPACK SMBIOS_TABLE_TYPE13;
 
 typedef struct {
   UINT8                 ItemType;
   UINT16                ItemHandle;
-} GROUP_STRUCT;
+} GNUPACK GROUP_STRUCT;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   SMBIOS_TABLE_STRING   GroupName;
   GROUP_STRUCT          Group[1];
-} SMBIOS_TABLE_TYPE14;
+} GNUPACK SMBIOS_TABLE_TYPE14;
 
 typedef struct {
   UINT8                 LogType;
   UINT8                 DataFormatType;
-} EVENT_LOG_TYPE;
+} GNUPACK EVENT_LOG_TYPE;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -299,7 +304,7 @@ typedef struct {
   UINT8                 NumberOfSupportedLogTypeDescriptors;
   UINT8                 LengthOfLogTypeDescriptor;
   EVENT_LOG_TYPE        EventLogTypeDescriptors[1];
-} SMBIOS_TABLE_TYPE15;
+} GNUPACK SMBIOS_TABLE_TYPE15;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -309,7 +314,7 @@ typedef struct {
   UINT32                MaximumCapacity;
   UINT16                MemoryErrorInformationHandle;
   UINT16                NumberOfMemoryDevices;
-} SMBIOS_TABLE_TYPE16;
+} GNUPACK SMBIOS_TABLE_TYPE16;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -333,7 +338,7 @@ typedef struct {
   // Add for smbios 2.6
   //  
   UINT8                 Attributes;
-} SMBIOS_TABLE_TYPE17;
+} GNUPACK SMBIOS_TABLE_TYPE17;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -344,7 +349,7 @@ typedef struct {
   UINT32                MemoryArrayErrorAddress;
   UINT32                DeviceErrorAddress;
   UINT32                ErrorResolution;
-} SMBIOS_TABLE_TYPE18;
+} GNUPACK SMBIOS_TABLE_TYPE18;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -352,7 +357,7 @@ typedef struct {
   UINT32                EndingAddress;
   UINT16                MemoryArrayHandle;
   UINT8                 PartitionWidth;
-} SMBIOS_TABLE_TYPE19;
+} GNUPACK SMBIOS_TABLE_TYPE19;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -363,14 +368,14 @@ typedef struct {
   UINT8                 PartitionRowPosition;
   UINT8                 InterleavePosition;
   UINT8                 InterleavedDataDepth;
-} SMBIOS_TABLE_TYPE20;
+} GNUPACK SMBIOS_TABLE_TYPE20;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   UINT8                 Type;
   UINT8                 Interface;
   UINT8                 NumberOfButtons;
-} SMBIOS_TABLE_TYPE21;
+} GNUPACK SMBIOS_TABLE_TYPE21;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -389,7 +394,7 @@ typedef struct {
   SMBIOS_TABLE_STRING   SBDSDeviceChemistry;
   UINT8                 DesignCapacityMultiplier;
   UINT32                OEMSpecific;
-} SMBIOS_TABLE_TYPE22;
+} GNUPACK SMBIOS_TABLE_TYPE22;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -398,12 +403,12 @@ typedef struct {
   UINT16                ResetLimit;
   UINT16                TimerInterval;
   UINT16                Timeout;
-} SMBIOS_TABLE_TYPE23;
+} GNUPACK SMBIOS_TABLE_TYPE23;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   UINT8                 HardwareSecuritySettings;
-} SMBIOS_TABLE_TYPE24;
+} GNUPACK SMBIOS_TABLE_TYPE24;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -412,7 +417,7 @@ typedef struct {
   UINT8                 NextScheduledPowerOnHour;
   UINT8                 NextScheduledPowerOnMinute;
   UINT8                 NextScheduledPowerOnSecond;
-} SMBIOS_TABLE_TYPE25;
+} GNUPACK SMBIOS_TABLE_TYPE25;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -425,7 +430,7 @@ typedef struct {
   UINT16                Accuracy;
   UINT32                OEMDefined;
   UINT16                NominalValue;
-} SMBIOS_TABLE_TYPE26;
+} GNUPACK SMBIOS_TABLE_TYPE26;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -434,7 +439,7 @@ typedef struct {
   UINT8                 CoolingUnitGroup;
   UINT32                OEMDefined;
   UINT16                NominalSpeed;
-} SMBIOS_TABLE_TYPE27;
+} GNUPACK SMBIOS_TABLE_TYPE27;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -447,7 +452,7 @@ typedef struct {
   UINT16                Accuracy;
   UINT32                OEMDefined;
   UINT16                NominalValue;
-} SMBIOS_TABLE_TYPE28;
+} GNUPACK SMBIOS_TABLE_TYPE28;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -460,13 +465,13 @@ typedef struct {
   UINT16                Accuracy;
   UINT32                OEMDefined;
   UINT16                NominalValue;
-} SMBIOS_TABLE_TYPE29;
+} GNUPACK SMBIOS_TABLE_TYPE29;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   SMBIOS_TABLE_STRING   ManufacturerName;
   UINT8                 Connections;
-} SMBIOS_TABLE_TYPE30;
+} GNUPACK SMBIOS_TABLE_TYPE30;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -477,13 +482,13 @@ typedef struct {
   UINT32                BisEntry32;
   UINT64                Reserved3;
   UINT32                Reserved4;
-} SMBIOS_TABLE_TYPE31;
+} GNUPACK SMBIOS_TABLE_TYPE31;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
   UINT8                 Reserved[6];
   UINT8                 BootStatus[1];
-} SMBIOS_TABLE_TYPE32;
+} GNUPACK SMBIOS_TABLE_TYPE32;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -494,7 +499,7 @@ typedef struct {
   UINT64                MemoryArrayErrorAddress;
   UINT64                DeviceErrorAddress;
   UINT32                ErrorResolution;
-} SMBIOS_TABLE_TYPE33;
+} GNUPACK SMBIOS_TABLE_TYPE33;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -502,7 +507,7 @@ typedef struct {
   UINT8                 Type;
   UINT32                Address;
   UINT8                 AddressType;
-} SMBIOS_TABLE_TYPE34;
+} GNUPACK SMBIOS_TABLE_TYPE34;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -510,7 +515,7 @@ typedef struct {
   UINT16                ManagementDeviceHandle;
   UINT16                ComponentHandle;
   UINT16                ThresholdHandle;
-} SMBIOS_TABLE_TYPE35;
+} GNUPACK SMBIOS_TABLE_TYPE35;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -520,12 +525,12 @@ typedef struct {
   UINT16                UpperThresholdCritical;
   UINT16                LowerThresholdNonRecoverable;
   UINT16                UpperThresholdNonRecoverable;
-} SMBIOS_TABLE_TYPE36;
+} GNUPACK SMBIOS_TABLE_TYPE36;
 
 typedef struct {
   UINT8                 DeviceLoad;
   UINT16                DeviceHandle;
-} MEMORY_DEVICE;
+} GNUPACK MEMORY_DEVICE;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -533,7 +538,7 @@ typedef struct {
   UINT8                 MaximumChannelLoad;
   UINT8                 MemoryDeviceCount;
   MEMORY_DEVICE         MemoryDevice[1];
-} SMBIOS_TABLE_TYPE37;
+} GNUPACK SMBIOS_TABLE_TYPE37;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -544,7 +549,7 @@ typedef struct {
   UINT64                BaseAddress;
   UINT8                 BaseAddressModifier_InterruptInfo;
   UINT8                 InterruptNumber;
-} SMBIOS_TABLE_TYPE38;
+} GNUPACK SMBIOS_TABLE_TYPE38;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
@@ -561,7 +566,7 @@ typedef struct {
   UINT16                InputVoltageProbeHandle;
   UINT16                CoolingDeviceHandle;
   UINT16                InputCurrentProbeHandle;
-} SMBIOS_TABLE_TYPE39;
+} GNUPACK SMBIOS_TABLE_TYPE39;
 
 //
 // Add type 40 and type 41 for smbios 2.6
@@ -572,13 +577,13 @@ typedef struct {
   UINT8                   ReferencedOffset;
   SMBIOS_TABLE_STRING     EntryString;
   UINT8                   Value[1];
-}ADDITIONAL_INFORMATION_ENTRY;
+} GNUPACK ADDITIONAL_INFORMATION_ENTRY;
 
 typedef struct {
   SMBIOS_TABLE_HEADER                   Hdr;
   UINT8                                 NumberOfAdditionalInformationEntries;
   ADDITIONAL_INFORMATION_ENTRY          AdditionalInfoEntries[1];  
-} SMBIOS_TABLE_TYPE40;
+} GNUPACK SMBIOS_TABLE_TYPE40;
 
 typedef struct {
   SMBIOS_TABLE_HEADER     Hdr;
@@ -588,15 +593,15 @@ typedef struct {
   UINT16                  SegmentGroupNum;
   UINT8                   BusNum;
   UINT8                   DevFuncNum;  
-} SMBIOS_TABLE_TYPE41;
+} GNUPACK SMBIOS_TABLE_TYPE41;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
-} SMBIOS_TABLE_TYPE126;
+} GNUPACK SMBIOS_TABLE_TYPE126;
 
 typedef struct {
   SMBIOS_TABLE_HEADER   Hdr;
-} SMBIOS_TABLE_TYPE127;
+} GNUPACK SMBIOS_TABLE_TYPE127;
 
 typedef union {
   SMBIOS_TABLE_HEADER   *Hdr;
@@ -645,8 +650,10 @@ typedef union {
   SMBIOS_TABLE_TYPE126  *Type126;
   SMBIOS_TABLE_TYPE127  *Type127;
   UINT8                 *Raw;
-} SMBIOS_STRUCTURE_POINTER;
+} GNUPACK SMBIOS_STRUCTURE_POINTER;
 
+#ifdef _MSC_VER
 #pragma pack()
+#endif
 
 #endif

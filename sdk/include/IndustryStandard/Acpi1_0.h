@@ -30,7 +30,13 @@ Abstract:
 //
 // Ensure proper structure formats
 //
+#ifdef _MSC_VER
 #pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
 //
 // ACPI 1.0b table structures
 //
@@ -43,7 +49,7 @@ typedef struct {
   UINT8   OemId[6];
   UINT8   Reserved;
   UINT32  RsdtAddress;
-} EFI_ACPI_1_0_ROOT_SYSTEM_DESCRIPTION_POINTER;
+} GNUPACK EFI_ACPI_1_0_ROOT_SYSTEM_DESCRIPTION_POINTER;
 
 //
 // Root System Description Table
@@ -99,7 +105,7 @@ typedef struct {
   UINT8                       Reserved5;
   UINT8                       Reserved6;
   UINT32                      Flags;
-} EFI_ACPI_1_0_FIXED_ACPI_DESCRIPTION_TABLE;
+} GNUPACK EFI_ACPI_1_0_FIXED_ACPI_DESCRIPTION_TABLE;
 
 //
 // FADT Version (as defined in ACPI 1.0b spec.)
@@ -132,7 +138,7 @@ typedef struct {
   UINT32  GlobalLock;
   UINT32  Flags;
   UINT8   Reserved[40];
-} EFI_ACPI_1_0_FIRMWARE_ACPI_CONTROL_STRUCTURE;
+} GNUPACK EFI_ACPI_1_0_FIRMWARE_ACPI_CONTROL_STRUCTURE;
 
 //
 // Firmware Control Structure Feature Flags
@@ -148,7 +154,7 @@ typedef struct {
   EFI_ACPI_DESCRIPTION_HEADER Header;
   UINT32                      LocalApicAddress;
   UINT32                      Flags;
-} EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER;
+} GNUPACK EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER;
 
 //
 // MADT Revision (as defined in ACPI 1.0b spec.)
@@ -184,7 +190,7 @@ typedef struct {
   UINT8   AcpiProcessorId;
   UINT8   ApicId;
   UINT32  Flags;
-} EFI_ACPI_1_0_PROCESSOR_LOCAL_APIC_STRUCTURE;
+} GNUPACK EFI_ACPI_1_0_PROCESSOR_LOCAL_APIC_STRUCTURE;
 
 //
 // Local APIC Flags.  All other bits are reserved and must be 0.
@@ -201,7 +207,7 @@ typedef struct {
   UINT8   Reserved;
   UINT32  IoApicAddress;
   UINT32  SystemVectorBase;
-} EFI_ACPI_1_0_IO_APIC_STRUCTURE;
+} GNUPACK EFI_ACPI_1_0_IO_APIC_STRUCTURE;
 
 //
 // Interrupt Source Override Structure
@@ -213,7 +219,7 @@ typedef struct {
   UINT8   Source;
   UINT32  GlobalSystemInterruptVector;
   UINT16  Flags;
-} EFI_ACPI_1_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE;
+} GNUPACK EFI_ACPI_1_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE;
 
 //
 // Non-Maskable Interrupt Source Structure
@@ -223,7 +229,7 @@ typedef struct {
   UINT8   Length;
   UINT16  Flags;
   UINT32  GlobalSystemInterruptVector;
-} EFI_ACPI_1_0_NON_MASKABLE_INTERRUPT_SOURCE_STRUCTURE;
+} GNUPACK EFI_ACPI_1_0_NON_MASKABLE_INTERRUPT_SOURCE_STRUCTURE;
 
 //
 // Local APIC NMI Structure
@@ -234,7 +240,7 @@ typedef struct {
   UINT8   AcpiProcessorId;
   UINT16  Flags;
   UINT8   LocalApicInti;
-} EFI_ACPI_1_0_LOCAL_APIC_NMI_STRUCTURE;
+} GNUPACK EFI_ACPI_1_0_LOCAL_APIC_NMI_STRUCTURE;
 
 //
 // Smart Battery Description Table (SBST)
@@ -244,7 +250,7 @@ typedef struct {
   UINT32                      WarningEnergyLevel;
   UINT32                      LowEnergyLevel;
   UINT32                      CriticalEnergyLevel;
-} EFI_ACPI_1_0_SMART_BATTERY_DESCRIPTION_TABLE;
+} GNUPACK EFI_ACPI_1_0_SMART_BATTERY_DESCRIPTION_TABLE;
 
 //
 // Known table signatures
@@ -294,6 +300,8 @@ typedef struct {
 //
 #define EFI_ACPI_1_0_SECONDARY_SYSTEM_DESCRIPTION_TABLE_SIGNATURE 0x54445353
 
+#ifdef _MSC_VER
 #pragma pack()
+#endif
 
 #endif

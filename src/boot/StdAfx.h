@@ -5,7 +5,10 @@
 //	purpose:	stdafx
 //********************************************************************
 
-#pragma once
+#ifndef __STDAFX_H__
+#define __STDAFX_H__ 1
+
+#include "../../sdk/include/EfiTypes.h"
 
 #ifdef __APPLE__
 #define __leave
@@ -76,3 +79,5 @@
 #include "MemoryMap.h"
 #include "PanicDialog.h"
 #include "FileVault.h"
+
+#endif

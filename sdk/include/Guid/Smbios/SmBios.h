@@ -36,7 +36,13 @@ extern EFI_GUID gEfiSmbiosTableGuid;
 //
 // Smbios Table Entry Point Structure
 //
+#ifdef _MSC_VER
 #pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
 typedef struct {
   UINT8   AnchorString[4];
   UINT8   EntryPointStructureChecksum;
@@ -52,19 +58,19 @@ typedef struct {
   UINT32  TableAddress;
   UINT16  NumberOfSmbiosStructures;
   UINT8   SmbiosBcdRevision;
-} SMBIOS_TABLE_ENTRY_POINT;
-#pragma pack()
+} GNUPACK SMBIOS_TABLE_ENTRY_POINT;
+
 //
 // The Smbios structure header
 //
-#pragma pack(1)
 typedef struct {
-
   UINT8   Type;
   UINT8   Length;
   UINT16  Handle;
+} GNUPACK SMBIOS_STRUCTURE;
 
-} SMBIOS_STRUCTURE;
+#ifdef _MSC_VER
 #pragma pack()
+#endif
 
 #endif

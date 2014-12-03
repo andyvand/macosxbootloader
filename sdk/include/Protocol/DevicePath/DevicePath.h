@@ -35,15 +35,22 @@ Abstract:
     0x9576e91, 0x6d3f, 0x11d2, 0x8e, 0x39, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b \
   }
 
-#pragma pack(push, 1)
+#ifdef _MSC_VER
+#pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 typedef struct {
   UINT8 Type;
   UINT8 SubType;
   UINT8 Length[2];
-} EFI_DEVICE_PATH_PROTOCOL;
+} GNUPACK EFI_DEVICE_PATH_PROTOCOL;
 
+#ifdef _MSC_VER
 #pragma pack(pop)
+#endif
 
 #define EFI_END_ENTIRE_DEVICE_PATH            0xff
 #define EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE    0xff

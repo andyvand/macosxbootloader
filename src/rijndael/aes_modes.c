@@ -63,7 +63,9 @@ extern "C"
 
 #include "aes_via_ace.h"
 
+#ifdef _MSC_VER
 #pragma pack(16)
+#endif
 
 aligned_array(unsigned long,    enc_gen_table, 12, 16) =    NEH_ENC_GEN_DATA;
 aligned_array(unsigned long,   enc_load_table, 12, 16) =   NEH_ENC_LOAD_DATA;

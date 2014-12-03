@@ -27,7 +27,12 @@ Revision History
 //#include "pci23.h"
 //#include "pci30.h"
 
-#pragma pack(push, 1)
+#ifdef _MSC_VER
+#pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
 
 typedef struct {
   UINT8 Register;
@@ -35,7 +40,7 @@ typedef struct {
   UINT8 Device;
   UINT8 Bus;
   UINT8 Reserved[4];
-} DEFIO_PCI_ADDR;
+} GNUPACK DEFIO_PCI_ADDR;
 
 #define EFI_ROOT_BRIDGE_LIST                            'eprb'
 #define EFI_PCI_EXPANSION_ROM_HEADER_EFISIGNATURE       0x0EF1
@@ -50,15 +55,17 @@ typedef struct {
   UINT8   Reserved[8];
   UINT16  EfiImageHeaderOffset;
   UINT16  PcirOffset;
-} EFI_PCI_EXPANSION_ROM_HEADER;
+} GNUPACK EFI_PCI_EXPANSION_ROM_HEADER;
 
 typedef union {
   UINT8                           *Raw;
   PCI_EXPANSION_ROM_HEADER        *Generic;
   EFI_PCI_EXPANSION_ROM_HEADER    *Efi;
   EFI_LEGACY_EXPANSION_ROM_HEADER *PcAt;
-} EFI_PCI_ROM_HEADER;
+} GNUPACK EFI_PCI_ROM_HEADER;
 
+#ifdef _MSC_VER
 #pragma pack(pop)
+#endif
 
 #endif

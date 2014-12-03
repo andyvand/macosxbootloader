@@ -30,7 +30,13 @@ Abstract:
 //
 // Ensure proper structure formats
 //
+#ifdef _MSC_VER
 #pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
 //
 // ACPI Specification Revision
 //
@@ -45,7 +51,7 @@ typedef struct {
   UINT8   RegisterBitOffset;
   UINT8   AccessSize;
   UINT64  Address;
-} EFI_ACPI_3_0_GENERIC_ADDRESS_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_GENERIC_ADDRESS_STRUCTURE;
 
 //
 // Generic Address Space Address IDs
@@ -82,7 +88,7 @@ typedef struct {
   UINT64  XsdtAddress;
   UINT8   ExtendedChecksum;
   UINT8   Reserved[3];
-} EFI_ACPI_3_0_ROOT_SYSTEM_DESCRIPTION_POINTER;
+} GNUPACK EFI_ACPI_3_0_ROOT_SYSTEM_DESCRIPTION_POINTER;
 
 //
 // RSD_PTR Revision (as defined in ACPI 3.0 spec.)
@@ -95,7 +101,7 @@ typedef struct {
 typedef struct {
   UINT32  Signature;
   UINT32  Length;
-} EFI_ACPI_3_0_COMMON_HEADER;
+} GNUPACK EFI_ACPI_3_0_COMMON_HEADER;
 
 //
 // Root System Description Table
@@ -173,7 +179,7 @@ typedef struct {
   EFI_ACPI_3_0_GENERIC_ADDRESS_STRUCTURE  XPmTmrBlk;
   EFI_ACPI_3_0_GENERIC_ADDRESS_STRUCTURE  XGpe0Blk;
   EFI_ACPI_3_0_GENERIC_ADDRESS_STRUCTURE  XGpe1Blk;
-} EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE;
+} GNUPACK EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE;
 
 //
 // FADT Version (as defined in ACPI 3.0 spec.)
@@ -239,7 +245,7 @@ typedef struct {
   UINT64  XFirmwareWakingVector;
   UINT8   Version;
   UINT8   Reserved[31];
-} EFI_ACPI_3_0_FIRMWARE_ACPI_CONTROL_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_FIRMWARE_ACPI_CONTROL_STRUCTURE;
 
 //
 // FACS Version (as defined in ACPI 3.0 spec.)
@@ -310,7 +316,7 @@ typedef struct {
   UINT8   AcpiProcessorId;
   UINT8   ApicId;
   UINT32  Flags;
-} EFI_ACPI_3_0_PROCESSOR_LOCAL_APIC_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_PROCESSOR_LOCAL_APIC_STRUCTURE;
 
 //
 // Local APIC Flags.  All other bits are reserved and must be 0.
@@ -327,7 +333,7 @@ typedef struct {
   UINT8   Reserved;
   UINT32  IoApicAddress;
   UINT32  GlobalSystemInterruptBase;
-} EFI_ACPI_3_0_IO_APIC_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_IO_APIC_STRUCTURE;
 
 //
 // Interrupt Source Override Structure
@@ -339,7 +345,7 @@ typedef struct {
   UINT8   Source;
   UINT32  GlobalSystemInterrupt;
   UINT16  Flags;
-} EFI_ACPI_3_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE;
 
 //
 // Platform Interrupt Sources Structure Definition
@@ -356,7 +362,7 @@ typedef struct {
   UINT32  PlatformInterruptSourceFlags;
   UINT8   CpeiProcessorOverride;
   UINT8   Reserved[31];
-} EFI_ACPI_3_0_PLATFORM_INTERRUPT_APIC_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_PLATFORM_INTERRUPT_APIC_STRUCTURE;
 
 //
 // MPS INTI flags.
@@ -373,7 +379,7 @@ typedef struct {
   UINT8   Length;
   UINT16  Flags;
   UINT32  GlobalSystemInterrupt;
-} EFI_ACPI_3_0_NON_MASKABLE_INTERRUPT_SOURCE_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_NON_MASKABLE_INTERRUPT_SOURCE_STRUCTURE;
 
 //
 // Local APIC NMI Structure
@@ -384,7 +390,7 @@ typedef struct {
   UINT8   AcpiProcessorId;
   UINT16  Flags;
   UINT8   LocalApicLint;
-} EFI_ACPI_3_0_LOCAL_APIC_NMI_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_LOCAL_APIC_NMI_STRUCTURE;
 
 //
 // Local APIC Address Override Structure
@@ -394,7 +400,7 @@ typedef struct {
   UINT8   Length;
   UINT16  Reserved;
   UINT64  LocalApicAddress;
-} EFI_ACPI_3_0_LOCAL_APIC_ADDRESS_OVERRIDE_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_LOCAL_APIC_ADDRESS_OVERRIDE_STRUCTURE;
 
 //
 // IO SAPIC Structure
@@ -406,7 +412,7 @@ typedef struct {
   UINT8   Reserved;
   UINT32  GlobalSystemInterruptBase;
   UINT64  IoSapicAddress;
-} EFI_ACPI_3_0_IO_SAPIC_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_IO_SAPIC_STRUCTURE;
 
 //
 // Local SAPIC Structure
@@ -421,7 +427,7 @@ typedef struct {
   UINT8   Reserved[3];
   UINT32  Flags;
   UINT32  ACPIProcessorUIDValue;
-} EFI_ACPI_3_0_PROCESSOR_LOCAL_SAPIC_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_PROCESSOR_LOCAL_SAPIC_STRUCTURE;
 
 //
 // Platform Interrupt Sources Structure
@@ -436,7 +442,7 @@ typedef struct {
   UINT8   IoSapicVector;
   UINT32  GlobalSystemInterrupt;
   UINT32  PlatformInterruptSourceFlags;
-} EFI_ACPI_3_0_PLATFORM_INTERRUPT_SOURCES_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_PLATFORM_INTERRUPT_SOURCES_STRUCTURE;
 
 //
 // Platform Interrupt Source Flags.
@@ -452,7 +458,7 @@ typedef struct {
   UINT32                      WarningEnergyLevel;
   UINT32                      LowEnergyLevel;
   UINT32                      CriticalEnergyLevel;
-} EFI_ACPI_3_0_SMART_BATTERY_DESCRIPTION_TABLE;
+} GNUPACK EFI_ACPI_3_0_SMART_BATTERY_DESCRIPTION_TABLE;
 
 //
 // SBST Version (as defined in ACPI 3.0 spec.)
@@ -470,7 +476,7 @@ typedef struct {
   EFI_ACPI_3_0_GENERIC_ADDRESS_STRUCTURE  EcData;
   UINT32                                  Uid;
   UINT8                                   GpeBit;
-} EFI_ACPI_3_0_EMBEDDED_CONTROLLER_BOOT_RESOURCES_TABLE;
+} GNUPACK EFI_ACPI_3_0_EMBEDDED_CONTROLLER_BOOT_RESOURCES_TABLE;
 
 //
 // ECDT Version (as defined in ACPI 3.0 spec.)
@@ -485,7 +491,7 @@ typedef struct {
   EFI_ACPI_DESCRIPTION_HEADER Header;
   UINT32                      Reserved1;  // Must be set to 1
   UINT64                      Reserved2;
-} EFI_ACPI_3_0_SYSTEM_RESOURCE_AFFINITY_TABLE_HEADER;
+} GNUPACK EFI_ACPI_3_0_SYSTEM_RESOURCE_AFFINITY_TABLE_HEADER;
 
 //
 // SRAT Version (as defined in ACPI 3.0 spec.)
@@ -512,7 +518,7 @@ typedef struct {
   UINT8   LocalSapicEid;
   UINT8   ProximityDomain31To8[3];
   UINT8   Reserved[4];
-} EFI_ACPI_3_0_PROCESSOR_LOCAL_APIC_SAPIC_AFFINITY_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_PROCESSOR_LOCAL_APIC_SAPIC_AFFINITY_STRUCTURE;
 
 //
 // Local APIC/SAPIC Flags.  All other bits are reserved and must be 0.
@@ -534,7 +540,7 @@ typedef struct {
   UINT32  Reserved2;
   UINT32  Flags;
   UINT64  Reserved3;
-} EFI_ACPI_3_0_MEMORY_AFFINITY_STRUCTURE;
+} GNUPACK EFI_ACPI_3_0_MEMORY_AFFINITY_STRUCTURE;
 
 //
 // Memory Flags.  All other bits are reserved and must be 0.
@@ -550,7 +556,7 @@ typedef struct {
 typedef struct {
   EFI_ACPI_DESCRIPTION_HEADER Header;
   UINT64                      NumberOfSystemLocalities;
-} EFI_ACPI_3_0_SYSTEM_LOCALITY_DISTANCE_INFORMATION_TABLE_HEADER;
+} GNUPACK EFI_ACPI_3_0_SYSTEM_LOCALITY_DISTANCE_INFORMATION_TABLE_HEADER;
 
 //
 // SLIT Version (as defined in ACPI 3.0 spec.)
@@ -686,6 +692,8 @@ typedef struct {
 //
 #define EFI_ACPI_3_0_ISCSI_BOOT_FIRMWARE_TABLE_SIGNATURE 0x54464269
 
+#ifdef _MSC_VER
 #pragma pack()
+#endif
 
 #endif

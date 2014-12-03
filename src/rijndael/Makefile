@@ -1,10 +1,13 @@
 ### Rijndael Mac OS X makefile ###
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(ASMCOMPFLAGS) -c $< -o $@
 
-librijndael.a: aes_modes.o aescrypt.o aeskey.o aestab.o aesxts.o
-	$(AR) cru $@ aes_modes.o aescrypt.o aeskey.o aestab.o aesxts.o
+%.o: %.asm
+	$(NASM) $(NASMFLAGS) $(ASMCOMPFLAGS) $(NASMCOMPFLAGS) -o $@ $<
+
+librijndael.a: aes_modes.o aescrypt.o aeskey.o aestab.o aesxts.o $(EXTRAOBJS)
+	$(AR) cru $@ aes_modes.o aescrypt.o aeskey.o aestab.o aesxts.o $(EXTRAOBJS)
 	$(RANLIB) $@
 
 clean:

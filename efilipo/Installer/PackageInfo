@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<pkg-info format-version="2" relocatable="true" overwrite-permissions="true" useHFSPlusCompression="true" auth="root" identifier="com.AnV.Software.pkg.efilipo.1.0" version="1.0">
-  <payload installKBytes="22" numberOfFiles="1"/>
+<pkg-info format-version="2" relocatable="true" overwrite-permissions="true" useHFSPlusCompression="true" auth="root" identifier="com.AnV.Software.pkg.efilipo.1.1" version="1.1">
+  <payload installKBytes="98" numberOfFiles="1"/>
   <bundle-version>
-    <bundle CFBundleVersion="1.0" CFBundleShortVersionString="1.0" SourceVersion="4" id="com.AnV.Software.efilipo" path="usr/bin/efilipo"/>
+    <bundle CFBundleVersion="1.1" CFBundleShortVersionString="1.1" SourceVersion="8" id="com.AnV.Software.efilipo" path="usr/bin/efilipo"/>
   </bundle-version>
 </pkg-info>

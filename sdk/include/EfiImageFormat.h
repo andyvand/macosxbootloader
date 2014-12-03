@@ -28,7 +28,13 @@ Abstract:
 // pack all data structures since this is actually a binary format and we cannot
 // allow internal padding in the data structures because of some compilerism..
 //
+#ifdef _MSC_VER
 #pragma pack(1)
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
 //
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -105,7 +111,7 @@ typedef UINT8 EFI_SECTION_TYPE;
 typedef struct {
   UINT8 Size[3];
   UINT8 Type;
-} EFI_COMMON_SECTION_HEADER;
+} GNUPACK EFI_COMMON_SECTION_HEADER;
 
 #define SECTION_SIZE(SectionHeaderPtr) \
     ((UINT32) (*((UINT32 *) ((EFI_COMMON_SECTION_HEADER *) SectionHeaderPtr)->Size) & 0x00ffffff))
@@ -126,7 +132,7 @@ typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
   UINT32                    UncompressedLength;
   UINT8                     CompressionType;
-} EFI_COMPRESSION_SECTION;
+} GNUPACK EFI_COMPRESSION_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -138,7 +144,7 @@ typedef struct {
   EFI_GUID                  SectionDefinitionGuid;
   UINT16                    DataOffset;
   UINT16                    Attributes;
-} EFI_GUID_DEFINED_SECTION;
+} GNUPACK EFI_GUID_DEFINED_SECTION;
 
 //
 // Bit values for Attributes
@@ -168,7 +174,7 @@ typedef struct {
 //
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
-} EFI_PE32_SECTION;
+} GNUPACK EFI_PE32_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -177,7 +183,7 @@ typedef struct {
 //
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
-} EFI_PIC_SECTION;
+} GNUPACK EFI_PIC_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -186,7 +192,7 @@ typedef struct {
 //
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
-} EFI_PEIM_HEADER_SECTION;
+} GNUPACK EFI_PEIM_HEADER_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -195,7 +201,7 @@ typedef struct {
 //
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
-} EFI_DEPEX_SECTION;
+} GNUPACK EFI_DEPEX_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -206,7 +212,7 @@ typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
   UINT16                    BuildNumber;
   INT16                     VersionString[1];
-} EFI_VERSION_SECTION;
+} GNUPACK EFI_VERSION_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -216,7 +222,7 @@ typedef struct {
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
   INT16                     FileNameString[1];
-} EFI_USER_INTERFACE_SECTION;
+} GNUPACK EFI_USER_INTERFACE_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -225,7 +231,7 @@ typedef struct {
 //
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
-} EFI_CODE16_SECTION;
+} GNUPACK EFI_CODE16_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -234,7 +240,7 @@ typedef struct {
 //
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
-} EFI_FIRMWARE_VOLUME_IMAGE_SECTION;
+} GNUPACK EFI_FIRMWARE_VOLUME_IMAGE_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -244,7 +250,7 @@ typedef struct {
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
   EFI_GUID                  SubTypeGuid;
-} EFI_FREEFORM_SUBTYPE_GUID_SECTION;
+} GNUPACK EFI_FREEFORM_SUBTYPE_GUID_SECTION;
 
 //
 // ////////////////////////////////////////////////////////////////////////////
@@ -253,12 +259,14 @@ typedef struct {
 //
 typedef struct {
   EFI_COMMON_SECTION_HEADER CommonHeader;
-} EFI_RAW_SECTION;
+} GNUPACK EFI_RAW_SECTION;
 
 //
 // undo the pragma from the beginning...
 //
+#ifdef _MSC_VER
 #pragma pack()
+#endif
 
 typedef union {
   EFI_COMMON_SECTION_HEADER         *CommonHeader;
@@ -274,6 +282,6 @@ typedef union {
   EFI_FIRMWARE_VOLUME_IMAGE_SECTION *FVImageSection;
   EFI_FREEFORM_SUBTYPE_GUID_SECTION *FreeformSubtypeSection;
   EFI_RAW_SECTION                   *RawSection;
-} EFI_FILE_SECTION_POINTER;
+} GNUPACK EFI_FILE_SECTION_POINTER;
 
 #endif
