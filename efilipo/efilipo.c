@@ -26,7 +26,7 @@ typedef struct aouthdr
 	uint16_t magic;		/* type of file				*/
 	uint16_t vstamp;	/* version stamp			*/
 	uint32_t tsize;		/* text size in bytes, padded to FW bdry*/
-	uint32_t dsize;		/* initialized data "  "		*/
+	uint32_t dsize;		/* initialized data from "		*/
 	uint32_t bsize;		/* uninitialized data "   "		*/
 	uint32_t entry;		/* entry pt.				*/
 	uint32_t text_start;	/* base of text used for this file 	*/
@@ -311,7 +311,7 @@ int main(int argc, char **argv)
 		{
 			if (dosstub->e_magic != EFI_IMAGE_TE_SIGNATURE)
 			{
-				printf("ERROR: File %s (nr %d) has bad DOS header magic", argv[curfile+2], (curfile+1));
+				printf("ERROR: File %s (nr %d) has bad DOS header magic\n”, argv[curfile+2], (curfile+1));
 
 				return -3;
 			} else {
