@@ -220,22 +220,27 @@ uint16_t create_ms_dos_stub_checksum(uint16_t *buffer, int len)
 	return (0x10000 - checksum);
 }
 
-uint32_t create_pe_checksum(unsigned char *buf, int output_size)
+unsigned int calc_pe_checksum(unsigned char *buf, unsigned int peheader, unsigned int size)
 {
-	uint32_t i, v, t = 0;
+    unsigned int checkSum = 0;
+    unsigned short	val;
+    unsigned int cur = 0;
 
-	for(i = 0; i < output_size; i += 2)
-	{
-		if(output_size - i == 1)
-			v = buf[i];
-		else
-			v = buf[i] + (buf[i+1] << 8);
+    /* recalc checksum. */
+    while (cur < size) {
+        val = (unsigned short)(buf + cur);
 
-		t += v;
-		t = 0xffff & (t + (t >> 0x10));
-	}
-
-	return(0xffff & (t + (t >> 0x10)));
+        if ((cur == peheader + 88) || (cur == peheader + 90))
+            val = 0;
+        checkSum += val;
+        checkSum = 0xffff & (checkSum + (checkSum >> 0x10));
+        cur += 2;
+    }
+    
+    checkSum = 0xffff & (checkSum + (checkSum >> 0x10));
+    checkSum += size;
+    
+    return checkSum;
 }
 
 int main(int argc, char **argv)
@@ -321,11 +326,15 @@ int main(int argc, char **argv)
 			dosstub->e_csum = 0;
 			dosstub->e_csum = create_ms_dos_stub_checksum((uint16_t *)outbuffer[curfile], dosstub->e_lfanew);
 
+#ifdef DEBUG
+            printf("File %d: Caculated MS-DOS stub checksum: 0x%.4X\n", curfile, dosstub->e_csum);
+#endif
+
 			pemagic = (uint32_t *)(outbuffer[curfile] + dosstub->e_lfanew);
 
 			if (pemagic[0] != EFI_IMAGE_NT_SIGNATURE)
 			{
-				printf("ERROR: File %s (nr %d) has bad PE/TE magic (%X)", argv[curfile+2], (curfile+1), pemagic[0]);
+				printf("ERROR: File %s (nr %d) has bad PE/TE magic (%X)\n", argv[curfile+2], (curfile+1), pemagic[0]);
 
 				return -4;
 			}
@@ -338,13 +347,21 @@ int main(int argc, char **argv)
 			if (pehdr32->magic == EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC)
 			{
 				pehdr32->CheckSum = 0;
-				pehdr32->CheckSum = create_pe_checksum((unsigned char *)pehdr32, (filesize[curfile] - dosstub->e_lfanew));
+                pehdr64->CheckSum = calc_pe_checksum(outbuffer[curfile], dosstub->e_lfanew, filesize[curfile]);
+
+#ifdef DEBUG
+                printf("File %d: Caculated PE checksum: 0x%.8X\n", curfile, pehdr32->CheckSum);
+#endif
 			}
 
 			if (pehdr64->magic == EFI_IMAGE_NT_OPTIONAL_HDR64_MAGIC)
 			{
 				pehdr64->CheckSum = 0;
-				pehdr64->CheckSum = create_pe_checksum((unsigned char *)pehdr64, (filesize[curfile] - dosstub->e_lfanew));
+                pehdr64->CheckSum = calc_pe_checksum(outbuffer[curfile], dosstub->e_lfanew, filesize[curfile]);
+
+#ifdef DEBUG
+                printf("File %d: Caculated PE checksum: 0x%.8X\n", curfile, pehdr64->CheckSum);
+#endif
 			}
 		}
 

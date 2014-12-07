@@ -6,9 +6,9 @@ TOPDIR=$(PWD)
 ### Debug ###
 DEBUG =# 1
 ifeq ("$(DEBUG)", "")
-DEBUGFLAGS=-g0 -DNDEBUG -fno-standalone-debug
+DEBUGFLAGS=-g0 -DNDEBUG
 else
-DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG  -fstandalone-debug
+DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG
 endif
 
 ### Tools ###
@@ -47,8 +47,42 @@ endif
 
 LDFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -nostdlib -n -Wl,--script,$(TOPDIR)/gcc4.9-ld-script -u _Z7EfiMainPvP17_EFI_SYSTEM_TABLE -e _Z7EfiMainPvP17_EFI_SYSTEM_TABLE --entry _Z7EfiMainPvP17_EFI_SYSTEM_TABLE --pie"
 
-EXTRAOBJS=
+ifeq ("$(ARCH)", "i386")
+#AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
+AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
+#AESASMDEFS=-DASM_X86_V2C=1 -D_ASM_X86_V2C=1 -DNO_ENCRYPTION_TABLE=1 -DNO_DECRYPTION_TABLE=1
+AESASMDEFS=
+
+### define ASM_X86_V1C for this object ###
+#EXTRAAESOBJS=aes_x86_v1.o
+
+### define ASM_X86_V2 or ASM_X86_V2C for this object ###
+EXTRAAESOBJS=aes_x86_v2.o
+
+### define no ASM_X86_XXX at all for this ###
+#EXTRAAESOBJS=
+
+#ASMCOMPFLAGS="$(AESASMDEFS)"
+ASMCOMPFLAGS=
+NASMCOMPFLAGS=
 else
+### define ASM_AMD64_C for this object ###
+EXTRAAESOBJS=aes_amd64.o
+
+### define no ASM_AMD64_C at all for this ###
+#EXTRAAESOBJS=
+
+ASMCOMPFLAGS="-DASM_AMD64_C=1 -D_DASM_AMD64_C=1"
+NASMCOMPFLAGS=
+#ASMCOMPFLAGS=
+endif
+else
+ifeq ("$(DEBUG)", "")
+DEBUGFLAGS=-g0 -DNDEBUG -fno-standalone-debug
+else
+DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG -fstandalone-debug
+endif
+
 CC=gcc
 CXX=g++
 LD=ld
@@ -78,11 +112,10 @@ endif
 CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -std=gnu11 -I/usr/include -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions" 
 CXXFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions -std=gnu++11 -I/usr/include"
 LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -image_base 0x240 -compatibility_version 1.0 -current_version 2.1 -flat_namespace -print_statistics -map boot.map -sectalign __TEXT __text 0x20  -sectalign __TEXT __eh_frame  0x20 -sectalign __TEXT __ustring 0x20  -sectalign __TEXT __const 0x20   -sectalign __TEXT __ustring 0x20 -sectalign __DATA __data 0x20  -sectalign __DATA __bss 0x20  -sectalign __DATA __common 0x20 -final_output boot.efi"
-endif
 
 ifeq ("$(ARCH)", "i386")
 #AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
-#AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
+AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
 #AESASMDEFS=-DASM_X86_V2C=1 -D_ASM_X86_V2C=1 -DNO_ENCRYPTION_TABLE=1 -DNO_DECRYPTION_TABLE=1
 AESASMDEFS=
 
@@ -108,6 +141,7 @@ EXTRAAESOBJS=aes_amd64.o
 ASMCOMPFLAGS="-DASM_AMD64_C=1 -D_DASM_AMD64_C=1"
 NASMCOMPFLAGS=-Daes_encrypt=_aes_encrypt -Daes_decrypt=_aes_decrypt
 #ASMCOMPFLAGS=
+endif
 endif
 
 NASM=nasm

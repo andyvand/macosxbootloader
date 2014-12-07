@@ -17,7 +17,7 @@ PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
 all: efilipo
 
 efilipo: efilipo.o
-	$(LD) $(LDFLAGS) -o $@ efilipo.o
+	$(LD) $(LDFLAGS) -o $@ efilipo.o -L/usr/lib
 	if [ $(SIGNCERT) != "" ]; then $(CODESIGN) -s $(SIGNCERT) $@; fi
 
 efilipo.o: efilipo.c
@@ -55,5 +55,5 @@ legacy-installer: efilipo
 	sudo sudo rm -Rf efilipo-1.1.pkg
 	sudo mv -f efilipopkg efilipo-1.1.pkg
 	sudo chown -R $(USER):staff efilipo-1.1.pkg
-	productsign --sign $(SIGNCERT) efilipo-1.1.pkg efilipo-legacy.pkg
+	if [ $(SIGNCERT) != "" ]; then productsign --sign $(SIGNCERT) efilipo-1.1.pkg efilipo-legacy.pkg; fi
 	rm -Rf efilipo-1.1.pkg
