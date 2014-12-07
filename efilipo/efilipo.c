@@ -106,26 +106,26 @@ typedef struct tehdr
 
 typedef struct ms_dos_stub
 {
-  /* DOS header fields - always at offset zero in the EXE file.  */
-  uint16_t e_magic;	/* Magic number, 0x5a4d. (DOSMAGIC above) */
-  uint16_t e_cblp;	/* Bytes on last page of file, 0x90.  */
-  uint16_t e_cp;	/* Pages in file, 0x3.  */
-  uint16_t e_crlc;	/* Relocations, 0x0.  */
-  uint16_t e_cparhdr;	/* Size of header in paragraphs, 0x4.  */
-  uint16_t e_minalloc;	/* Minimum extra paragraphs needed, 0x0.  */
-  uint16_t e_maxalloc;	/* Maximum extra paragraphs needed, 0xFFFF.  */
-  uint16_t e_ss;	/* Initial (relative) SS value, 0x0.  */
-  uint16_t e_sp;	/* Initial SP value, 0xb8.  */
-  uint16_t e_csum;	/* Checksum, 0x0.  */
-  uint16_t e_ip;	/* Initial IP value, 0x0.  */
-  uint16_t e_cs;	/* Initial (relative) CS value, 0x0.  */
-  uint16_t e_lfarlc;	/* File address of relocation table, 0x40.  */
-  uint16_t e_ovno;	/* Overlay number, 0x0.  */
-  uint16_t e_res[4];	/* Reserved words, all 0x0.  */
-  uint16_t e_oemid;	/* OEM identifier (for e_oeminfo), 0x0.  */
-  uint16_t e_oeminfo;	/* OEM information; e_oemid specific, 0x0.  */
-  uint16_t e_res2[10];	/* Reserved words, all 0x0.  */
-  uint32_t e_lfanew;	/* File address of new exe header, usually 0x80.  */
+	/* DOS header fields - always at offset zero in the EXE file.  */
+	uint16_t e_magic;	/* Magic number, 0x5a4d. (DOSMAGIC above) */
+	uint16_t e_cblp;	/* Bytes on last page of file, 0x90.  */
+	uint16_t e_cp;	/* Pages in file, 0x3.  */
+	uint16_t e_crlc;	/* Relocations, 0x0.  */
+	uint16_t e_cparhdr;	/* Size of header in paragraphs, 0x4.  */
+	uint16_t e_minalloc;	/* Minimum extra paragraphs needed, 0x0.  */
+	uint16_t e_maxalloc;	/* Maximum extra paragraphs needed, 0xFFFF.  */
+	uint16_t e_ss;	/* Initial (relative) SS value, 0x0.  */
+	uint16_t e_sp;	/* Initial SP value, 0xb8.  */
+	uint16_t e_csum;	/* Checksum, 0x0.  */
+	uint16_t e_ip;	/* Initial IP value, 0x0.  */
+	uint16_t e_cs;	/* Initial (relative) CS value, 0x0.  */
+	uint16_t e_lfarlc;	/* File address of relocation table, 0x40.  */
+	uint16_t e_ovno;	/* Overlay number, 0x0.  */
+	uint16_t e_res[4];	/* Reserved words, all 0x0.  */
+	uint16_t e_oemid;	/* OEM identifier (for e_oeminfo), 0x0.  */
+	uint16_t e_oeminfo;	/* OEM information; e_oemid specific, 0x0.  */
+	uint16_t e_res2[10];	/* Reserved words, all 0x0.  */
+	uint32_t e_lfanew;	/* File address of new exe header, usually 0x80.  */
 } ms_dos_stub_t;
 
 #if defined(__ppc__) || defined(__ppc64__)
