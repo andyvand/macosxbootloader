@@ -25,9 +25,6 @@ fi
 
 cp src/boot/boot.efi boot.32.efi
 
-echo "Building efilipo"
-cd efilipo && make && cd ..
-
 echo "Building universal EFI binary"
 ./efilipo/efilipo boot.efi boot.64.efi boot.32.efi
 make clean

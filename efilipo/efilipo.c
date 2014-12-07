@@ -222,30 +222,31 @@ uint16_t create_ms_dos_stub_checksum(uint16_t *buffer, int len)
 
 unsigned int calc_pe_checksum(unsigned char *buf, unsigned int peheader, unsigned int size)
 {
-    unsigned int checkSum = 0;
-    unsigned short	val;
-    unsigned int cur = 0;
+	unsigned int checkSum = 0;
+	unsigned short	val;
+	unsigned int cur = 0;
 
-    /* recalc checksum. */
-    while (cur < size) {
-        val = (unsigned short)(buf + cur);
+	/* recalc checksum. */
+	while (cur < size) {
+		val = (unsigned short)(buf + cur);
 
-        if ((cur == peheader + 88) || (cur == peheader + 90))
-            val = 0;
-        checkSum += val;
-        checkSum = 0xffff & (checkSum + (checkSum >> 0x10));
-        cur += 2;
-    }
-    
-    checkSum = 0xffff & (checkSum + (checkSum >> 0x10));
-    checkSum += size;
-    
-    return checkSum;
+		if ((cur == peheader + 88) || (cur == peheader + 90))
+			val = 0;
+
+		checkSum += val;
+		checkSum = 0xffff & (checkSum + (checkSum >> 0x10));
+		cur += 2;
+	}
+
+	checkSum = 0xffff & (checkSum + (checkSum >> 0x10));
+	checkSum += size;
+
+	return checkSum;
 }
 
 int main(int argc, char **argv)
 {
-  	unsigned char *outbuffer[13];
+	unsigned char *outbuffer[13];
 	struct fat_arch fatarch[13];
 	int filesize[13];
 	char isTE[13];
@@ -327,7 +328,7 @@ int main(int argc, char **argv)
 			dosstub->e_csum = create_ms_dos_stub_checksum((uint16_t *)outbuffer[curfile], dosstub->e_lfanew);
 
 #ifdef DEBUG
-            printf("File %d: Caculated MS-DOS stub checksum: 0x%.4X\n", curfile, dosstub->e_csum);
+			printf("File %d: Caculated MS-DOS stub checksum: 0x%.4X\n", curfile, dosstub->e_csum);
 #endif
 
 			pemagic = (uint32_t *)(outbuffer[curfile] + dosstub->e_lfanew);
@@ -347,20 +348,20 @@ int main(int argc, char **argv)
 			if (pehdr32->magic == EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC)
 			{
 				pehdr32->CheckSum = 0;
-                pehdr64->CheckSum = calc_pe_checksum(outbuffer[curfile], dosstub->e_lfanew, filesize[curfile]);
+				pehdr32->CheckSum = calc_pe_checksum(outbuffer[curfile], dosstub->e_lfanew, filesize[curfile]);
 
 #ifdef DEBUG
-                printf("File %d: Caculated PE checksum: 0x%.8X\n", curfile, pehdr32->CheckSum);
+				printf("File %d: Caculated PE checksum: 0x%.8X\n", curfile, pehdr32->CheckSum);
 #endif
 			}
 
 			if (pehdr64->magic == EFI_IMAGE_NT_OPTIONAL_HDR64_MAGIC)
 			{
 				pehdr64->CheckSum = 0;
-                pehdr64->CheckSum = calc_pe_checksum(outbuffer[curfile], dosstub->e_lfanew, filesize[curfile]);
+				pehdr64->CheckSum = calc_pe_checksum(outbuffer[curfile], dosstub->e_lfanew, filesize[curfile]);
 
 #ifdef DEBUG
-                printf("File %d: Caculated PE checksum: 0x%.8X\n", curfile, pehdr64->CheckSum);
+				printf("File %d: Caculated PE checksum: 0x%.8X\n", curfile, pehdr64->CheckSum);
 #endif
 			}
 		}
@@ -448,45 +449,44 @@ int main(int argc, char **argv)
 				return -5;
 		}
 
-        fatarch[curfile].offset = ARCHSWAP(curoffset);
-        fatarch[curfile].size = ARCHSWAP(filesize[curfile]);
-        fatarch[curfile].align = 0;
+		fatarch[curfile].offset = ARCHSWAP(curoffset);
+		fatarch[curfile].size = ARCHSWAP(filesize[curfile]);
+		fatarch[curfile].align = 0;
 
-        curoffset += filesize[curfile];
-        ++curfile;
-    }
+		curoffset += filesize[curfile];
+		++curfile;
+	}
 
-    fout = fopen(argv[1], "wb");
-    
-    if (fout == NULL)
-    {
-        printf("ERROR: Could not open output file %s\n", argv[1]);
+	fout = fopen(argv[1], "wb");
 
-        fclose(fout);
+	if (fout == NULL)
+	{
+		printf("ERROR: Could not open output file %s\n", argv[1]);
 
-        return -6;
-    }
+		fclose(fout);
 
-    checksize = fwrite(&fathdr, sizeof(struct fat_header), 1, fout);
+		return -6;
+	}
 
-    curfile = 0;
-    while (curfile < (argc - 2))
-    {
-        checksize = fwrite(&(fatarch[curfile]), sizeof(struct fat_arch), 1, fout);
+	checksize = fwrite(&fathdr, sizeof(struct fat_header), 1, fout);
 
-        ++curfile;
-    }
+	curfile = 0;
+	while (curfile < (argc - 2))
+	{
+		checksize = fwrite(&(fatarch[curfile]), sizeof(struct fat_arch), 1, fout);
 
-    curfile = 0;
-    while (curfile < (argc - 2))
-    {
-        checksize = fwrite(outbuffer[curfile], filesize[curfile], 1, fout);
+		++curfile;
+	}
+
+	curfile = 0;
+	while (curfile < (argc - 2))
+	{
+        	checksize = fwrite(outbuffer[curfile], filesize[curfile], 1, fout);
         
-        ++curfile;
-    }
+		++curfile;
+	}
 
-    fclose(fout);
+	fclose(fout);
 
-    return 0;
+	return 0;
 }
-

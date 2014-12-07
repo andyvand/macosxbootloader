@@ -170,4 +170,3 @@ clean:
 	cd src/boot && make clean && cd ../..
 	cd src/boot/x64 && make clean && cd ../../..
 	cd src/boot/x86 && make clean && cd ../../..
-	cd efilipo && make clean && cd ..
