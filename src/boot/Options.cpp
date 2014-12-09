@@ -605,6 +605,8 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 			}
 		}
 
+        // Skip kernel cache path name check on Hackintosh
+#ifndef HACKINTOSH
 		//
 		// load kernel cache device path
 		//
@@ -621,7 +623,10 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		// setup default kernel cache name
 		//
 		if(BlTestBootMode(BOOT_MODE_NET) && !kernelCacheFilePath && !kernelFilePath)
-		{
+#else
+        if(BlTestBootMode(BOOT_MODE_NET))
+#endif
+        {
 			kernelCachePathName												= BlAllocateString(CHAR8_CONST_STRING("x86_64\\kernelcache"));
 			kernelCacheFilePath												= DevPathAppendLastComponent(bootFilePath, kernelCachePathName, TRUE);
 		}
@@ -682,6 +687,8 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-s"), &valueLength, FALSE))
 			BlSetBootMode(BOOT_MODE_SINGLE_USER | BOOT_MODE_VERBOSE, 0);
 
+        // AnV - No compatibility check, panic dialog skip and no debugging for hackintosh
+#ifndef HACKINTOSH
 		//
 		// compact check
 		//
@@ -699,6 +706,7 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		//
 		if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-debug"), &valueLength, FALSE))
 			BlSetBootMode(BOOT_MODE_DEBUG, 0);
+#endif
 
 		//
 		// disable ASLR for safe mode

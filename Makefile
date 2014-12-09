@@ -11,6 +11,12 @@ else
 DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG
 endif
 
+ifeq ("$(HACKINTOSH)", "1")
+HACKFLAGS=-DHACKINTOSH=1
+else
+HACKFLAGS=
+endif
+
 INSTALL = install
 
 ### Change to "" for no code signing or to your Apple developer certificate ###
@@ -44,7 +50,7 @@ NASMFLAGS=-f elf64 -DAPPLE -DARCH64
 MTOC=$(TOOLPATH)x86_64-clover-linux-gnu-objcopy -I elf64-x86-64 -O pei-x86-64
 endif
 
-CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -fPIC -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -I/usr/include -DGNU -D__declspec\(x\)= -D__APPLE__"
+CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -fPIC -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -I/usr/include -DGNU -D__declspec\(x\)= -D__APPLE__"
 CXXFLAGS = $(CFLAGS)
 
 ifeq ("$(ARCH)", "i386")
@@ -105,7 +111,7 @@ ARCHDIR = x86
 ARCHFLAGS = -arch i386
 ARCHLDFLAGS = -u __Z7EfiMainPvP17_EFI_SYSTEM_TABLE -e __Z7EfiMainPvP17_EFI_SYSTEM_TABLE -read_only_relocs suppress
 NASMFLAGS = -f macho -DAPPLEUSE
-ARCHCFLAGS = -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -DAPPLEEXTRA -DUCHAR_MAX=0xFF -DUSHRT_MAX=0xFFFF -DUINT_MAX=0xFFFFFFFF -DULONG_MAX=0xFFFFFFFF -Duint_8t=unsigned\ char -Duint_16t=unsigned\ short -Duint_32t=unsigned\ int -Duint_64t=unsigned\ long\ long -DBRG_UI8=1 -DBRG_UI16=1 -DBRG_UI32=1 -DBRG_UI64=1 -D__i386__=1 
+ARCHCFLAGS = -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -DAPPLEEXTRA -Duint_8t=unsigned\ char -Duint_16t=unsigned\ short -Duint_32t=unsigned\ int -Duint_64t=unsigned\ long\ long -DBRG_UI8=1 -DBRG_UI16=1 -DBRG_UI32=1 -DBRG_UI64=1 -D__i386__=1
 EXTRAOBJS="StartKernel.o"
 else
 ARCHDIR = x64
@@ -117,8 +123,8 @@ ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -f
 EXTRAOBJS=
 endif
 
-CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -std=gnu11 -I/usr/include -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions" 
-CXXFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions -std=gnu++11 -I/usr/include"
+CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -std=gnu11 -I/usr/include -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions" 
+CXXFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions $(ARCHCFLAGS) -fpie -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions -std=gnu++11 -I/usr/include"
 LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -image_base 0x240 -compatibility_version 1.0 -current_version 2.1 -flat_namespace -print_statistics -map boot.map -sectalign __TEXT __text 0x20  -sectalign __TEXT __eh_frame  0x20 -sectalign __TEXT __ustring 0x20  -sectalign __TEXT __const 0x20   -sectalign __TEXT __ustring 0x20 -sectalign __DATA __data 0x20  -sectalign __DATA __bss 0x20  -sectalign __DATA __common 0x20 -final_output boot.efi"
 
 ifeq ("$(ARCH)", "i386")

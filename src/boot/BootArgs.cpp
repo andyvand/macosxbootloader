@@ -297,7 +297,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 	UINT64 virtualAddress													= 0;
 	UINT64 physicalAddress													= 0;
 
-	__try
+    __try
 	{
 		//
 		// detect acpi nvs memory
@@ -430,7 +430,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 				//
 				if(rootUUID)
 					DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-uuid"), rootUUID, static_cast<UINT32>(strlen(rootUUID) + 1) * sizeof(CHAR8), TRUE);
-			}
+            }
 
 			//
 			// add root match
@@ -439,7 +439,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 			{
 				DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("root-matching"), rootMatchDict, static_cast<UINT32>(strlen(rootMatchDict) + 1) * sizeof(CHAR8), TRUE);
 				MmFreePool(const_cast<CHAR8*>(rootMatchDict));
-			}
+            }
 		}
 
 		//
@@ -463,11 +463,14 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file-path"), bootFilePath, static_cast<UINT32>(DevPathGetSize(bootFilePath)), FALSE)))
 			try_leave(NOTHING);
 
+        // AnV - RAM DMG info is not supported on hackintosh
+#ifndef HACKINTOSH
 		//
 		// add ram dmg info
 		//
 		BlpAddRamDmgProperty(chosenNode, bootDevicePath);
-		
+#endif
+
 		//
 		// add random-seed property with a static data (for testing only)
 		//
@@ -483,7 +486,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 
 		do																						// 0x17e55:
 		{
-			//
+            //
 			// The RDRAND instruction is part of the Intel Secure Key Technology, which is currently only available 
 			// on the Intel I5/I7 Ivy Bridge and Haswell processors. Not on processors used in the old MacPro models.
 			// This is why I had to disassemble Apple's boot.efi and port their assembler code to standard C.
@@ -495,7 +498,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 			{
 				continue;																		// jb		0x17e55		(retry)
 			}
-			
+
 			cpuTick = ArchGetCpuTick();															// callq	0x121a7
 			rcx = (cpuTick >> 8);																// mov		%rax,	%rcx
 																								// shr		$0x8,	%rcx
@@ -514,7 +517,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 			ecx = (edi & 0xffff);																// movzwl	%di,	%ecx
 			
 		} while (index < 64);																	// cmp		%r14d,	%r12d
-																								// jne		0x17e55		(next)
+													// jne		0x17e55		(next)
 
 		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("random-seed"), seedBuffer, sizeof(seedBuffer), TRUE);
 
@@ -559,11 +562,14 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-args"), bootArgs->CommandLine, static_cast<UINT32>(strlen(bootArgs->CommandLine) + 1) * sizeof(CHAR8), FALSE)))
 			try_leave(NOTHING);
 
+        // AnV - Net is incompatible with hackintosh
+#ifndef HACKINTOSH
 		//
 		// net
 		//
 		if(EFI_ERROR(status = NetSetupDeviceTree(bootDeviceHandle)))
 			try_leave(NOTHING);
+#endif
 
 		//
 		// pe
@@ -571,6 +577,8 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 		if(EFI_ERROR(status = PeSetupDeviceTree()))
 			try_leave(NOTHING);
 
+        // AnV - FileVault is incompatible with hackintosh
+#ifndef HACKINTOSH
 		//
 		// FileVault2, key store
 		//
@@ -584,7 +592,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 			bootArgs->KeyStoreDataStart										= static_cast<UINT32>(keyStorePhysicalAddress);
 			bootArgs->KeyStoreDataSize										= static_cast<UINT32>(keyStoreDataSize);
 		}
-			
+#endif
 
 		//
 		// console device tree
@@ -724,7 +732,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 		// sort memory map
 		//
 		MmSortMemoryMap(memoryMap, memoryMapSize, descriptorSize);
-
+        
 		//
 		// convert pointer
 		//

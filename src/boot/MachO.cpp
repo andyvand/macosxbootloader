@@ -948,6 +948,116 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 	return status;
 }
 
+EFI_STATUS MachLoadThinFatFileBuffer(UINT8* fileBuffer, UINTN fileSize, UINT64 *dataOffset, UINTN *dataSize)
+{
+    UINT8 *curBuffer                                                        = fileBuffer;
+
+#if DEBUG_LDRP_CALL_CSPRINTF
+    CsPrintf(CHAR8_CONST_STRING("PIKE: Curbuffer set\n"));
+#endif
+
+    __try
+    {
+        //
+        // read fat header
+        //
+        FAT_HEADER *fatHeader												= (FAT_HEADER *)curBuffer;
+        curBuffer                                                           += sizeof(FAT_HEADER);
+        UINTN readLength													= fileSize;
+
+#if DEBUG_LDRP_CALL_CSPRINTF
+        CsPrintf(CHAR8_CONST_STRING("PIKE: FAT header set\n"));
+#endif
+
+        //
+        // check read length
+        //
+        if(readLength < sizeof(fatHeader))
+            return EFI_DEVICE_ERROR;
+
+        //
+        // check for kernelcache magic (comp)
+        //
+        if(fatHeader->Magic == SWAP_BE32_TO_HOST(KERNEL_CACHE_MAGIC))
+        {
+#if DEBUG_LDRP_CALL_CSPRINTF
+            CsPrintf(CHAR8_CONST_STRING("PIKE: SWAP_BE32_TO_HOST(KERNEL_CACHE_MAGIC) found!\n"));
+#endif
+        }
+
+        //
+        // check fat header
+        //
+        BOOLEAN needSwap													= TRUE;
+        if(fatHeader->Magic == FAT_MAGIC)
+            needSwap														= FALSE;
+        else if(fatHeader->Magic == FAT_CIGAM)
+            fatHeader->ArchHeadersCount										= SWAP32(fatHeader->ArchHeadersCount);
+        else {
+#if DEBUG_LDRP_CALL_CSPRINTF
+            CsPrintf(CHAR8_CONST_STRING("PIKE: FAT header (cache/regular) magic not found!\n"));
+#endif
+
+            return EFI_DEVICE_ERROR;
+        }
+
+        //
+        // read arch headers
+        //
+        FAT_ARCH_HEADER *x64ArchHeader										= (FAT_ARCH_HEADER *)0;
+        FAT_ARCH_HEADER *curArchHeader										= (FAT_ARCH_HEADER *)0;
+        for(UINT32 i = 0; i < fatHeader->ArchHeadersCount; i ++)
+        {
+            //
+            // read it
+            //
+            curArchHeader = (FAT_ARCH_HEADER *)fileBuffer;
+            fileBuffer += sizeof(FAT_ARCH_HEADER);
+
+            //
+            // swap
+            //
+            if(needSwap)
+            {
+                curArchHeader->CpuType										= SWAP32(curArchHeader->CpuType);
+                curArchHeader->OffsetInFile									= SWAP32(curArchHeader->OffsetInFile);
+                curArchHeader->Size											= SWAP32(curArchHeader->Size);
+            }
+
+            //
+            // check arch
+            //
+            if(curArchHeader->CpuType == 0x1000007)
+            {
+                x64ArchHeader												= curArchHeader;
+                break;
+            }
+        }
+        
+        //
+        // not found
+        //
+        if(x64ArchHeader == NULL)
+            return EFI_DEVICE_ERROR;
+
+        if(!x64ArchHeader->Size)
+            return EFI_DEVICE_ERROR;
+        
+        //
+        // output
+        //
+        if(x64ArchHeader->OffsetInFile)
+            *dataOffset                                                     = x64ArchHeader->OffsetInFile;
+        if(x64ArchHeader->Size)
+            *dataSize														= x64ArchHeader->Size;
+    }
+    __finally
+    {
+    }
+    
+    return EFI_SUCCESS;
+}
+
 //
 // get first segment64
 //
@@ -1044,12 +1154,12 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
 		// check signature
 		//
 		if(machHeader.Magic != MH_MAGIC_64)
-			try_leave(CsPrintf(CHAR8_CONST_STRING("Booting from 32-bit kernelcache is not supported.\n")); status = EFI_LOAD_ERROR);
+			try_leave(CsPrintf(CHAR8_CONST_STRING("Booting from 32-bit kernelcache is not supported (magic = 0x%x).\n"), machHeader.Magic); status = EFI_LOAD_ERROR);
 
 		//
 		// read 64bit header
 		//
-		if(EFI_ERROR(status = IoReadFile(fileHandle, &machHeader.Reserved, sizeof(machHeader.Reserved), &readLength, FALSE)))
+		if(EFI_ERROR(status = IoReadFile(fileHandle, &machHeader.Reserved, sizeof(&machHeader.Reserved), &readLength, FALSE)))
 			try_leave(NOTHING);
 
 		//
@@ -1273,7 +1383,7 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
 		//
 		// save arch type
 		//
-		loadedInfo->ArchType												= machHeader.CpuType;
+		loadedInfo->ArchType												= (&machHeader)->CpuType;
 	}
 	__finally
 	{
@@ -1282,6 +1392,245 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
 	}
 
 	return status;
+}
+
+EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKernelMemory, MACH_O_LOADED_INFO* loadedInfo)
+{
+    EFI_STATUS status														= EFI_SUCCESS;
+    VOID* commandsBuffer													= 0;
+
+    __try
+    {
+        //
+        // get info
+        //
+        UINT64 machOffset													= 0;
+        UINTN machLength													= 0;
+        MACH_HEADER64 *machHeader                                           = (MACH_HEADER64 *)0;
+        UINTN readLength                                                    = 0;
+
+        MachLoadThinFatFileBuffer(fileBuffer, fileSize, &machOffset, &machLength);
+
+        if(!machLength)
+        {
+            machHeader                                                      = (MACH_HEADER64 *)(fileBuffer);
+            machOffset                                                      = 0;
+            readLength                                                      = fileSize;
+        } else {
+            machHeader                                                      = (MACH_HEADER64 *)(fileBuffer + machOffset);
+            readLength                                                      = machLength;
+        }
+
+        //
+        // check signature
+        //
+        if(machHeader->Magic != MH_MAGIC_64)
+            try_leave(CsPrintf(CHAR8_CONST_STRING("Booting from 32-bit kernelcache is not supported (magic = 0x%x).\n"), machHeader->Magic); status = EFI_LOAD_ERROR);
+
+        //
+        // check ASLR
+        //
+        if(BlTestBootMode(BOOT_MODE_ASLR) && !(machHeader->Flags & MH_PIE))
+            LdrSetupASLR(FALSE, 0);
+
+        //
+        // Set commands buffer
+        //
+        commandsBuffer														= (fileBuffer + machOffset + sizeof(MACH_HEADER64));
+        
+        //
+        // process commands
+        //
+        VOID* dataSegment													= nullptr;
+        VOID* linkEditSegment												= nullptr;
+        UINT64 linkEditSegmentOffset										= 0;
+        LOAD_COMMAND_HEADER* theCommand										= static_cast<LOAD_COMMAND_HEADER*>(commandsBuffer);
+
+        for(UINT32 i = 0; i < machHeader->CommandsCount; i ++, theCommand = Add2Ptr(theCommand, theCommand->CommandLength, LOAD_COMMAND_HEADER*))
+        {
+            //
+            // process it
+            //
+            switch(theCommand->CommandType)
+            {
+                case MACH_O_COMMAND_UNIX_THREAD:
+                {
+                    //
+                    // get rip
+                    //
+                    THREAD_COMMAND* threadCommand							= _CR(theCommand, THREAD_COMMAND, Header);
+                    if(threadCommand->ThreadStateFlavor != THREAD_STATE_FLAVOR_X64)
+                        try_leave(CsPrintf(CHAR8_CONST_STRING("Only 64-bit version of LC_UNIXTHREAD is supported.\n")); status = EFI_LOAD_ERROR);
+                    else
+                        loadedInfo->EntryPointVirtualAddress				= threadCommand->ThreadState.X64.Rip + LdrGetASLRDisplacement();
+                    
+                    loadedInfo->EntryPointPhysicalAddress					= LdrStaticVirtualToPhysical(loadedInfo->EntryPointVirtualAddress);
+                }
+                    break;
+                    
+                case MACH_O_COMMAND_SYMTAB:
+                {
+                    SYMTAB_COMMAND* symbolTableCommand						= _CR(theCommand, SYMTAB_COMMAND, Header);
+                    if(LdrGetASLRDisplacement())
+                    {
+                        SYMTAB_ENTRY64* symbolEntry							= Add2Ptr(linkEditSegment, symbolTableCommand->SymbolTableOffset - linkEditSegmentOffset, SYMTAB_ENTRY64*);
+                        for(UINT32 i = 0; i < symbolTableCommand->SymbolCount; i ++, symbolEntry ++)
+                        {
+                            if(symbolEntry->Type <= 0x1f)
+                                symbolEntry->Value							+= LdrGetASLRDisplacement();
+                        }
+                    }
+                }
+                    break;
+                    
+                case MACH_O_COMMAND_DYSYMTAB:
+                {
+                    DYSYMTAB_COMMAND* dynamicSymbolTableCommand				= _CR(theCommand, DYSYMTAB_COMMAND, Header);
+                    if(dynamicSymbolTableCommand->LocalRelocationCount && LdrGetASLRDisplacement())
+                    {
+                        if(!dataSegment || !linkEditSegment)
+                            try_leave(status = EFI_LOAD_ERROR);
+                        
+                        RELOCATION_INFO* relocationInfo						= Add2Ptr(linkEditSegment, dynamicSymbolTableCommand->LocalRelocationOffset - linkEditSegmentOffset, RELOCATION_INFO*);
+                        for(UINT32 i = 0; i < dynamicSymbolTableCommand->LocalRelocationCount; i ++, relocationInfo ++)
+                        {
+                            //
+                            // In final linked images, there are only two valid relocation kinds:
+                            //		r_type=X86_64_RELOC_UNSIGNED, r_length=3, r_pcrel=0, r_extern=1, r_symbolnum=sym_index
+                            //			This tells dyld to add the address of a symbol to a pointer sized (8-byte)
+                            //			piece of data (i.e on disk the 8-byte piece of data contains the addend). The
+                            //			r_symbolnum contains the index into the symbol table of the target symbol.
+                            //
+                            //		r_type=X86_64_RELOC_UNSIGNED, r_length=3, r_pcrel=0, r_extern=0, r_symbolnum=0
+                            //			This tells dyld to adjust the pointer sized (8-byte) piece of data by the amount
+                            //			the containing image was loaded from its base address (e.g. slide).
+                            //
+                            if(relocationInfo->Type || relocationInfo->Length != 3 || relocationInfo->PCRelative || relocationInfo->External)
+                                try_leave(status = EFI_LOAD_ERROR);
+                            
+                            UINT64* address									= Add2Ptr(dataSegment, static_cast<INT64>(relocationInfo->SectionOffset), UINT64*);
+                            *address										+= LdrGetASLRDisplacement();
+                        }
+                    }
+                }
+                    break;
+                    
+                case MACH_O_COMMAND_SEGMENT64:
+                {
+                    //
+                    // get info
+                    //
+                    SEGMENT_COMMAND64* segmentCommand64						= _CR(theCommand, SEGMENT_COMMAND64, Header);
+                    UINT64 segmentVirtualAddress							= segmentCommand64->VirtualAddress + LdrGetASLRDisplacement();
+                    UINT64 segmentVirtualSize								= segmentCommand64->VirtualSize;
+                    UINT64 segmentFileSize									= segmentCommand64->FileSize;
+                    UINT64 segmentFileOffset								= segmentCommand64->FileOffset;
+                    
+                    //
+                    // empty segment
+                    //
+                    if(!segmentVirtualSize)
+                        break;
+                    
+                    //
+                    // allocate buffer
+                    //
+                    UINTN allocatedLength									= static_cast<UINTN>(segmentVirtualSize);
+                    UINT64 virtualAddress									= segmentVirtualAddress;
+                    UINT64 physicalAddress									= useKernelMemory ? MmAllocateKernelMemory(&allocatedLength, &virtualAddress) : MmAllocateLoaderData(&allocatedLength, &virtualAddress);
+                    if(!physicalAddress)
+                        try_leave(status = EFI_OUT_OF_RESOURCES);
+                    
+                    //
+                    // Copy in
+                    //
+                    UINTN fileLength										= static_cast<UINTN>(segmentVirtualSize > segmentFileSize ? segmentFileSize : segmentVirtualSize);
+                    memcpy((VOID *)physicalAddress, (fileBuffer + machOffset + segmentFileOffset), segmentFileSize);
+
+                    //
+                    // zero out
+                    //
+                    if(segmentFileSize != allocatedLength)
+                        EfiBootServices->SetMem(Add2Ptr(physicalAddress, segmentFileSize, VOID*), allocatedLength - segmentFileSize, 0);
+                    
+                    //
+                    // first writable segment
+                    //
+                    if(!dataSegment && (segmentCommand64->InitialProtection & VM_PROT_WRITE))
+                        dataSegment											= ArchConvertAddressToPointer(physicalAddress, VOID*);
+                    
+                    //
+                    // link edit segment
+                    //
+                    if(!linkEditSegment && !strcmp(segmentCommand64->Name, CHAR8_CONST_STRING("__LINKEDIT")))
+                    {
+                        linkEditSegment										= ArchConvertAddressToPointer(physicalAddress, VOID*);
+                        linkEditSegmentOffset								= segmentFileOffset;
+                    }
+                    
+                    //
+                    // first __TEXT segment also contains MACH_HEADER
+                    //
+                    if(!strcmp(segmentCommand64->Name, CHAR8_CONST_STRING("__TEXT")))
+                    {
+                        //
+                        // save mach header
+                        //
+                        loadedInfo->ImageBasePhysicalAddress				= physicalAddress;
+                        loadedInfo->ImageBaseVirtualAddress					= virtualAddress;
+                        
+                        //
+                        // relocation for ASLR
+                        //
+                        if(LdrGetASLRDisplacement())
+                        {
+                            
+                            SEGMENT_COMMAND64* theSegment64					= MachpGetFirstSegment64(Add2Ptr(physicalAddress, 0, MACH_HEADER64*));
+                            while(theSegment64)
+                            {
+                                theSegment64->VirtualAddress				+= LdrGetASLRDisplacement();
+                                SECTION64* theSection64						= MachpGetFirstSection64(theSegment64);
+                                while(theSection64)
+                                {
+                                    theSection64->Address					+= LdrGetASLRDisplacement();
+                                    theSection64							= MachpGetNextSection64(theSegment64, theSection64);
+                                }
+                                theSegment64								= MachpGetNextSegment64(Add2Ptr(physicalAddress, 0, MACH_HEADER64*), theSegment64);
+                            }
+                        }
+                    }
+                    
+                    //
+                    // update min/max
+                    //
+                    if(!loadedInfo->MinVirtualAddress || virtualAddress < loadedInfo->MinVirtualAddress)
+                    {
+                        loadedInfo->MinVirtualAddress						= virtualAddress;
+                        loadedInfo->MinPhysicalAddress						= LdrStaticVirtualToPhysical(loadedInfo->MinVirtualAddress);
+                    }
+                    
+                    if(!loadedInfo->MaxVirtualAddress || loadedInfo->MaxVirtualAddress < virtualAddress + allocatedLength)
+                    {
+                        loadedInfo->MaxVirtualAddress						= virtualAddress + allocatedLength;
+                        loadedInfo->MaxPhysicalAddress						= LdrStaticVirtualToPhysical(loadedInfo->MaxVirtualAddress);
+                    }
+                }
+                    break;
+            }
+        }
+        
+        //
+        // save arch type
+        //
+        loadedInfo->ArchType												= machHeader->CpuType;
+    }
+    __finally
+    {
+        if(commandsBuffer)
+            MmFreePool(commandsBuffer);
+    }
+
+    return status;
 }
 
 //

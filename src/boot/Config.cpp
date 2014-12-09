@@ -729,6 +729,7 @@ CHAR8 CONST* CmGetStringValueForKeyAndCommandLine(CHAR8 CONST* commandLine, CHAR
 		*valueLength														= 0;
 
 	CHAR8 CONST* retValue													= nullptr;
+
 	if(commandLine)
 		retValue															= CmpGetCommandStringValueForKey(commandLine, keyName, valueLength);
 

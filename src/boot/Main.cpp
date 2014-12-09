@@ -402,13 +402,17 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		// memory initialize
 		//
 		if(EFI_ERROR(status = MmInitialize()))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// init arch phase 0
 		//
 		if(EFI_ERROR(status = ArchInitialize0()))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// get debug options
@@ -416,82 +420,114 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		CHAR8* debugOptions													= nullptr;
 		BlpReadDebugOptions(&debugOptions);
 
+        // AnV - Boot debugger is incompatible with hackintosh
+#ifndef HACKINTOSH
 		//
 		// init boot debugger
 		//
 		//debugOptions														= CHAR8_STRING("/debug=1394 /channel=12 /break /connectall /runapple=/System/Library/CoreServices/boot.apple");
 		//debugOptions														= CHAR8_STRING("/debug=1394 /channel=12 /break /connectall /connectwait=5");
 		if(EFI_ERROR(status = BdInitialize(debugOptions)))
+        {
 			try_leave(NOTHING);
+        }
+#endif
 
 		//
 		// run apple's boot.efi
 		//
 		CHAR8 CONST* appleBootFileName										= debugOptions ? strstr(debugOptions, CHAR8_CONST_STRING("/runapple=")) : nullptr;
 		if(appleBootFileName)
+        {
 			try_leave(status = BlpRunAppleBoot(appleBootFileName + 10));
+        }
 
 		//
 		// init arch parse 1
 		//
 		if(EFI_ERROR(status = ArchInitialize1()))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// initialize console
 		//
 		if(EFI_ERROR(status = CsInitialize()))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// fix rom variable
 		//
 		if(EFI_ERROR(status = BlpSetupRomVariable()))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// initialize device tree
 		//
 		if(EFI_ERROR(status = DevTreeInitialize()))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// init platform expert
 		//
 		if(EFI_ERROR(status = PeInitialize()))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// detect memory size
 		//
 		if(EFI_ERROR(status = BlDetectMemorySize()))
+        {
 			try_leave(NOTHING);
+        }
 
+        // AnV - Core storage is incompatible with hackintosh
+#ifndef HACKINTOSH
 		//
 		// check hibernate
 		//
 		UINT8 coreStorageVolumeKeyIdent[16]									= {0};
 		BOOLEAN resumeFromCoreStorage										= HbStartResumeFromHibernate(coreStorageVolumeKeyIdent);
+
 		if(resumeFromCoreStorage)
+        {
 			BlSetBootMode(BOOT_MODE_HIBER_FROM_FV, 0);
+        }
+#endif
 
 		//
 		// enable ASLR
 		//
 		LdrSetupASLR(TRUE, 0);
 
+        // AnV - Detect hot key is incompatible with hackintosh
+#ifndef HACKINTOSH
 		//
 		// detect hot key
 		//
 		if(EFI_ERROR(status = BlDetectHotKey()))
+        {
 			try_leave(NOTHING);
+        }
+#endif
 
 		//
 		// get loaded image protocol
 		//
 		EFI_LOADED_IMAGE_PROTOCOL* loadedBootImage							= nullptr;
 		if(EFI_ERROR(status = EfiBootServices->HandleProtocol(EfiImageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedBootImage))))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// allocate buffer
@@ -499,13 +535,17 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		UINTN loaderOptionsSize												= (loadedBootImage->LoadOptionsSize / sizeof(CHAR16) + 1) * sizeof(CHAR8);
 		CHAR8* loaderOptions												= static_cast<CHAR8*>(MmAllocatePool(loaderOptionsSize));
 		if(!loaderOptions)
+        {
 			try_leave(status = EFI_OUT_OF_RESOURCES);
+        }
 
 		//
 		// unicode -> utf8
 		//
 		if(EFI_ERROR(status = BlUnicodeToUtf8(static_cast<CHAR16*>(loadedBootImage->LoadOptions), loadedBootImage->LoadOptionsSize / sizeof(CHAR16), loaderOptions, loaderOptionsSize / sizeof(CHAR8))))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// detect root device
@@ -513,33 +553,46 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		EFI_HANDLE bootDeviceHandle											= loadedBootImage->DeviceHandle;
 		EFI_DEVICE_PATH_PROTOCOL* bootFilePath								= loadedBootImage->FilePath;
 		if(EFI_ERROR(status = IoDetectRoot(&bootDeviceHandle, &bootFilePath, debugOptions && strstr(debugOptions, CHAR8_CONST_STRING("/detectboot")))))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// get boot device path
 		//
 		EFI_DEVICE_PATH_PROTOCOL* bootDevicePath							= DevPathGetDevicePathProtocol(bootDeviceHandle);
 		if(!bootDevicePath)
+        {
 			try_leave(status = EFI_DEVICE_ERROR);
+        }
 
 		//
 		// process option
 		//
 		CHAR8* kernelCommandLine											= nullptr;
 		if(EFI_ERROR(status = BlProcessOptions(loaderOptions, &kernelCommandLine, bootDevicePath, bootFilePath)))
+        {
 			try_leave(NOTHING);
+        }
 
 		//
 		// check 64-bit cpu
 		//
 		if(EFI_ERROR(status = ArchCheck64BitCpu()))
+        {
 			try_leave(NOTHING);
+        }
 
+        // AnV - Removed compatibility check for hackintosh
+#ifndef HACKINTOSH
 		//
 		// compact check
 		//
 		if(!BlTestBootMode(BOOT_MODE_SKIP_BOARD_ID_CHECK) && EFI_ERROR(status = BlpCheckBoardId(BlGetBoardId(), bootFilePath)))
+        {
 			try_leave(NOTHING);
+        }
+#endif
 
 		//
 		// check recovery
@@ -548,34 +601,48 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		if(filePath)
 		{
 			if(strstr(filePath, CHAR8_CONST_STRING("com.apple.recovery.boot")))
-				BlSetBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY, BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_BOOT_IS_NOT_ROOT);
+            {
+                BlSetBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY, BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_BOOT_IS_NOT_ROOT);
+            }
 
 			MmFreePool(filePath);
 		}
 
+        // AnV - Don't show panic dialog on hackintosh, it hangs the boot
+#ifndef HACKINTOSH
 		//
 		// show panic dialog
 		//
 		if(!BlTestBootMode(BOOT_MODE_SKIP_PANIC_DIALOG | BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY | BOOT_MODE_HIBER_FROM_FV | BOOT_MODE_SAFE))
 			BlShowPanicDialog(&kernelCommandLine);
+#endif
 
 		//
 		// run recovery.efi
 		//
 		if(BlTestBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE))
+        {
 			BlpRunRecoveryEfi(bootDevicePath, bootFilePath);
+        }
 
+        // AnV - Hackintosh is incompatible with core volume
+#ifndef HACKINTOSH
 		//
 		// check FileVault2
 		//
 		if(BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
+        {
 			FvLookupUnlockCoreVolumeKey(bootDevicePath, resumeFromCoreStorage);
+        }
 
-		//
+        //
 		// restore graph config
 		//
 		if(!BlTestBootMode(BOOT_MODE_HAS_FILE_VAULT2_CONFIG))
+        {
 			CsConnectDevice(FALSE, FALSE);
+        }
+#endif
 
 		//
 		// setup console mode
@@ -587,9 +654,13 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		else
 		{
 			if(!EFI_ERROR(CsInitializeGraphMode()))
+            {
 				CsDrawBootImage(TRUE);
+            }
 		}
 
+        // Core storage is incompatible with hackintosh
+#ifndef HACKINTOSH
 		//
 		// continue hibernate
 		//
@@ -597,41 +668,64 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		{
 			UINT8 coreStorageVolumeKey[16]									= {0};
 			if(FvFindCoreVolumeKey(coreStorageVolumeKeyIdent, coreStorageVolumeKey, sizeof(coreStorageVolumeKey)))
-				HbContinueResumeFromHibernate(coreStorageVolumeKey, sizeof(coreStorageVolumeKey));
+            {
+                HbContinueResumeFromHibernate(coreStorageVolumeKey, sizeof(coreStorageVolumeKey));
+            }
 		}
+#endif
 
 		//
 		// load kernel cache
 		//
 		MACH_O_LOADED_INFO kernelInfo										= {0};
+
 		status																= LdrLoadKernelCache(&kernelInfo, bootDevicePath);
-		BOOLEAN usingKernelCache											= !EFI_ERROR(status);
+
+        BOOLEAN usingKernelCache											= !EFI_ERROR(status);
 		if(!usingKernelCache && LdrGetKernelCacheOverride())
-			try_leave(NOTHING);
+        {
+            try_leave(NOTHING);
+        }
 
 		//
 		// load kernel
 		//
-		if(!usingKernelCache && EFI_ERROR(status = LdrLoadKernel(&kernelInfo)))
-			try_leave(NOTHING);
+        if(!usingKernelCache)
+        {
+            if(EFI_ERROR(status = LdrLoadKernel(&kernelInfo)))
+            {
+                try_leave(NOTHING);
+            }
+        }
 
 		//
 		// initialize boot args
 		//
 		BOOT_ARGS* bootArgs													= nullptr;
-		if(EFI_ERROR(status = BlInitializeBootArgs(bootDevicePath, bootFilePath, bootDeviceHandle, kernelCommandLine, &bootArgs)))
-			try_leave(NOTHING);
+
+        if(EFI_ERROR(status = BlInitializeBootArgs(bootDevicePath, bootFilePath, bootDeviceHandle, kernelCommandLine, &bootArgs)))
+        {
+            try_leave(NOTHING);
+        }
 
 		//
 		// load driver
 		//
-		if(!usingKernelCache && EFI_ERROR(status = LdrLoadDrivers()))
-			try_leave(NOTHING);
+        if(!usingKernelCache)
+        {
+            if(!usingKernelCache && EFI_ERROR(status = LdrLoadDrivers()))
+            {
+                try_leave(NOTHING);
+            }
+        }
 
+        // AnV - RAM disk is incompatible with Hackintosh
+#ifndef HACKINTOSH
 		//
 		// load ramdisk
 		//
 		LdrLoadRamDisk();
+#endif
 
 		//
 		// console finalize
@@ -641,18 +735,23 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		// finish boot args
 		//
-		if(EFI_ERROR(status = BlFinalizeBootArgs(bootArgs, kernelCommandLine, bootDeviceHandle, &kernelInfo)))
-			try_leave(NOTHING);
+        if(EFI_ERROR(status = BlFinalizeBootArgs(bootArgs, kernelCommandLine, bootDeviceHandle, &kernelInfo)))
+        {
+            try_leave(NOTHING);
+        }
 
+        // AnV - Boot debugger is incompatible with hackintosh
+#ifndef HACKINTOSH
 		//
 		// stop debugger
 		//
 		BdFinalize();
+#endif
 
 		//
 		// start kernel
 		//
-		ArchStartKernel(ArchConvertAddressToPointer(kernelInfo.EntryPointPhysicalAddress, VOID*), bootArgs);
+        ArchStartKernel(ArchConvertAddressToPointer(kernelInfo.EntryPointPhysicalAddress, VOID*), bootArgs);
 	}
 	__finally
 	{

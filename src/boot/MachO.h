@@ -62,11 +62,13 @@ typedef struct _MACH_O_LOADED_INFO
 // get thin fat info
 //
 EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile, UINTN* dataSize);
+EFI_STATUS MachLoadThinFatFileBuffer(UINT8* fileBuffer, UINTN fileSize, UINT64 *dataOffset, UINTN *dataSize);
 
 //
 // load mach-o
 //
 EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MACH_O_LOADED_INFO* loadedInfo);
+EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKernelMemory, MACH_O_LOADED_INFO* loadedInfo);
 
 //
 // get symbol virtual address by name

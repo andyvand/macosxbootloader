@@ -594,13 +594,13 @@ EFI_STATUS IoReadFile(IO_FILE_HANDLE* fileHandle, VOID* readBuffer, UINTN buffer
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 
-	__try
+    __try
 	{
 		*readLength															= 0;
 
 		if(fileHandle->EfiLoadFileProtocol)
 		{
-			UINT64 fileSize													= 0;
+            UINT64 fileSize													= 0;
 			if(EFI_ERROR(status = IoGetFileSize(fileHandle, &fileSize)))
 				try_leave(NOTHING);
 
@@ -625,38 +625,41 @@ EFI_STATUS IoReadFile(IO_FILE_HANDLE* fileHandle, VOID* readBuffer, UINTN buffer
 
 				if(readLength != fileHandle->FileSize)
 					try_leave(MmFreePool(fileHandle->FileBuffer); fileHandle->FileBuffer = nullptr; status = EFI_DEVICE_ERROR);
-			}
+            }
 		}
 
 		if(fileHandle->FileBuffer)
 		{
 			UINTN copyLength												= fileHandle->FileOffset >= fileHandle->FileSize ? 0 : fileHandle->FileSize - fileHandle->FileOffset;
-			if(copyLength > bufferSize)
+            if(copyLength > bufferSize)
 				copyLength													= bufferSize;
 
 			memcpy(readBuffer, fileHandle->FileBuffer + fileHandle->FileOffset, copyLength);
 			fileHandle->FileOffset											+= copyLength;
 			*readLength														= copyLength;
 			try_leave(NOTHING);
-		}
+        }
 
 		if(!fileHandle->EfiFileHandle)
 			try_leave(status = EFI_INVALID_PARAMETER);
+       
+        UINT8* curBuffer													= static_cast<UINT8*>(readBuffer);
+        while(bufferSize)
+        {
+            UINTN lengthThisRun												= bufferSize > 1024 * 1024 ? 1024 * 1024 : bufferSize;
 
-		UINT8* curBuffer													= static_cast<UINT8*>(readBuffer);
-		while(bufferSize)
-		{
-			UINTN lengthThisRun												= bufferSize > 1024 * 1024 ? 1024 * 1024 : bufferSize;
-			if(EFI_ERROR(status = fileHandle->EfiFileHandle->Read(fileHandle->EfiFileHandle, &lengthThisRun, curBuffer)) || !lengthThisRun)
-				try_leave(NOTHING);
+            if(EFI_ERROR(status = fileHandle->EfiFileHandle->Read(fileHandle->EfiFileHandle, &lengthThisRun, curBuffer)) || !lengthThisRun)
+            {
+                try_leave(NOTHING);
+            }
 
-			bufferSize														-= lengthThisRun;
-			curBuffer														+= lengthThisRun;
-			*readLength														+= lengthThisRun;
+            bufferSize														-= lengthThisRun;
+            curBuffer														+= lengthThisRun;
+            *readLength														+= lengthThisRun;
 
-			if(directoryFile)
-				break;
-		}
+            if(directoryFile)
+                break;
+        }
 	}
 	__finally
 	{

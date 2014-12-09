@@ -362,6 +362,7 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 	IO_FILE_HANDLE fileHandle												= {0};
 	VOID* compressedBuffer													= nullptr;
 	VOID* uncompressedBuffer												= nullptr;
+    BOOLEAN directUse                                                       = FALSE;
 
 	__try
 	{
@@ -376,8 +377,8 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 		//
 		UINT8 tempBuffer[0x140]												= {0};
 		CHAR8 CONST* modelName												= PeGetModelName();
-		UINTN modelNameLength												= strlen(modelName);
-		UINTN devicePathLength												= DevPathGetSize(bootDevicePath);
+        UINTN modelNameLength												= strlen(modelName);
+        UINTN devicePathLength												= DevPathGetSize(bootDevicePath);
 		CHAR8 CONST* fileName												= LdrpKernelPathName ? LdrpKernelPathName : LdrpKernelCachePathName;
 		UINTN fileNameLength												= strlen(fileName);
 
@@ -469,6 +470,7 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 		//
 		STATIC COMPRESSED_KERNEL_CACHE_HEADER fileHeader					= {0};
 		UINTN readLength													= 0;
+        UINT32 uncompressedSize                                             = 0;
 		if(EFI_ERROR(status = IoReadFile(&fileHandle, &fileHeader, sizeof(fileHeader), &readLength, FALSE)))
 			try_leave(NOTHING);
 
@@ -530,7 +532,7 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 			//
 			// allocate buffer
 			//
-			UINT32 uncompressedSize											= SWAP_BE32_TO_HOST(fileHeader.UncompressedSize);
+			uncompressedSize											= SWAP_BE32_TO_HOST(fileHeader.UncompressedSize);
 			uncompressedBuffer												= MmAllocatePool(uncompressedSize);
 			if(!uncompressedBuffer)
 				try_leave(status = EFI_OUT_OF_RESOURCES);
@@ -585,13 +587,7 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 			// hack file handle
 			//
 			IoCloseFile(&fileHandle);
-			fileHandle.EfiFileHandle										= nullptr;
-			fileHandle.EfiFilePath											= nullptr;
-			fileHandle.EfiLoadFileProtocol									= nullptr;
-			fileHandle.FileBuffer											= static_cast<UINT8*>(uncompressedBuffer);
-			fileHandle.FileOffset											= 0;
-			fileHandle.FileSize												= uncompressedSize;
-			uncompressedBuffer												= nullptr;
+            directUse                                                       = TRUE;
 		}
 		else
 		{
@@ -599,6 +595,7 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 			// seek to beginning
 			//
 			IoSetFilePosition(&fileHandle, 0);
+            directUse                                                       = FALSE;
 		}
 #if DEBUG_LDRP_CALL_CSPRINTF
 		CsPrintf(CHAR8_CONST_STRING("PIKE: Calling MachLoadMachO().\n"));
@@ -606,8 +603,22 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 		//
 		// load mach-o
 		//
-		if(EFI_ERROR(status = MachLoadMachO(&fileHandle, TRUE, loadedInfo)))
-			try_leave(NOTHING);
+        if (directUse == FALSE)
+        {
+#if DEBUG_LDRP_CALL_CSPRINTF
+            CsPrintf(CHAR8_CONST_STRING("PIKE: No direct use\n"));
+#endif
+
+            if(EFI_ERROR(status = MachLoadMachO(&fileHandle, TRUE, loadedInfo)))
+                try_leave(NOTHING);
+        } else {
+#if DEBUG_LDRP_CALL_CSPRINTF
+            CsPrintf(CHAR8_CONST_STRING("PIKE: Direct use\n"));
+#endif
+            
+            if(EFI_ERROR(status = MachLoadMachOBuffer((UINT8 *)uncompressedBuffer, uncompressedSize, TRUE, loadedInfo)))
+                try_leave(NOTHING);
+        }
 
 		DEVICE_TREE_NODE* chosenNode										= DevTreeFindNode(CHAR8_CONST_STRING("/chosen"), TRUE);
 		if(chosenNode)
@@ -626,6 +637,7 @@ EFI_STATUS LdrLoadKernelCache(MACH_O_LOADED_INFO* loadedInfo, EFI_DEVICE_PATH_PR
 #if DEBUG_LDRP_CALL_CSPRINTF
 	CsPrintf(CHAR8_CONST_STRING("PIKE: Returning from LdrLoadKernelCache(%d).\n"), status);
 #endif
+
 	return status;
 }
 
