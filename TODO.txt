@@ -20,8 +20,14 @@ Phase 3: Status - Completed!
 
 1.) Add Xcode compiler support (status: Done).
 
+
 Phase 4: Status - Completed!
 
 1.) Build universal boot.efi (status: Done).
 
 2.) Add universal build script (status: Done).
+
+
+Phase 5: Status - Completed!
+
+1.) Add script for building installer packages (status: Done).

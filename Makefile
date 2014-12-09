@@ -11,6 +11,14 @@ else
 DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG
 endif
 
+INSTALL = install
+
+### Change to "" for no code signing or to your Apple developer certificate ###
+#SIGNCERT = ""
+#PKGSIGNCERT = ""
+SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
+PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
+
 ### Tools ###
 ifeq ("$(CLOVERTOOLS)", "1")
 ifeq ("$(TOOLPATH)", "")
@@ -170,3 +178,42 @@ clean:
 	cd src/boot && make clean && cd ../..
 	cd src/boot/x64 && make clean && cd ../../..
 	cd src/boot/x86 && make clean && cd ../../..
+
+bin/boot.efi: build_universal.sh
+	./$<
+
+newinstaller: bin/boot.efi
+	sudo mkdir -p macosxbootloaderinst/System/Library/CoreServices
+	mkdir -p macosxbootloaderpkg
+	mkdir -p macosxbootloadercombopkg
+	sudo $(INSTALL) $< macosxbootloaderinst/System/Library/CoreServices/boot.efi
+	sudo chown -R root:wheel macosxbootloaderinst
+	cd macosxbootloaderinst && sudo rm -f .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo cpio -o < ../macosxbootloader_pkg.txt > ../macosxbootloaderpkg/Payload && sudo rm -f .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo mkbom . ../macosxbootloaderpkg/Bom && cd ..
+	sudo cp -Rf Scripts macosxbootloaderpkg/Scripts
+	sudo rm -Rf macosxbootloaderinst
+	sudo cp -Rf Installer/PackageInfo macosxbootloaderpkg/PackageInfo
+	cd macosxbootloaderpkg && sudo rm -Rf .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo xar -cjf ../macosxbootloadercombopkg/macosxbootloader-1.0.pkg . && cd ..
+	sudo rm  -Rf macosxbootloaderpkg Payload Bom
+	if [ $(PKGSIGNCERT) != "" ]; then sudo productsign --sign $(PKGSIGNCERT) macosxbootloadercombopkg/macosxbootloader-1.0.pkg macosxbootloadercombopkg/macosxbootloader-1.0-apple.pkg && sudo rm -Rf macosxbootloadercombopkg/macosxbootloader-1.0.pkg; else mv macosxbootloadercombopkg/macosxbootloader-1.0.pkg macosxbootloadercombopkg/macosxbootloader-1.0-apple.pkg; fi
+	sudo cp -Rf Installer/Resources macosxbootloadercombopkg/Resources
+	sudo cp -f Installer/Distribution macosxbootloadercombopkg/Distribution
+	cd macosxbootloadercombopkg &&  sudo rm -Rf .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo productbuild --distribution Distribution --resources Resources --package-path $(PWD) ../macosxbootloader-apple.pkg && cd ..
+	sudo rm -Rf macosxbootloadercombopkg
+	if [ $(PKGSIGNCERT) != "" ]; then sudo productsign --sign $(PKGSIGNCERT) macosxbootloader-apple.pkg macosxbootloader.pkg && sudo rm -Rf macosxbootloader-apple.pkg; else mv macosxbootloader-apple.pkg macosxbootloader.pkg; fi
+
+legacy-installer: bin/boot.efi
+	sudo mkdir -p macosxbootloaderinst/System/Library/CoreServices
+	mkdir -p macosxbootloaderpkg/Contents
+	sudo $(INSTALL) $< macosxbootloaderinst/System/Library/CoreServices/boot.efi
+	sudo chown -R root:wheel macosxbootloaderinst
+	cd macosxbootloaderinst && sudo rm -f .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo cpio -o < ../macosxbootloader_pkg.txt > ../macosxbootloaderpkg/Contents/Archive.pax && gzip -v9 ../macosxbootloaderpkg/Contents/Archive.pax && sudo rm -f .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo mkbom . ../macosxbootloaderpkg/Contents/Archive.bom && cd ..
+	sudo rm -Rf macosxbootloaderinst
+	sudo cp -Rf LegacyInstaller/* macosxbootloaderpkg/Contents/
+	sudo cp -Rf Scripts macosxbootloaderpkg/Contents/Scripts
+	sudo rm -Rf macosxbootloaderpkg/.DS_Store macosxbootloaderpkg/*/.DS_Store macosxbootloaderpkg/*/*/.DS_Store
+	sudo sudo rm -Rf macosxbootloader-1.0.pkg
+	sudo mv -f macosxbootloaderpkg macosxbootloader-1.0.pkg
+	sudo chown -R $(USER):staff macosxbootloader-1.0.pkg
+	if [ $(SIGNCERT) != "" ]; then productsign --sign $(SIGNCERT) macosxbootloader-1.0.pkg macosxbootloader-legacy.pkg; else mv macosxbootloader-1.0.pkg macosxbootloader-legacy.pkg; fi
+	rm -Rf macosxbootloader-1.0.pkg
+

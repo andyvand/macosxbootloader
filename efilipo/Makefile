@@ -55,5 +55,6 @@ legacy-installer: efilipo
 	sudo sudo rm -Rf efilipo-1.1.pkg
 	sudo mv -f efilipopkg efilipo-1.1.pkg
 	sudo chown -R $(USER):staff efilipo-1.1.pkg
-	if [ $(SIGNCERT) != "" ]; then productsign --sign $(SIGNCERT) efilipo-1.1.pkg efilipo-legacy.pkg; fi
+	if [ $(SIGNCERT) != "" ]; then productsign --sign $(SIGNCERT) efilipo-1.1.pkg efilipo-legacy.pkg; else mv efilipo-1.1.pkg efilipo-legacy.pkg; fi
 	rm -Rf efilipo-1.1.pkg
+
