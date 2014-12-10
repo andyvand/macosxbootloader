@@ -158,6 +158,14 @@ NASMCOMPFLAGS=-Daes_encrypt=_aes_encrypt -Daes_decrypt=_aes_decrypt
 endif
 endif
 
+ifeq ("$(OBJCONV)", "1")
+ifeq ("$(ARCH)", "i386")
+MTOC=objconv -fpe32 -xs -nu
+else
+MTOC=objconv -fpe64 -xs -nu
+endif
+endif
+
 NASM=nasm
 
 ### Flags ###
