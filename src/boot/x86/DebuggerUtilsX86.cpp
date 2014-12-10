@@ -865,7 +865,9 @@ VOID BdpRestoreKframe(KTRAP_FRAME* trapFrame, CONTEXT* contextRecord)
 	BdpRestoreProcessorControlState(&BdPrcb->ProcessorState);
 }
 
+#if defined(_MSC_VER)
 #pragma optimize("",off)
+#endif
 
 //
 // debug routine used when debugger is enabled
@@ -950,7 +952,9 @@ BOOLEAN BdTrap(EXCEPTION_RECORD* exceptionRecord, struct _KEXCEPTION_FRAME* exce
 	return TRUE;
 }
 
+#if defined(_MSC_VER)
 #pragma optimize("",on)
+#endif
 
 //
 // extract continuation control data from Manipulate_State message

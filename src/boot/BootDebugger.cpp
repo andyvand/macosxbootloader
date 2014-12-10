@@ -33,11 +33,20 @@ UINT32 BdPacketIdExpected													= 0;
 UINT32 BdNumberRetries														= 5;
 UINT32 BdRetryCount															= 5;
 KDP_BREAKPOINT_TYPE	BdBreakpointInstruction									= KDP_BREAKPOINT_VALUE;
+
+#if defined(_MSC_VER)
 BREAKPOINT_ENTRY BdBreakpointTable[BREAKPOINT_TABLE_SIZE]					= {0};
 UINT64 BdRemoteFiles[0x10]													= {0};
 CHAR8 BdFileTransferBuffer[0x2000]											= {0};
 LIST_ENTRY BdModuleList														= {0};
 LDR_DATA_TABLE_ENTRY BdModuleDataTableEntry									= {0};
+#else
+BREAKPOINT_ENTRY BdBreakpointTable[BREAKPOINT_TABLE_SIZE];
+UINT64 BdRemoteFiles[0x10];
+CHAR8 BdFileTransferBuffer[0x2000];
+LIST_ENTRY BdModuleList;
+LDR_DATA_TABLE_ENTRY BdModuleDataTableEntry;
+#endif
 
 //
 // check write access
@@ -754,7 +763,13 @@ STATIC UINT32 BdpReadPciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT
 		length																= PCI_MAX_CONFIG_OFFSET - offset;
 
 	UINT32 readLength														= 0;
+
+#if defined(_MSC_VER)
 	PCI_TYPE_GENERIC localHeader											= {0};
+#else
+	PCI_TYPE_GENERIC localHeader;
+#endif
+
 	if(offset >= sizeof(localHeader))
 	{
 		BdpReadPciConfigSpace(bus, device, func, 0, &localHeader, EFI_FIELD_OFFSET(PCI_DEVICE_INDEPENDENT_REGION, Command));
@@ -851,7 +866,13 @@ STATIC UINT32 BdpWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UIN
 		length																= PCI_MAX_CONFIG_OFFSET - offset;
 
 	UINT32 writeLength														= 0;
-	PCI_TYPE_GENERIC localHeader											= {0};
+
+#if defined(_MSC_VER)
+	PCI_TYPE_GENERIC localHeader                                                                                    = {0};
+#else
+	PCI_TYPE_GENERIC localHeader;
+#endif
+
 	if(offset >= sizeof(localHeader))
 	{
 		BdpReadPciConfigSpace(bus, device, func, 0, &localHeader, EFI_FIELD_OFFSET(PCI_DEVICE_INDEPENDENT_REGION, Command));

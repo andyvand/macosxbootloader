@@ -52,6 +52,7 @@ Abstract:
 //
 // Disabling bitfield type checking warnings.
 //
+#if defined( _MSC_VER )
 #pragma warning ( disable : 4214 )
 
 //
@@ -90,6 +91,7 @@ Abstract:
 // Warning: The result of the unary '&' operator may be unaligned. Ignore it.
 //
 #pragma warning ( disable : 4366 )
+#endif
 
 #endif
 

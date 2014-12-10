@@ -47,7 +47,9 @@ extern "C"
 #pragma intrinsic(memcpy)
 #endif
 
+#if defined( _MSC_VER )
 #pragma warning(disable:4731)
+#endif
 
 #define BFR_BLOCKS      8
 

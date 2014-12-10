@@ -481,7 +481,13 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		//
 		UINT8 progressSaveUnder[HIBERNATE_PROGRESS_COUNT][HIBERNATE_PROGRESS_SAVE_UNDER_SIZE];
 		UINT8 initVector[16]												= {0};
+
+#ifdef _MSC_VER
 		aes_decrypt_ctx aesContext											= {0};
+#else
+        aes_decrypt_ctx aesContext;
+#endif
+
 		UINT64 imageTotalLength												= image1Size + 1 * 1024 * 1024;
 		UINT64 leftLength													= image1Size - sizeof(HIBERNATE_IMAGE_HEADER);
 		UINT64 readOffset													= imageHeader->FileExtentMap[0].Offset + sizeof(HIBERNATE_IMAGE_HEADER);

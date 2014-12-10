@@ -111,6 +111,7 @@ STATIC EFI_STATUS BlpSetupRomVariable()
 	return EFI_SUCCESS;
 }
 
+#ifndef HACKINTOSH
 //
 // check board id
 //
@@ -192,6 +193,7 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 
 	return status;
 }
+#endif
 
 //
 // run recovery booter

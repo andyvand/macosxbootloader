@@ -227,7 +227,10 @@ STATIC VOID BdpRestoreKframe(KTRAP_FRAME* trapFrame, KEXCEPTION_FRAME* exception
 //
 // trap handler
 //
+#if defined(_MSC_VER)
 #pragma optimize("",off)
+#endif
+
 BOOLEAN BdTrap(EXCEPTION_RECORD* exceptionRecord, KEXCEPTION_FRAME* exceptionFrame, KTRAP_FRAME* trapFrame)
 {
 	BdPrcb->ProcessorState.ContextFrame.ContextFlags						= CONTEXT_FULL | CONTEXT_DEBUG_REGISTERS;
@@ -310,7 +313,10 @@ BOOLEAN BdTrap(EXCEPTION_RECORD* exceptionRecord, KEXCEPTION_FRAME* exceptionFra
 
 	return TRUE;
 }
+
+#if defined(_MSC_VER)
 #pragma optimize("",on)
+#endif
 
 //
 // initialize

@@ -23,7 +23,10 @@ extern "C"
 	// allocate from stack
 	//
 	VOID* BOOTAPI _alloca(UINTN bufferLength);
+
+#if defined( _MSC_VER )
 	#pragma intrinsic(_alloca)
+#endif
 
 	//
 	// memcpy

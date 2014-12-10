@@ -95,6 +95,7 @@ Abstract:
 //
 // Disabling bitfield type checking warnings.
 //
+#if defined( _MSC_VER )
 #pragma warning ( disable : 4214 )
 
 //
@@ -128,7 +129,7 @@ Abstract:
 // This warning is caused by empty (after preprocessing) souce file.
 //
 #pragma warning ( disable : 4206 )
-
+#endif
 
 #endif
 

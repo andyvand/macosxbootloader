@@ -216,6 +216,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDevicePath(EFI_HANDLE deviceHandle, CHAR8* uu
 	return uuidBuffer;
 }
 
+#ifndef HACKINTOSH
 //
 // add ram dmg property
 //
@@ -277,6 +278,7 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 
 	}
 }
+#endif
 
 //
 // add memory range

@@ -17,7 +17,7 @@
 // global
 //
 STATIC UINT32 BlpBootMode													= BOOT_MODE_NORMAL | BOOT_MODE_SKIP_BOARD_ID_CHECK;
-STATIC UINT32 BlpForceCpuArchType											= CPU_ARCH_NONE;
+//STATIC UINT32 BlpForceCpuArchType											= CPU_ARCH_NONE;
 STATIC BOOLEAN BlpPasswordUIEfiRun											= FALSE;
 
 //
@@ -223,6 +223,7 @@ STATIC CHAR8 CONST* BlpLoadConfigFile(CHAR8 CONST* bootOptions, EFI_DEVICE_PATH_
 	return retValue;
 }
 
+#ifndef HACKINTOSH
 //
 // read device path variable
 //
@@ -269,6 +270,7 @@ STATIC VOID BlpSetupPathFromVariable(EFI_DEVICE_PATH_PROTOCOL** filePath, CHAR8*
 	if(devicePath && pathName)
 		*pathName															= DevPathExtractFilePathName(devicePath, FALSE);
 }
+#endif
 
 //
 // setup path from command line

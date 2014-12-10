@@ -1567,7 +1567,6 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
                     //
                     // Copy in
                     //
-                    UINTN fileLength										= static_cast<UINTN>(segmentVirtualSize > segmentFileSize ? segmentFileSize : segmentVirtualSize);
                     memcpy((VOID *)physicalAddress, (fileBuffer + machOffset + segmentFileOffset), segmentFileSize);
 
                     //

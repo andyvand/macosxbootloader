@@ -306,7 +306,12 @@ STATIC CHAR8 CONST* FvpLoginUnlockIdent										= nullptr;
 STATIC CHAR8 CONST* FvpUserPassword											= nullptr;
 STATIC CHAR8 CONST* FvpKeyEncryptingKeyIdent								= nullptr;
 STATIC UINTN FvpVolumeKeyKEKLength											= 0;
+
+#if defined(_MSC_VER)
 STATIC UINT8 FvpVolumeKeyKEK[0x80]											= {0};
+#else
+STATIC UINT8 FvpVolumeKeyKEK[0x80];
+#endif
 
 STATIC UINTN FvpVolumeKeyCount												= 0;
 STATIC VOLUME_KEY_INFO* FvpVolumeKeyList									= nullptr;
@@ -409,7 +414,12 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		//
 		// read volume header
 		//
+#ifdef _MSC_VER
 		CORE_STORAGE_VOLUME_HEADER localHeader								= {0};
+#else
+		CORE_STORAGE_VOLUME_HEADER localHeader;
+#endif
+
 		UINT64 offset														= blockIoProtocol->Media->LastBlock * blockIoProtocol->Media->BlockSize;
 		if(EFI_ERROR(status = diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, offset, sizeof(localHeader), &localHeader)))
 		{
@@ -426,8 +436,14 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		//
 		// decrypt with aes-xts
 		//
+#ifdef _MSC_VER
 		symmetric_xts xtsContext											= {0};
 		UINT8 initVector[0x10]												= {0};
+#else
+		symmetric_xts xtsContext;
+		UINT8 initVector[0x10];
+#endif
+
 		xts_start(0, initVector, localHeader.EncryptedRootKey1, localHeader.KeyLength, initVector, 0x10, 0, 0, &xtsContext);
 		xts_decrypt(fileBuffer, static_cast<unsigned long>(fileSize), fileBuffer, initVector, &xtsContext);
 		xts_done(&xtsContext);
@@ -515,7 +531,12 @@ STATIC BOOLEAN FvpAESUnwrap(VOID CONST* kekBuffer, UINTN kekLength, UINT64 initV
 	UINT8* R																= static_cast<UINT8*>(plaintext);
 	memcpy(R, Add2Ptr(ciphertext, sizeof(A), VOID CONST*), sizeof(UINT64) * n);
 
+#ifdef _MSC_VER
 	aes_decrypt_ctx aesContext												= {0};
+#else
+	aes_decrypt_ctx aesContext;
+#endif
+
 	aes_decrypt_key(static_cast<UINT8 CONST*>(kekBuffer), static_cast<INT32>(kekLength), &aesContext);
 	
 	for(INT32 j = 5; j >= 0; j --)
@@ -623,7 +644,12 @@ STATIC EFI_STATUS FvpDecryptVolumeKEKWithMasterKeyUser()
 //
 STATIC VOID FvpHMACSHA256(VOID CONST* messageBuffer, UINTN messageLength, VOID CONST* keyBuffer, UINTN keyLength, UINT8* resultBuffer)
 {
+#ifdef _MSC_VER
 	SHA256_CONTEXT sha256Context											= {0};
+#else
+	SHA256_CONTEXT sha256Context;
+#endif
+
 	UINT8 kPad[0x40]														= {0};
 	UINT8 tk[0x20]															= {0};
 	if(keyLength > sizeof(kPad))
