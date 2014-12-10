@@ -160,9 +160,9 @@ endif
 
 ifeq ("$(OBJCONV)", "1")
 ifeq ("$(ARCH)", "i386")
-MTOC=objconv -fpe32 -xs -nu
+MTOC=objconv -ed2022 -fwin32 -xs -nu
 else
-MTOC=objconv -fpe64 -xs -nu
+MTOC=objconv -ed2022 -fwin64 -xs -nu
 endif
 endif
 
