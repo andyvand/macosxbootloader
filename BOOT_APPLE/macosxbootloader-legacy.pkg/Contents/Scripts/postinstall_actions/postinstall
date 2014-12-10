@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ -e "$3/System/Library/CoreServices/boot.efi" ] ; then
+    echo "Protecting boot.efi..."
+	sudo chflags uchg "$3/System/Library/CoreServices/boot.efi"
+    echo "Blessing boot.efi..."
+	sudo bless —-file "$3/System/Library/CoreServices/boot.efi" —-folder "$3/System/Library/CoreServices" —-setBoot —-verbose
+fi
+
+exit 0
