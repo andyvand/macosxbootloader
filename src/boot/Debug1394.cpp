@@ -5,12 +5,6 @@
 //	purpose:	debug over 1394
 //********************************************************************
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 #include "StdAfx.h"
 #include "Debug1394.h"
 
@@ -52,9 +46,6 @@
 
 #ifndef __APPLE__
 #include <pshpack1.h>
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
 #endif
 
 //

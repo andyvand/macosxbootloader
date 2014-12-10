@@ -15,15 +15,6 @@
 //
 #ifndef __APPLE__
 #include <pshpack1.h>
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
-#endif
-
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
 #endif
 
 typedef struct _LDR_EXTENSION_MODULE

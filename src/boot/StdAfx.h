@@ -17,6 +17,18 @@
 #define __finally if (1)
 #endif
 
+#ifdef __APPLE__
+#ifndef nullptr
+#define nullptr 0
+#endif
+#endif
+
+#ifndef __APPLE__
+#define GNUPACK
+#else
+#define GNUPACK __attribute__((packed))
+#endif
+
 #define NOTHING
 #define BOOTAPI																__cdecl
 #define CHAR8_CONST_STRING(S)												static_cast<CHAR8 CONST*>(static_cast<VOID CONST*>(S))

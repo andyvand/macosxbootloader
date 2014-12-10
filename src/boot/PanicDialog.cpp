@@ -8,17 +8,8 @@
 #include "StdAfx.h"
 #include "PanicDialog.h"
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 #ifndef __APPLE__
 #include <pshpack1.h>
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
 #endif
 
 typedef struct _PANIC_INFO_LOG

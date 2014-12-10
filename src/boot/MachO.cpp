@@ -30,25 +30,11 @@
 #define MH_PIE																0x200000
 #define VM_PROT_WRITE														2
 
-#ifdef __APPLE__
-#undef UINT32
-#define UINT32 unsigned int
-#endif
-
 //
 // fat header
 //
 #ifndef __APPLE__
 #include <pshpack1.h>
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
-#endif
-
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
 #endif
 
 typedef struct _FAT_HEADER
