@@ -570,7 +570,8 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		// process option
 		//
 		CHAR8* kernelCommandLine											= nullptr;
-		if(EFI_ERROR(status = BlProcessOptions(loaderOptions, &kernelCommandLine, bootDevicePath, bootFilePath)))
+        BOOLEAN usingKernelCache                                            = FALSE;
+		if(EFI_ERROR(status = BlProcessOptions(loaderOptions, &kernelCommandLine, bootDevicePath, bootFilePath, &usingKernelCache)))
         {
 			try_leave(NOTHING);
         }
@@ -650,6 +651,14 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		if(BlTestBootMode(BOOT_MODE_VERBOSE))
 		{
 			CsSetConsoleMode(TRUE, FALSE);
+
+            // Print boot.efi info for verbose mode
+            CsPrintf(CHAR8_CONST_STRING("boot.efi start ("));
+#if defined(_X86_) || defined(_M_X86) || defined(__i386__)
+            CsPrintf(CHAR8_CONST_STRING("32-bit)\n"));
+#else
+            CsPrintf(CHAR8_CONST_STRING("64-bit)\n"));
+#endif
 		}
 		else
 		{
@@ -679,12 +688,19 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		MACH_O_LOADED_INFO kernelInfo										= {0};
 
-		status																= LdrLoadKernelCache(&kernelInfo, bootDevicePath);
-
-        BOOLEAN usingKernelCache											= !EFI_ERROR(status);
-		if(!usingKernelCache && LdrGetKernelCacheOverride())
+        if (usingKernelCache == TRUE)
         {
-            try_leave(NOTHING);
+            status														= LdrLoadKernelCache(&kernelInfo, bootDevicePath);
+
+            usingKernelCache                                            = !EFI_ERROR(status);
+        }
+
+		if(!usingKernelCache)
+        {
+           if (LdrGetKernelCacheOverride())
+           {
+                try_leave(NOTHING);
+           }
         }
 
 		//
@@ -713,19 +729,25 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
         if(!usingKernelCache)
         {
-            if(!usingKernelCache && EFI_ERROR(status = LdrLoadDrivers()))
+            if(EFI_ERROR(status = LdrLoadDrivers()))
             {
                 try_leave(NOTHING);
             }
         }
 
         // AnV - RAM disk is incompatible with Hackintosh
-#ifndef HACKINTOSH
 		//
 		// load ramdisk
 		//
+#ifndef HACKINTOSH
 		LdrLoadRamDisk();
 #endif
+
+        // Notifity user we are starting the kernel on verbose mode...
+        if(BlTestBootMode(BOOT_MODE_VERBOSE))
+        {
+            CsPrintf(CHAR8_CONST_STRING("Finalise settings and start kernel...\n"));
+        }
 
 		//
 		// console finalize

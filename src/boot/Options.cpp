@@ -532,7 +532,7 @@ EFI_STATUS BlDetectHotKey()
 //
 // process option
 //
-EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandLine, EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DEVICE_PATH_PROTOCOL* bootFilePath)
+EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandLine, EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DEVICE_PATH_PROTOCOL* bootFilePath, BOOLEAN* kernelCache)
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 	CHAR8* bootArgsVariable													= nullptr;
@@ -680,6 +680,14 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		//
 		if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-x"), &valueLength, FALSE))
 			BlSetBootMode(BOOT_MODE_SAFE, 0);
+
+        //
+        // kernel cache
+        //
+        if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-f"), &valueLength, FALSE))
+            kernelCache[0] = FALSE;
+        else
+            kernelCache[0] = TRUE;
 
 		//
 		// single user mode

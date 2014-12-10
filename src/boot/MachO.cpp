@@ -30,6 +30,11 @@
 #define MH_PIE																0x200000
 #define VM_PROT_WRITE														2
 
+#ifdef __APPLE__
+#undef UINT32
+#define UINT32 unsigned int
+#endif
+
 //
 // fat header
 //
@@ -773,68 +778,70 @@ typedef struct _RELOCATION_INFO
 //
 EFI_STATUS MachpLoadMachOThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile, UINTN* dataSize)
 {
-	EFI_STATUS status														= EFI_SUCCESS;
-
-	__try
+    __try
 	{
 		//
 		// seek file
 		//
-		if(EFI_ERROR(status = IoSetFilePosition(fileHandle, 0)))
-			try_leave(NOTHING);
+		if(EFI_ERROR(IoSetFilePosition(fileHandle, 0)))
+			return EFI_DEVICE_ERROR;
 
 		//
 		// read mach header
 		//
 		MACH_HEADER machHeader												= {0};
 		UINTN readLength													= 0;
-		if(EFI_ERROR(status = IoReadFile(fileHandle, &machHeader, sizeof(machHeader), &readLength, FALSE)))
-			try_leave(NOTHING);
+		if(EFI_ERROR(IoReadFile(fileHandle, &machHeader, sizeof(MACH_HEADER), &readLength, FALSE)))
+            return EFI_DEVICE_ERROR;
 
 		//
 		// check length
 		//
-		if(readLength < sizeof(machHeader))
-			try_leave(status = EFI_DEVICE_ERROR);
+		if(readLength < sizeof(MACH_HEADER))
+			return EFI_DEVICE_ERROR;
 
 		//
 		// seek back
 		//
-		if(EFI_ERROR(status = IoSetFilePosition(fileHandle, 0)))
-			try_leave(NOTHING);
+		if(EFI_ERROR(IoSetFilePosition(fileHandle, 0)))
+            return EFI_DEVICE_ERROR;
 
 		//
 		// get file size
 		//
 		UINT64 fileSize														= 0;
-		if(EFI_ERROR(status = IoGetFileSize(fileHandle, &fileSize)))
-			try_leave(NOTHING);
+		if(EFI_ERROR(IoGetFileSize(fileHandle, &fileSize)))
+            return EFI_DEVICE_ERROR;
 
-		//
+        //
 		// check magic
 		//
 		if(machHeader.Magic != MH_MAGIC_64)
-			try_leave(status = EFI_NOT_FOUND);
+			return EFI_NOT_FOUND;
 
 		//
 		// check cpu arch type
 		//
 		if(machHeader.CpuType != 0x1000007)
-			try_leave(status = EFI_NOT_FOUND);
+			return EFI_NOT_FOUND;
 
 		//
 		// the whole file
 		//
 		if(offsetInFile)
 			*offsetInFile													= 0;
+
+        if(EFI_ERROR(IoSetFilePosition(fileHandle, 0)))
+            return EFI_DEVICE_ERROR;
+
 		if(dataSize)
-			*dataSize														= static_cast<UINT32>(fileSize);
+			dataSize[0]														= static_cast<UINTN>(fileSize);
 	}
 	__finally
 	{
 	}
 
-	return status;
+	return EFI_SUCCESS;
 }
 
 //
@@ -852,7 +859,7 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 		FAT_HEADER fatHeader												= {0};
 		UINTN readLength													= 0;
 		if(EFI_ERROR(status = IoReadFile(fileHandle, &fatHeader, sizeof(fatHeader), &readLength, FALSE)))
-			try_leave(NOTHING);
+            return EFI_DEVICE_ERROR;
 
 		//
 		// check read length
@@ -868,7 +875,9 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 #if DEBUG_LDRP_CALL_CSPRINTF
 			CsPrintf(CHAR8_CONST_STRING("PIKE: SWAP_BE32_TO_HOST(KERNEL_CACHE_MAGIC) found!\n"));
 #endif
-			try_leave(status = IoSetFilePosition(fileHandle, 0));
+
+			status = IoSetFilePosition(fileHandle, 0);
+            return status;
 		}
 
 		//
@@ -880,7 +889,15 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 		else if(fatHeader.Magic == FAT_CIGAM)
 			fatHeader.ArchHeadersCount										= SWAP32(fatHeader.ArchHeadersCount);
 		else
-			try_leave(status = MachpLoadMachOThinFatFile(fileHandle, offsetInFile, dataSize));
+        {
+			status = MachpLoadMachOThinFatFile(fileHandle, offsetInFile, dataSize);
+
+#if DEBUG_LDRP_CALL_CSPRINTF
+            CsPrintf(CHAR8_CONST_STRING("PIKE: Load Thin Mach-O FAT file done: size = 0x%x\n", dataSize));
+#endif
+
+            return status;
+        }
 
 		//
 		// read arch headers
@@ -889,6 +906,8 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 		FAT_ARCH_HEADER curArchHeader										= {0};
 		for(UINT32 i = 0; i < fatHeader.ArchHeadersCount; i ++)
 		{
+            readLength = sizeof(FAT_ARCH_HEADER);
+
 			//
 			// read it
 			//
@@ -1159,7 +1178,7 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
 		//
 		// read 64bit header
 		//
-		if(EFI_ERROR(status = IoReadFile(fileHandle, &machHeader.Reserved, sizeof(&machHeader.Reserved), &readLength, FALSE)))
+		if(EFI_ERROR(status = IoReadFile(fileHandle, &machHeader.Reserved, sizeof(machHeader.Reserved), &readLength, FALSE)))
 			try_leave(NOTHING);
 
 		//
@@ -1200,7 +1219,8 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
 		VOID* linkEditSegment												= nullptr;
 		UINT64 linkEditSegmentOffset										= 0;
 		LOAD_COMMAND_HEADER* theCommand										= static_cast<LOAD_COMMAND_HEADER*>(commandsBuffer);
-		for(UINT32 i = 0; i < machHeader.CommandsCount; i ++, theCommand = Add2Ptr(theCommand, theCommand->CommandLength, LOAD_COMMAND_HEADER*))
+        UINT32 i = 0;
+		while (i < machHeader.CommandsCount)
 		{
 			//
 			// process it
@@ -1377,13 +1397,16 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
 					}
 				}
 				break;
-			}
+            }
+
+            theCommand = Add2Ptr(theCommand, theCommand->CommandLength, LOAD_COMMAND_HEADER*);
+            i++;
 		}
 
 		//
 		// save arch type
 		//
-		loadedInfo->ArchType												= (&machHeader)->CpuType;
+		loadedInfo->ArchType												= machHeader.CpuType;
 	}
 	__finally
 	{

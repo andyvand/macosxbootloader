@@ -348,40 +348,40 @@ EFI_STATUS BlDetectMemorySize()
 	return EFI_SUCCESS;
 }
 
-#define READ_BUFFER(B, L, I, V, T)											do{if((I) >= (L)) return EFI_BAD_BUFFER_SIZE; (V) = static_cast<T>((B)[(I)]); (I) += 1;}while(0)
-#define WRITE_BUFFER(B, L, I, V, T)											do{if((I) >= (L) - 1) return EFI_BUFFER_TOO_SMALL; (B)[(I)] = static_cast<T>(V); (I) += 1;}while(0)
+#define READ_BUFFER(B, L, I, V, T)											do{if((I) >= (L)) return EFI_BAD_BUFFER_SIZE; (V) = (T)((B)[(I)]); (I) += 1;}while(0)
+#define WRITE_BUFFER(B, L, I, V, T)											do{if((I) >= (L) - 1) return EFI_BUFFER_TOO_SMALL; (B)[(I)] = (T)(V); (I) += 1;}while(0)
 
 //
 // unicode to utf8
 //
 EFI_STATUS BlUnicodeToUtf8(CHAR16 CONST* unicodeBuffer, UINTN unicodeCharCount, CHAR8* utf8Buffer, UINTN utf8BufferLength)
 {
-	UINT32 j																= 0;
-	utf8Buffer[utf8BufferLength - 1]										= 0;
-	for(UINT32 i = 0; i < unicodeCharCount; i ++)
-	{
-		CHAR16 unicodeChar													= unicodeBuffer[i];
-		if(unicodeChar < 0x0080)
-		{
-			WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, unicodeChar, UINT8);
-		}
-		else if(unicodeChar < 0x0800)
-		{
-			WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  6) & 0x0f) | 0xc0, UINT8);
-			WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  0) & 0x3f) | 0x80, UINT8);
-		}
-		else
-		{
-			WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >> 12) & 0x0f) | 0xe0, UINT8);
-			WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  6) & 0x3f) | 0x80, UINT8);
-			WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  0) & 0x3f) | 0x80, UINT8);
-		}
-	}
-
-	if(j < utf8BufferLength - 1)
-		WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, 0, UINT8);
-
-	return EFI_SUCCESS;
+    UINTN j                                                                 = 0;
+    utf8Buffer[utf8BufferLength - 1]										= 0;
+    for(UINTN i = 0; i < unicodeCharCount; i ++)
+    {
+        CHAR16 unicodeChar													= unicodeBuffer[i];
+        if(unicodeChar < 0x0080)
+        {
+            WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, unicodeChar, UINT8);
+        }
+        else if(unicodeChar < 0x0800)
+        {
+            WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  6) & 0x0f) | 0xc0, UINT8);
+            WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  0) & 0x3f) | 0x80, UINT8);
+        }
+        else
+        {
+            WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >> 12) & 0x0f) | 0xe0, UINT8);
+            WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  6) & 0x3f) | 0x80, UINT8);
+            WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, ((unicodeChar >>  0) & 0x3f) | 0x80, UINT8);
+        }
+    }
+    
+    if(j < utf8BufferLength - 1)
+        WRITE_BUFFER(utf8Buffer, utf8BufferLength, j, 0, UINT8);
+    
+    return EFI_SUCCESS;
 }
 
 //
@@ -389,18 +389,18 @@ EFI_STATUS BlUnicodeToUtf8(CHAR16 CONST* unicodeBuffer, UINTN unicodeCharCount, 
 //
 EFI_STATUS BlUnicodeToAnsi(CHAR16 CONST* unicodeBuffer, UINTN unicodeCharCount, CHAR8* ansiBuffer, UINTN ansiBufferLength)
 {
-	UINTN j																	= 0;
-	ansiBuffer[ansiBufferLength - 1]										= 0;
-	for(UINTN i = 0; i < unicodeCharCount; i ++)
-	{
-		CHAR16 unicodeChar													= unicodeBuffer[i];
-		WRITE_BUFFER(ansiBuffer, ansiBufferLength, j, unicodeChar & 0xff, CHAR8);
-	}
-
-	if(j < ansiBufferLength - 1)
-		WRITE_BUFFER(ansiBuffer, ansiBufferLength, j, 0, CHAR8);
-
-	return EFI_SUCCESS;
+    UINTN j																	= 0;
+    ansiBuffer[ansiBufferLength - 1]										= 0;
+    for(UINTN i = 0; i < unicodeCharCount; i ++)
+    {
+        CHAR16 unicodeChar													= unicodeBuffer[i];
+        WRITE_BUFFER(ansiBuffer, ansiBufferLength, j, unicodeChar & 0xff, CHAR8);
+    }
+    
+    if(j < ansiBufferLength - 1)
+        WRITE_BUFFER(ansiBuffer, ansiBufferLength, j, 0, CHAR8);
+    
+    return EFI_SUCCESS;
 }
 
 //
@@ -408,41 +408,41 @@ EFI_STATUS BlUnicodeToAnsi(CHAR16 CONST* unicodeBuffer, UINTN unicodeCharCount, 
 //
 EFI_STATUS BlUtf8ToUnicode(CHAR8 CONST* utf8Buffer, UINTN bytesCount, CHAR16* unicodeBuffer, UINTN unicodeBufferLengthInChar)
 {
-	UINTN i																	= 0;
-	UINTN j																	= 0;
-	unicodeBuffer[unicodeBufferLengthInChar - 1]							= 0;
-	while(i < bytesCount)
-	{
-		UINT8 utf8Char1;
-		UINT8 utf8Char2;
-		UINT8 utf8Char3;
-		READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char1, UINT8);
-
-		if(utf8Char1 < 0x80)
-		{
-			WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, utf8Char1, CHAR16);
-		}
-		else if(utf8Char1 < 0xe0)
-		{
-			READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char2, UINT8);
-
-			UINT16 unicodeChar												= (static_cast<UINT16>(utf8Char1 & 0x0f) << 6) | (utf8Char2 & 0x3f);
-			WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, unicodeChar, CHAR16);
-		}
-		else
-		{
-			READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char2, UINT8);
-			READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char3, UINT8);
-
-			UINT16 unicodeChar												= (static_cast<UINT16>(utf8Char1 & 0x0f) << 12) | (static_cast<UINT16>(utf8Char2 & 0x3f) << 6) | static_cast<UINT16>(utf8Char3 & 0x3f);
-			WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, unicodeChar, CHAR16);
-		}
-	}
-
-	if(j < unicodeBufferLengthInChar - 1)
-		WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, 0, CHAR16);
-
-	return EFI_SUCCESS;
+    UINTN i																	= 0;
+    UINTN j																	= 0;
+    unicodeBuffer[unicodeBufferLengthInChar - 1]							= 0;
+    while(i < bytesCount)
+    {
+        UINT8 utf8Char1;
+        UINT8 utf8Char2;
+        UINT8 utf8Char3;
+        READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char1, UINT8);
+        
+        if(utf8Char1 < 0x80)
+        {
+            WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, utf8Char1, CHAR16);
+        }
+        else if(utf8Char1 < 0xe0)
+        {
+            READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char2, UINT8);
+            
+            UINT16 unicodeChar												= (UINT16)((utf8Char1 & 0x0f) << 6) | (UINT16)(utf8Char2 & 0x3f);
+            WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, unicodeChar, CHAR16);
+        }
+        else
+        {
+            READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char2, UINT8);
+            READ_BUFFER(utf8Buffer, bytesCount, i, utf8Char3, UINT8);
+            
+            UINT16 unicodeChar												= (UINT16)((utf8Char1 & 0x0f) << 12) | (UINT16)((utf8Char2 & 0x3f) << 6) | (UINT16)(utf8Char3 & 0x3f);
+            WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, unicodeChar, CHAR16);
+        }
+    }
+    
+    if(j < unicodeBufferLengthInChar - 1)
+        WRITE_BUFFER(unicodeBuffer, unicodeBufferLengthInChar, j, 0, CHAR16);
+    
+    return EFI_SUCCESS;
 }
 
 #undef READ_BUFFER
