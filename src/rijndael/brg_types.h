@@ -195,9 +195,15 @@ extern "C" {
 								pointed to by 'x' ('n' is a power of 2)
 */
 
-#define ALIGN_OFFSET(x,n)	(((ptrint_t)(x)) & ((n) - 1))
-#define ALIGN_FLOOR(x,n)	((uint_8t*)(x) - ( ((ptrint_t)(x)) & ((n) - 1)))
-#define ALIGN_CEIL(x,n)		((uint_8t*)(x) + (-((ptrint_t)(x)) & ((n) - 1)))
+#ifdef GNU
+#define EXTRACAST(a) (unsigned long)(a)
+#else
+#define EXTRACAST(a) a
+#endif
+
+#define ALIGN_OFFSET(x,n)	(((ptrint_t)(EXTRACAST(x))) & ((n) - 1))
+#define ALIGN_FLOOR(x,n)	((uint_8t*)(x) - ( ((ptrint_t)(EXTRACAST(x))) & ((n) - 1)))
+#define ALIGN_CEIL(x,n)		((uint_8t*)(x) + (-((ptrint_t)(EXTRACAST(x))) & ((n) - 1)))
 
 /*  These defines are used to declare buffers in a way that allows
     faster operations on longer variables to be used.  In all these

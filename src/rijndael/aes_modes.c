@@ -119,8 +119,8 @@ AES_RETURN aes_test_alignment_detection(unsigned int n)	/* 4 <= n <= 16 */
 
 	for(i = 0; i < n; ++i)
 	{
-		uint_8t *qf = ALIGN_FLOOR(p + i, n),
-				*qh =  ALIGN_CEIL(p + i, n);
+		uint_8t *qf = ALIGN_FLOOR(p + i, n);
+		uint_8t *qh = ALIGN_CEIL(p + i, n);
 		
 		if(qh == qf)
 			++count_eq;

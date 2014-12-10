@@ -498,7 +498,11 @@ STATIC BOOLEAN Bd1394pInitializeController(UINT32 channel)
 	//
 	// set singnatuer
 	//
-	Bd1394pGlobalData->DebugConfigRom.Singnature							= '1394';
+#if defined (__ppc__) || defined(__ppc64__)
+	Bd1394pGlobalData->DebugConfigRom.Singnature                                                    = 0x31333934;
+#else
+	Bd1394pGlobalData->DebugConfigRom.Singnature							= 0x34393331;
+#endif
 
 	//
 	// set bus options
