@@ -1,0 +1,4571 @@
+diff -Nur cctools-862/Makefile cctools-862-AnV/Makefile
+--- cctools-862/Makefile	2014-11-02 07:19:11.000000000 +0100
++++ cctools-862-AnV/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -15,6 +15,8 @@
+ OLD_LIBKLD = NO
+ BUILD_DYLIBS = YES
+ LTO = -DLTO_SUPPORT
++# apply otool-ng patches
++OTOOL_NG = -DOTOOL_NG_SUPPORT
+ 
+ ifeq "macos" "$(RC_OS)"
+   TRIE := $(shell if [ "$(RC_MAJOR_RELEASE_TRAIN)" = "Tiger" ] || \
+@@ -26,6 +28,7 @@
+ else
+   TRIE =
+ endif
++TRIE =
+ 
+ ifneq "" "$(wildcard /bin/mkdirs)"
+   MKDIRS = /bin/mkdirs
+@@ -46,7 +49,7 @@
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"	\
+ 			EFITOOLS="$(EFITOOLS)" 				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT	\
+ 			SRCROOT=$(SRCROOT)/$$i				\
+ 			OBJROOT=$(OBJROOT)/$$i				\
+ 			SYMROOT=$(SYMROOT)/$$i $@) || exit 1 ;		\
+@@ -66,7 +69,7 @@
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"	\
+ 			EFITOOLS="$(EFITOOLS)" 				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT	\
+ 			SRCROOT=$(SRCROOT)/$$i				\
+ 			OBJROOT=$(OBJROOT)/$$i				\
+ 			SYMROOT=$(SYMROOT)/$$i $@) || exit 1 ;		\
+@@ -80,7 +83,7 @@
+ 		    (cd $$i; $(MAKE) RC_CFLAGS="$(RC_CFLAGS) $(HIDE)"	\
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			EFITOOLS="$(EFITOOLS)" 				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT 	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT 	\
+ 			$@) || exit 1 ; 				\
+ 	      done;							\
+ 	    SED_RC_CFLAGS=`echo "$(RC_CFLAGS)" | sed 's/-arch ppc64//'  \
+@@ -97,7 +100,7 @@
+ 		    (cd $$i; $(MAKE) RC_CFLAGS="$$SED_RC_CFLAGS"	\
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			EFITOOLS="$(EFITOOLS)"				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT	\
+ 			$@) || exit 1 ; 				\
+ 	        done;							\
+ 	    fi								\
+@@ -127,7 +130,7 @@
+ 		RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"			\
+ 		VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"		\
+ 		EFITOOLS="$(EFITOOLS)" TRIE="$(TRIE)"			\
+-		LTO="$(LTO)" DSTROOT=$$DSTROOT/$(INSTALL_LOCATION)	\
++		LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT/$(INSTALL_LOCATION)	\
+ 		SRCROOT=$(SRCROOT)					\
+ 		OBJROOT=$(OBJROOT)					\
+ 		SYMROOT=$(SYMROOT) $$target;				\
+@@ -139,7 +142,7 @@
+ 		SUBDIRS_32="$(SUBDIRS_32)"				\
+ 		VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"		\
+ 		EFITOOLS="$(EFITOOLS)" TRIE="$(TRIE)"			\
+-		LTO="$(LTO)" DSTROOT=$$DSTROOT install_tools 		\
++		LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT install_tools 		\
+ 		lib_ofiles_install;					\
+ 	fi
+ 
+@@ -154,7 +157,7 @@
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"	\
+ 			EFITOOLS="$(EFITOOLS)" 				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT	\
+ 			SRCROOT=$(SRCROOT)/$$i				\
+ 			OBJROOT=$(OBJROOT)/$$i				\
+ 			SYMROOT=$(SYMROOT)/$$i install) || exit 1;	\
+@@ -174,7 +177,7 @@
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"	\
+ 			EFITOOLS="$(EFITOOLS)"				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT	\
+ 			SRCROOT=$(SRCROOT)/$$i				\
+ 			OBJROOT=$(OBJROOT)/$$i				\
+ 			SYMROOT=$(SYMROOT)/$$i install) || exit 1;	\
+@@ -189,7 +192,7 @@
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"	\
+ 			EFITOOLS="$(EFITOOLS)"				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT 	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT 	\
+ 			install) || exit 1;				\
+ 	      done;							\
+ 	    SED_RC_CFLAGS=`echo "$(RC_CFLAGS)" | sed 's/-arch ppc64//'  \
+@@ -207,7 +210,7 @@
+ 			RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"		\
+ 			VERS_STRING_FLAGS="$(VERS_STRING_FLAGS)"	\
+ 			EFITOOLS="$(EFITOOLS)"				\
+-			TRIE="$(TRIE)" LTO="$(LTO)" DSTROOT=$$DSTROOT 	\
++			TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" DSTROOT=$$DSTROOT 	\
+ 			install) || exit 1;				\
+ 	        done;							\
+ 	    fi								\
+@@ -223,7 +226,7 @@
+ 		OBJROOT=$(OBJROOT)					\
+ 		SYMROOT=$(SYMROOT)					\
+ 		EFITOOLS="$(EFITOOLS)" TRIE="$(TRIE)"			\
+-		LTO="$(LTO)" lib_ofiles_install
++		LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" lib_ofiles_install
+ 
+ lib_ofiles lib_ofiles_install: installhdrs
+ 	@if [ $(SRCROOT) ];						\
+@@ -271,7 +274,7 @@
+ 	    echo =========== $(MAKE) $@ for misc =============;		\
+ 	    (cd misc; $(MAKE) "RC_CFLAGS=$(RC_CFLAGS) $(HIDE)"		\
+ 		RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"			\
+-		TRIE="$(TRIE)" LTO="$(LTO)"				\
++		TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)"				\
+ 		DSTROOT=$$DSTROOT					\
+ 		SRCROOT=$(SRCROOT)/misc					\
+ 		OBJROOT=$(OBJROOT)/misc					\
+@@ -313,7 +316,7 @@
+ 	    echo =========== $(MAKE) $@ for misc =============;		\
+ 	    (cd misc; $(MAKE) "RC_CFLAGS=$(RC_CFLAGS) $(HIDE)"		\
+ 		RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"			\
+-		TRIE="$(TRIE)" LTO="$(LTO)"				\
++		TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)"				\
+ 		DSTROOT=$$DSTROOT $@) || exit 1;			\
+ 	    (cd cbtlibs; $(MAKE) "RC_CFLAGS=$(RC_CFLAGS) $(HIDE)"	\
+ 		RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"			\
+@@ -331,7 +334,7 @@
+ 		OBJROOT=$(OBJROOT)					\
+ 		SYMROOT=$(SYMROOT)					\
+ 		EFITOOLS="$(EFITOOLS)" TRIE="$(TRIE)"			\
+-		LTO="$(LTO)" install
++		LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)" install
+ 
+ install_os_tools: installhdrs
+ 	@if [ $(SRCROOT) ];						\
+@@ -348,7 +351,7 @@
+ 	    echo =========== $(MAKE) $@ for misc =============;	\
+ 	    (cd misc; $(MAKE) "RC_CFLAGS=$(RC_CFLAGS) $(HIDE)"		\
+ 		RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"			\
+-		TRIE="$(TRIE)" LTO="$(LTO)"				\
++		TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)"				\
+ 		DSTROOT=$$DSTROOT					\
+ 		SRCROOT=$(SRCROOT)/misc					\
+ 		OBJROOT=$(OBJROOT)/misc					\
+@@ -369,7 +372,7 @@
+ 	    echo =========== $(MAKE) $@ for misc =============;		\
+ 	    (cd misc; $(MAKE) "RC_CFLAGS=$(RC_CFLAGS) $(HIDE)"		\
+ 		RC_ARCHS="$(RC_ARCHS)" RC_OS="$(RC_OS)"			\
+-		TRIE="$(TRIE)" LTO="$(LTO)"				\
++		TRIE="$(TRIE)" LTO="$(LTO)" OTOOL_NG="$(OTOOL_NG)"				\
+ 		DSTROOT=$$DSTROOT $@) || exit 1;			\
+ 	    echo =========== $(MAKE) $@ for man =============;		\
+ 	    (cd man; $(MAKE) "RC_CFLAGS=$(RC_CFLAGS) $(HIDE)"		\
+diff -Nur cctools-862/ar/Makefile cctools-862-AnV/ar/Makefile
+--- cctools-862/ar/Makefile	2014-11-02 06:47:58.000000000 +0100
++++ cctools-862-AnV/ar/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -1,13 +1,14 @@
+ ifneq "" "$(SDKROOT)"
+   SDK = -isysroot $(SDKROOT)
+-  CC = $(shell xcrun -find -sdk $(SDKROOT) cc)
+   DSYMUTIL = $(shell xcrun -find -sdk ${SDKROOT} dsymutil)
+ else
+   DSYMUTIL = dsymutil
+ endif
+ 
+-OFLAG = -Os
+-CFLAGS = -g $(OFLAG) -Wall -I$(SRCROOT)/../include $(SDK)
++CC = clang
++
++OFLAG = -Ofast
++CFLAGS = -arch i386 -arch x86_64 -g0 $(OFLAG) -Wall -I$(SRCROOT)/../include $(SDK)
+ LIBSTUFF = -L$(SYMROOT)/../libstuff -lstuff
+ MKDIRS = /bin/mkdir -p
+ SRCROOT = .
+diff -Nur cctools-862/as/Makefile cctools-862-AnV/as/Makefile
+--- cctools-862/as/Makefile	2014-11-02 06:48:00.000000000 +0100
++++ cctools-862-AnV/as/Makefile	2014-12-02 17:11:21.000000000 +0100
+@@ -2,14 +2,15 @@
+ 
+ ifneq "" "$(SDKROOT)"
+   SDK = -isysroot $(SDKROOT)
+-  CC = $(shell xcrun -find -sdk $(SDKROOT) cc)
+   DSYMUTIL = $(shell xcrun -find -sdk ${SDKROOT} dsymutil)
+ else
+   DSYMUTIL = dsymutil
+ endif
+ 
+-OFLAG = -Os
+-CFLAGS = $(OFLAG) -g -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) \
++CC = clang
++
++OFLAG = -Ofast
++CFLAGS = -arch i386 -arch x86_64 $(OFLAG) -g0 -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) \
+ 	-Wall -DNeXT_MOD $(SDK)
+ LIBSTUFF_DIR = -L$(SYMROOT)/../../libstuff
+ LIBSTUFF = -lstuff
+diff -Nur cctools-862/cbtlibs/Makefile cctools-862-AnV/cbtlibs/Makefile
+--- cctools-862/cbtlibs/Makefile	2014-11-02 06:48:01.000000000 +0100
++++ cctools-862-AnV/cbtlibs/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -1,5 +1,6 @@
++CC=clang
+ RC_OS = macos
+-OFLAG = -Os
++OFLAG = -Ofast
+ ifneq "" "$(SDKROOT)"
+   SDK = -isysroot $(SDKROOT)
+   CC = $(shell xcrun -find -sdk $(SDKROOT) cc)
+@@ -10,7 +11,7 @@
+   RANLIB = ranlib
+ endif
+ 	
+-CFLAGS = $(OFLAG) -g -I$(SRCROOT)/../include -Wall $(SDK)
++CFLAGS = -arch i386 -arch x86_64 $(OFLAG) -g0 -I$(SRCROOT)/../include -Wall $(SDK)
+ MKDIRS = /bin/mkdir -p
+ SRCROOT = .
+ SYMROOT = .
+diff -Nur cctools-862/efitools/Makefile cctools-862-AnV/efitools/Makefile
+--- cctools-862/efitools/Makefile	2014-11-02 06:48:01.000000000 +0100
++++ cctools-862-AnV/efitools/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -1,3 +1,4 @@
++CC=clang
+ export USE_APPLE_PB_SUPPORT = all
+ RC_OS = macos
+ ifneq "" "$(SDKROOT)"
+@@ -8,8 +9,8 @@
+   DSYMUTIL = dsymutil
+ endif
+ 
+-OFLAG = -Os
+-CFLAGS = $(OFLAG) -g -Wall \
++OFLAG = -Ofast
++CFLAGS = -arch i386 -arch x86_64 $(OFLAG) -g0 -Wall \
+ 	 -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) $(SDK)
+ LIBSTUFF = -L$(SYMROOT)/../libstuff -lstuff
+ MKDIRS = /bin/mkdir -p
+diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
+--- cctools-862/efitools/mtoc.c	2014-11-02 06:48:01.000000000 +0100
++++ cctools-862-AnV/efitools/mtoc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -46,6 +46,7 @@
+ #include "coff/base_relocs.h"
+ #include "mach-o/x86_64/reloc.h"
+ #include "mach-o/arm64/reloc.h"
++#include "mach-o/ppc/reloc.h"
+ 
+ /* used by error routines as the name of this program */
+ char *progname = NULL;
+@@ -111,6 +112,19 @@
+     { "rtdrv",			IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER },
+     { "DXE_RUNTIME_DRIVER",	IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER },
+ 
++    /* AnV - Extra subsystem fields */
++    { "UNKNOWN",        IMAGE_SUBSYSTEM_UNKNOWN },
++    { "NATIVE",         IMAGE_SUBSYSTEM_NATIVE },
++    { "WINDOWS",        IMAGE_SUBSYSTEM_WINDOWS_GUI },
++    { "CONSOLE",        IMAGE_SUBSYSTEM_WINDOWS_CUI },
++    { "OS2",            IMAGE_SUBSYSTEM_OS2_CUI },
++    { "POSIX",          IMAGE_SUBSYSTEM_OS2_CUI },
++    { "WINNATIVE",      IMAGE_SUBSYSTEM_NATIVE_WINDOWS },
++    { "WINDOWSCE",      IMAGE_SUBSYSTEM_WINDOWS_CE_GUI },
++    { "ROM",            IMAGE_SUBSYSTEM_EFI_ROM },
++    { "XBOX",           IMAGE_SUBSYSTEM_XBOX },
++    { "WINBOOT",        IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION },
++
+     { NULL, 0 }
+ };
+ 
+@@ -486,8 +500,10 @@
+ 	if(archs->object->mh_cputype != CPU_TYPE_I386 &&
+ 	   archs->object->mh_cputype != CPU_TYPE_ARM &&
+ 	   archs->object->mh_cputype != CPU_TYPE_ARM64 &&
++       archs->object->mh_cputype != CPU_TYPE_POWERPC &&
++       archs->object->mh_cputype != CPU_TYPE_POWERPC64 &&
+ 	   archs->object->mh_cputype != CPU_TYPE_X86_64)
+-	    fatal("input file: %s must be an i386 or ARM architecture",
++	    fatal("input file: %s must be an i386, PowerPC or ARM architecture",
+ 		  archs->file_name);
+ 	if(archs->object->mh != NULL){
+ 	    if(archs->object->mh->filetype == MH_PRELOAD ||
+@@ -687,6 +703,19 @@
+ 			    break;
+ 			}
+ 		        break;
++            case CPU_TYPE_POWERPC:
++            switch(flavor){
++            ppc_thread_state_t *cpu;
++            case PPC_THREAD_STATE:
++                cpu = (ppc_thread_state_t *)state;
++                entry = cpu->__srr0;
++                state += sizeof(ppc_thread_state_t);
++                break;
++            default:
++                state += count * sizeof(uint32_t);
++                break;
++            }
++                break;
+ 		    case CPU_TYPE_ARM:
+ 			switch(flavor){
+ 			arm_thread_state_t *cpu;
+@@ -1012,6 +1041,21 @@
+ 		    count = *((uint32_t *)state);
+ 		    state += sizeof(uint32_t);
+ 		    switch(arch->object->mh_cputype){
++#ifdef PPC_THREAD_STATE64
++            case CPU_TYPE_POWERPC64:
++            switch(flavor){
++                ppc_thread_state64_t *cpu64;
++            case PPC_THREAD_STATE64:
++                cpu64 = (ppc_thread_state64_t *)state;
++                entry = cpu64->__srr0;
++                state += sizeof(ppc_thread_state64_t);
++                break;
++            default:
++                state += count * sizeof(uint32_t);
++                break;
++            }
++            break;
++#endif /* PPC_THREAD_STATE64 */
+ #ifdef x86_THREAD_STATE64
+ 		    case CPU_TYPE_X86_64:
+ 			switch(flavor){
+@@ -1351,14 +1395,18 @@
+ 	if(ofile->mh != NULL){
+ 	    if(ofile->mh->cputype == CPU_TYPE_I386)
+ 		filehdr.f_magic = IMAGE_FILE_MACHINE_I386;
+-	    else
++	    else if (ofile->mh->cputype == CPU_TYPE_ARM)
+ 		filehdr.f_magic = IMAGE_FILE_MACHINE_ARM;
++        else
++        filehdr.f_magic = IMAGE_FILE_MACHINE_POWERPC;
+ 	}
+ 	else{
+ 	    if(ofile->mh64->cputype == CPU_TYPE_X86_64)
+ 		filehdr.f_magic = IMAGE_FILE_MACHINE_AMD64;
+-	    else
++	    else if(ofile->mh64->cputype == CPU_TYPE_ARM64)
+ 		filehdr.f_magic = IMAGE_FILE_MACHINE_ARM64;
++        else
++        filehdr.f_magic = IMAGE_FILE_MACHINE_POWERPC;
+ 	}
+ 	filehdr.f_nscns = nscns;
+ #ifdef HACK_TO_MATCH_TEST_CASE
+@@ -1661,6 +1709,23 @@
+ 	    system_fatal("Can't close output file: %s", out);
+ }
+ 
++static
++unsigned char
++create_ms_dos_stub_checksum(unsigned char *buffer, unsigned long len)
++{
++    unsigned char checksum = 0;
++    unsigned long donecnt = 0;
++
++    while (donecnt < len)
++    {
++        checksum += buffer[donecnt];
++
++        ++donecnt;
++    }
++
++    return (0x100 - checksum);
++}
++
+ /*
+  * create_ms_dos_stub() is pass a pointer to the buffer where to fill in the
+  * MS-DOS stub.
+@@ -1766,6 +1831,8 @@
+ 	p->dos_program[61] = 0x0;
+ 	p->dos_program[62] = 0x0;
+ 	p->dos_program[63] = 0x0;
++
++    p->e_csum = create_ms_dos_stub_checksum((unsigned char *)p, sizeof(struct ms_dos_stub));
+ }
+ 
+ 
+@@ -2125,6 +2192,10 @@
+ 			gather_base_reloc_info(s[j].addr, relocs, s[j].nreloc,
+ 				CPU_TYPE_ARM, 2, GENERIC_RELOC_VANILLA,
+ 				IMAGE_REL_BASED_HIGHLOW);
++            else if(arch->object->mh_cputype == CPU_TYPE_POWERPC)
++            gather_base_reloc_info(s[j].addr, relocs, s[j].nreloc,
++                CPU_TYPE_POWERPC, 2, GENERIC_RELOC_VANILLA,
++                IMAGE_REL_BASED_HIGHLOW);
+ 		    if((s[j].flags & SECTION_TYPE) ==
+ 			S_NON_LAZY_SYMBOL_POINTERS){
+ 			for(addr = s[j].addr;
+@@ -2143,7 +2214,7 @@
+ 		     * segment.
+ 		     */
+ 		    /*
+-		     * But arm64 relocations are NOT relative to the first
++		     * But arm64/ppc64 relocations are NOT relative to the first
+ 		     * writable segment but just the first segment.
+ 		     */
+ 		    if((first_addr == 0) &&
+@@ -2170,6 +2241,10 @@
+ 			gather_base_reloc_info(s64[j].addr, relocs,
+ 			    s64[j].nreloc, CPU_TYPE_ARM64, 3,
+ 			    ARM64_RELOC_UNSIGNED, IMAGE_REL_BASED_DIR64);
++            else if(arch->object->mh_cputype == CPU_TYPE_POWERPC64)
++            gather_base_reloc_info(s64[j].addr, relocs,
++                s64[j].nreloc, CPU_TYPE_POWERPC64, 3,
++                PPC_RELOC_VANILLA, IMAGE_REL_BASED_DIR64);
+ 		    if((s64[j].flags & SECTION_TYPE) ==
+ 			S_NON_LAZY_SYMBOL_POINTERS){
+ 			for(addr = s64[j].addr;
+@@ -2195,6 +2270,10 @@
+ 		gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
+ 		    CPU_TYPE_ARM, 2, GENERIC_RELOC_VANILLA,
+ 		    IMAGE_REL_BASED_HIGHLOW);
++        else if(arch->object->mh_cputype == CPU_TYPE_POWERPC)
++        gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
++            CPU_TYPE_POWERPC, 2, GENERIC_RELOC_VANILLA,
++            IMAGE_REL_BASED_HIGHLOW);
+ 	    else if(arch->object->mh_cputype == CPU_TYPE_X86_64)
+ 		gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
+ 		    CPU_TYPE_X86_64, 3, X86_64_RELOC_UNSIGNED,
+@@ -2203,6 +2282,10 @@
+ 		gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
+ 		    CPU_TYPE_ARM64, 3, ARM64_RELOC_UNSIGNED,
+ 		    IMAGE_REL_BASED_DIR64);
++        else if(arch->object->mh_cputype == CPU_TYPE_POWERPC64)
++        gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
++            CPU_TYPE_POWERPC64, 3, GENERIC_RELOC_VANILLA,
++            IMAGE_REL_BASED_DIR64);
+ 	}
+ 	/*
+ 	if(dyst != NULL && dyst->nextrel != 0)
+diff -Nur cctools-862/gprof/Makefile cctools-862-AnV/gprof/Makefile
+--- cctools-862/gprof/Makefile	2014-11-02 06:48:01.000000000 +0100
++++ cctools-862-AnV/gprof/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -1,3 +1,4 @@
++CC=clang
+ ifneq "" "$(SDKROOT)"
+   SDK = -isysroot $(SDKROOT)
+   CC = $(shell xcrun -find -sdk $(SDKROOT) cc)
+@@ -6,8 +7,8 @@
+   DSYMUTIL = dsymutil
+ endif
+ 
+-OFLAG = -Os
+-CFLAGS = $(OFLAG) -g -I../include -Wall -DNeXT_MOD -DDEBUG $(SDK)
++OFLAG = -Ofast
++CFLAGS = -arch i386 -arch x86_64 $(OFLAG) -g0 -I../include -Wall -DNeXT_MOD -DDEBUG $(SDK)
+ LIBSTUFF = -L$(SYMROOT)/../libstuff -lstuff
+ MKDIRS = /bin/mkdir -p
+ OBJROOT = .
+diff -Nur cctools-862/include/coff/aouthdr.h cctools-862-AnV/include/coff/aouthdr.h
+--- cctools-862/include/coff/aouthdr.h	2014-11-02 06:48:02.000000000 +0100
++++ cctools-862-AnV/include/coff/aouthdr.h	2014-12-02 16:59:40.000000000 +0100
+@@ -101,9 +101,25 @@
+ 	uint32_t DataDirectory[16][2]; /* 16 entries, 2 elements/entry, */
+ };
+ 
++struct aouthdr_rom {
++    uint16_t magic;
++    uint16_t vstamp;
++    uint32_t tsize;
++    uint32_t dsize;
++    uint32_t bsize;
++    uint32_t entry;
++    uint32_t text_start;
++    uint32_t data_start;
++    uint32_t bss_start;
++    uint32_t gpr_mask;
++    uint32_t cpr_mask[4];
++    uint32_t gp_value;
++};
++
+ /* for the magic field */
+-#define PE32MAGIC       0x10b   /* 32-bit image */
+-#define PE32PMAGIC	0x20b	/* 32-bit image inside 64-bit address space */
++#define PE32MAGIC   0x10b   /* 32-bit image */
++#define PE32PMAGIC  0x20b   /* 32-bit image inside 64-bit address space */
++#define ROMMAGIC    0x107   /* ROM image */
+ 
+ /* for the FileAlignment field */
+ #define FILEALIGNMENT	0x200	/* The alignment factor (in bytes) that is used
+@@ -127,8 +143,19 @@
+ #define VSTAMP (LINKER_VERSION / 100 + (LINKER_VERSION % 100) * 256)
+ 
+ /* for the Subsystem field */
++#define IMAGE_SUBSYSTEM_UNKNOWN 0
++#define IMAGE_SUBSYSTEM_NATIVE 1
++#define IMAGE_SUBSYSTEM_WINDOWS_GUI 2
++#define IMAGE_SUBSYSTEM_WINDOWS_CUI 3
++#define IMAGE_SUBSYSTEM_OS2_CUI 5
++#define IMAGE_SUBSYSTEM_POSIX_CUI 7
++#define IMAGE_SUBSYSTEM_NATIVE_WINDOWS 8
++#define IMAGE_SUBSYSTEM_WINDOWS_CE_GUI 9
+ #define IMAGE_SUBSYSTEM_EFI_APPLICATION		10
+ #define IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER	11
+ #define IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER	12
++#define IMAGE_SUBSYSTEM_EFI_ROM 13
++#define IMAGE_SUBSYSTEM_XBOX 14
++#define IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION 16
+ 
+ #endif /* _COFF_AOUTHDR_H */
+diff -Nur cctools-862/include/coff/filehdr.h cctools-862-AnV/include/coff/filehdr.h
+--- cctools-862/include/coff/filehdr.h	2014-11-02 06:48:02.000000000 +0100
++++ cctools-862-AnV/include/coff/filehdr.h	2014-12-02 16:59:40.000000000 +0100
+@@ -46,10 +46,17 @@
+ };
+ 
+ /* Machine numbers (for the f_magic field).  */
++#define IMAGE_FILE_MACHINE_UNKNOWN           0
+ #define IMAGE_FILE_MACHINE_ARM               0x01c0
++#define IMAGE_FILE_MACHINE_THUMB             0x01c2
++#define IMAGE_FILE_MACHINE_ARMV7             0x01c4
+ #define IMAGE_FILE_MACHINE_ARM64             0x01c6
++#define IMAGE_FILE_MACHINE_POWERPC           0x01F0
++#define IMAGE_FILE_MACHINE_POWERPCFP         0x01f1
+ #define IMAGE_FILE_MACHINE_I386              0x014c
++#define IMAGE_FILE_MACHINE_IA64              0x0200
+ #define IMAGE_FILE_MACHINE_AMD64             0x8664
++#define IMAGE_FILE_MACHINE_EBC               0x0EBC
+ 
+ /* NT specific file attributes (for the f_flags field).  */
+ #define IMAGE_FILE_EXECUTABLE_IMAGE          0x0002
+diff -Nur cctools-862/include/llvm-c/Disassembler.h cctools-862-AnV/include/llvm-c/Disassembler.h
+--- cctools-862/include/llvm-c/Disassembler.h	2014-11-02 06:48:02.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/Disassembler.h	2014-12-02 16:59:40.000000000 +0100
+@@ -15,6 +15,7 @@
+ #ifndef LLVM_C_DISASSEMBLER_H
+ #define LLVM_C_DISASSEMBLER_H
+ 
++#include "LLVMDataTypes.h"
+ #include <stddef.h>
+ 
+ /**
+@@ -41,12 +42,12 @@
+  * instruction are specified by the Offset parameter and its byte widith is the
+  * size parameter.  For instructions sets with fixed widths and one symbolic
+  * operand per instruction, the Offset parameter will be zero and Size parameter
+- * will be the instruction width.  The information is returned in TagBuf and is 
++ * will be the instruction width.  The information is returned in TagBuf and is
+  * Triple specific with its specific information defined by the value of
+  * TagType for that Triple.  If symbolic information is returned the function
+  * returns 1, otherwise it returns 0.
+  */
+-typedef int (*LLVMOpInfoCallback)(void *DisInfo, uint64_t Pc,
++typedef int (*LLVMOpInfoCallback)(void *DisInfo, uint64_t CB_PC,
+                                   uint64_t Offset, uint64_t Size,
+                                   int TagType, void *TagBuf);
+ 
+@@ -57,7 +58,7 @@
+  * SubtractSymbol can be link edited independent of each other.  Many other
+  * platforms only allow a relocatable expression of the form AddSymbol + Offset
+  * to be encoded.
+- * 
++ *
+  * The LLVMOpInfoCallback() for the TagType value of 1 uses the struct
+  * LLVMOpInfo1.  The value of the relocatable expression for the operand,
+  * including any PC adjustment, is passed in to the call back in the Value
+@@ -225,7 +226,7 @@
+  * no valid instruction.
+  */
+ size_t LLVMDisasmInstruction(LLVMDisasmContextRef DC, uint8_t *Bytes,
+-                             uint64_t BytesSize, uint64_t Pc,
++                             uint64_t BytesSize, uint64_t DI_PC,
+                              char *OutString, size_t OutStringSize);
+ 
+ /**
+diff -Nur cctools-862/include/llvm-c/Disassembler_old.h cctools-862-AnV/include/llvm-c/Disassembler_old.h
+--- cctools-862/include/llvm-c/Disassembler_old.h	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/Disassembler_old.h	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,233 @@
++/*===-- llvm-c/Disassembler.h - Disassembler Public C Interface ---*- C -*-===*\
++|*                                                                            *|
++|*                     The LLVM Compiler Infrastructure                       *|
++|*                                                                            *|
++|* This file is distributed under the University of Illinois Open Source      *|
++|* License. See LICENSE.TXT for details.                                      *|
++|*                                                                            *|
++|*===----------------------------------------------------------------------===*|
++|*                                                                            *|
++|* This header provides a public interface to a disassembler library.         *|
++|* LLVM provides an implementation of this interface.                         *|
++|*                                                                            *|
++\*===----------------------------------------------------------------------===*/
++
++#ifndef LLVM_C_DISASSEMBLER_H
++#define LLVM_C_DISASSEMBLER_H
++
++#include <stddef.h>
++
++/**
++ * @defgroup LLVMCDisassembler Disassembler
++ * @ingroup LLVMC
++ *
++ * @{
++ */
++
++/**
++ * An opaque reference to a disassembler context.
++ */
++typedef void *LLVMDisasmContextRef;
++
++/**
++ * The type for the operand information call back function.  This is called to
++ * get the symbolic information for an operand of an instruction.  Typically
++ * this is from the relocation information, symbol table, etc.  That block of
++ * information is saved when the disassembler context is created and passed to
++ * the call back in the DisInfo parameter.  The instruction containing operand
++ * is at the PC parameter.  For some instruction sets, there can be more than
++ * one operand with symbolic information.  To determine the symbolic operand
++ * information for each operand, the bytes for the specific operand in the
++ * instruction are specified by the Offset parameter and its byte widith is the
++ * size parameter.  For instructions sets with fixed widths and one symbolic
++ * operand per instruction, the Offset parameter will be zero and Size parameter
++ * will be the instruction width.  The information is returned in TagBuf and is 
++ * Triple specific with its specific information defined by the value of
++ * TagType for that Triple.  If symbolic information is returned the function
++ * returns 1, otherwise it returns 0.
++ */
++typedef int (*LLVMOpInfoCallback)(void *DisInfo, uint64_t Pc,
++                                  uint64_t Offset, uint64_t Size,
++                                  int TagType, void *TagBuf);
++
++/**
++ * The initial support in LLVM MC for the most general form of a relocatable
++ * expression is "AddSymbol - SubtractSymbol + Offset".  For some Darwin targets
++ * this full form is encoded in the relocation information so that AddSymbol and
++ * SubtractSymbol can be link edited independent of each other.  Many other
++ * platforms only allow a relocatable expression of the form AddSymbol + Offset
++ * to be encoded.
++ * 
++ * The LLVMOpInfoCallback() for the TagType value of 1 uses the struct
++ * LLVMOpInfo1.  The value of the relocatable expression for the operand,
++ * including any PC adjustment, is passed in to the call back in the Value
++ * field.  The symbolic information about the operand is returned using all
++ * the fields of the structure with the Offset of the relocatable expression
++ * returned in the Value field.  It is possible that some symbols in the
++ * relocatable expression were assembly temporary symbols, for example
++ * "Ldata - LpicBase + constant", and only the Values of the symbols without
++ * symbol names are present in the relocation information.  The VariantKind
++ * type is one of the Target specific #defines below and is used to print
++ * operands like "_foo@GOT", ":lower16:_foo", etc.
++ */
++struct LLVMOpInfoSymbol1 {
++  uint64_t Present;  /* 1 if this symbol is present */
++  const char *Name;  /* symbol name if not NULL */
++  uint64_t Value;    /* symbol value if name is NULL */
++};
++
++struct LLVMOpInfo1 {
++  struct LLVMOpInfoSymbol1 AddSymbol;
++  struct LLVMOpInfoSymbol1 SubtractSymbol;
++  uint64_t Value;
++  uint64_t VariantKind;
++};
++
++/**
++ * The operand VariantKinds for symbolic disassembly.
++ */
++#define LLVMDisassembler_VariantKind_None 0 /* all targets */
++
++/**
++ * The ARM target VariantKinds.
++ */
++#define LLVMDisassembler_VariantKind_ARM_HI16 1 /* :upper16: */
++#define LLVMDisassembler_VariantKind_ARM_LO16 2 /* :lower16: */
++
++/**
++ * The ARM64 target VariantKinds.
++ */
++#define LLVMDisassembler_VariantKind_ARM64_PAGE       1 /* @page */
++#define LLVMDisassembler_VariantKind_ARM64_PAGEOFF    2 /* @pageoff */
++#define LLVMDisassembler_VariantKind_ARM64_GOTPAGE    3 /* @gotpage */
++#define LLVMDisassembler_VariantKind_ARM64_GOTPAGEOFF 4 /* @gotpageoff */
++#define LLVMDisassembler_VariantKind_ARM64_TLVP       5 /* @tvlppage */
++#define LLVMDisassembler_VariantKind_ARM64_TLVOFF     6 /* @tvlppageoff */
++
++/**
++ * The type for the symbol lookup function.  This may be called by the
++ * disassembler for things like adding a comment for a PC plus a constant
++ * offset load instruction to use a symbol name instead of a load address value.
++ * It is passed the block information is saved when the disassembler context is
++ * created and the ReferenceValue to look up as a symbol.  If no symbol is found
++ * for the ReferenceValue NULL is returned.  The ReferenceType of the
++ * instruction is passed indirectly as is the PC of the instruction in
++ * ReferencePC.  If the output reference can be determined its type is returned
++ * indirectly in ReferenceType along with ReferenceName if any, or that is set
++ * to NULL.
++ */
++typedef const char *(*LLVMSymbolLookupCallback)(void *DisInfo,
++                                                uint64_t ReferenceValue,
++                                                uint64_t *ReferenceType,
++                                                uint64_t ReferencePC,
++                                                const char **ReferenceName);
++/**
++ * The reference types on input and output.
++ */
++/* No input reference type or no output reference type. */
++#define LLVMDisassembler_ReferenceType_InOut_None 0
++
++/* The input reference is from a branch instruction. */
++#define LLVMDisassembler_ReferenceType_In_Branch 1
++/* The input reference is from a PC relative load instruction. */
++#define LLVMDisassembler_ReferenceType_In_PCrel_Load 2
++
++/* The input reference is from an ARM64::ADRP instruction. */
++#define LLVMDisassembler_ReferenceType_In_ARM64_ADRP 0x100000001
++/* The input reference is from an ARM64::ADDXri instruction. */
++#define LLVMDisassembler_ReferenceType_In_ARM64_ADDXri 0x100000002
++/* The input reference is from an ARM64::LDRXui instruction. */
++#define LLVMDisassembler_ReferenceType_In_ARM64_LDRXui 0x100000003
++/* The input reference is from an ARM64::LDRXl instruction. */
++#define LLVMDisassembler_ReferenceType_In_ARM64_LDRXl 0x100000004
++/* The input reference is from an ARM64::ADR instruction. */
++#define LLVMDisassembler_ReferenceType_In_ARM64_ADR 0x100000005
++
++/* The output reference is to as symbol stub. */
++#define LLVMDisassembler_ReferenceType_Out_SymbolStub 1
++/* The output reference is to a symbol address in a literal pool. */
++#define LLVMDisassembler_ReferenceType_Out_LitPool_SymAddr 2
++/* The output reference is to a cstring address in a literal pool. */
++#define LLVMDisassembler_ReferenceType_Out_LitPool_CstrAddr 3
++
++/* The output reference is to a Objective-C CoreFoundation string. */
++#define LLVMDisassembler_ReferenceType_Out_Objc_CFString_Ref 4
++/* The output reference is to a Objective-C message. */
++#define LLVMDisassembler_ReferenceType_Out_Objc_Message 5
++/* The output reference is to a Objective-C message ref. */
++#define LLVMDisassembler_ReferenceType_Out_Objc_Message_Ref 6
++/* The output reference is to a Objective-C selector ref. */
++#define LLVMDisassembler_ReferenceType_Out_Objc_Selector_Ref 7
++/* The output reference is to a Objective-C class ref. */
++#define LLVMDisassembler_ReferenceType_Out_Objc_Class_Ref 8
++
++/* The output reference is to a C++ symbol name. */
++#define LLVMDisassembler_ReferenceType_DeMangled_Name 9
++
++#ifdef __cplusplus
++extern "C" {
++#endif /* !defined(__cplusplus) */
++
++/**
++ * Create a disassembler for the TripleName.  Symbolic disassembly is supported
++ * by passing a block of information in the DisInfo parameter and specifying the
++ * TagType and callback functions as described above.  These can all be passed
++ * as NULL.  If successful, this returns a disassembler context.  If not, it
++ * returns NULL. This function is equivalent to calling LLVMCreateDisasmCPU()
++ * with an empty CPU name.
++ */
++LLVMDisasmContextRef LLVMCreateDisasm(const char *TripleName, void *DisInfo,
++                                      int TagType, LLVMOpInfoCallback GetOpInfo,
++                                      LLVMSymbolLookupCallback SymbolLookUp);
++
++/**
++ * Create a disassembler for the TripleName and a specific CPU.  Symbolic
++ * disassembly is supported by passing a block of information in the DisInfo
++ * parameter and specifying the TagType and callback functions as described
++ * above.  These can all be passed * as NULL.  If successful, this returns a
++ * disassembler context.  If not, it returns NULL.
++ */
++LLVMDisasmContextRef LLVMCreateDisasmCPU(const char *Triple, const char *CPU,
++                                         void *DisInfo, int TagType,
++                                         LLVMOpInfoCallback GetOpInfo,
++                                         LLVMSymbolLookupCallback SymbolLookUp);
++
++/**
++ * Set the disassembler's options.  Returns 1 if it can set the Options and 0
++ * otherwise.
++ */
++int LLVMSetDisasmOptions(LLVMDisasmContextRef DC, uint64_t Options);
++
++/* The option to produce marked up assembly. */
++#define LLVMDisassembler_Option_UseMarkup 1
++/* The option to print immediates as hex. */
++#define LLVMDisassembler_Option_PrintImmHex 2
++
++/**
++ * Dispose of a disassembler context.
++ */
++void LLVMDisasmDispose(LLVMDisasmContextRef DC);
++
++/**
++ * Disassemble a single instruction using the disassembler context specified in
++ * the parameter DC.  The bytes of the instruction are specified in the
++ * parameter Bytes, and contains at least BytesSize number of bytes.  The
++ * instruction is at the address specified by the PC parameter.  If a valid
++ * instruction can be disassembled, its string is returned indirectly in
++ * OutString whose size is specified in the parameter OutStringSize.  This
++ * function returns the number of bytes in the instruction or zero if there was
++ * no valid instruction.
++ */
++size_t LLVMDisasmInstruction(LLVMDisasmContextRef DC, uint8_t *Bytes,
++                             uint64_t BytesSize, uint64_t Pc,
++                             char *OutString, size_t OutStringSize);
++
++/**
++ * @}
++ */
++
++#ifdef __cplusplus
++}
++#endif /* !defined(__cplusplus) */
++
++#endif /* !defined(LLVM_C_DISASSEMBLER_H) */
+diff -Nur cctools-862/include/llvm-c/LLVMDataTypes.h cctools-862-AnV/include/llvm-c/LLVMDataTypes.h
+--- cctools-862/include/llvm-c/LLVMDataTypes.h	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/LLVMDataTypes.h	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,186 @@
++/* include/llvm/Support/DataTypes.h.  Generated from DataTypes.h.in by configure.  */
++/*===-- include/Support/DataTypes.h - Define fixed size types -----*- C -*-===*\
++|*                                                                            *|
++|*                     The LLVM Compiler Infrastructure                       *|
++|*                                                                            *|
++|* This file is distributed under the University of Illinois Open Source      *|
++|* License. See LICENSE.TXT for details.                                      *|
++|*                                                                            *|
++|*===----------------------------------------------------------------------===*|
++|*                                                                            *|
++|* This file contains definitions to figure out the size of _HOST_ data types.*|
++|* This file is important because different host OS's define different macros,*|
++|* which makes portability tough.  This file exports the following            *|
++|* definitions:                                                               *|
++|*                                                                            *|
++|*   [u]int(32|64)_t : typedefs for signed and unsigned 32/64 bit system types*|
++|*   [U]INT(8|16|32|64)_(MIN|MAX) : Constants for the min and max values.     *|
++|*                                                                            *|
++|* No library is required when using these functions.                         *|
++|*                                                                            *|
++|*===----------------------------------------------------------------------===*/
++
++/* Please leave this file C-compatible. */
++
++/* Please keep this file in sync with DataTypes.h.cmake */
++
++#ifndef SUPPORT_DATATYPES_H
++#define SUPPORT_DATATYPES_H
++
++#define HAVE_INTTYPES_H 1
++#define HAVE_STDINT_H 1
++#define HAVE_UINT64_T 1
++/* #undef HAVE_U_INT64_T */
++
++#ifdef __cplusplus
++#include <cmath>
++#else
++#include <math.h>
++#endif
++
++#ifndef _MSC_VER
++
++/* Note that <inttypes.h> includes <stdint.h>, if this is a C99 system. */
++#include <sys/types.h>
++
++#ifdef HAVE_INTTYPES_H
++#include <inttypes.h>
++#endif
++
++#ifdef HAVE_STDINT_H
++#include <stdint.h>
++#endif
++
++/* Handle incorrect definition of uint64_t as u_int64_t */
++#ifndef HAVE_UINT64_T
++#ifdef HAVE_U_INT64_T
++typedef u_int64_t uint64_t;
++#else
++# error "Don't have a definition for uint64_t on this platform"
++#endif
++#endif
++
++#else /* _MSC_VER */
++/* Visual C++ doesn't provide standard integer headers, but it does provide
++   built-in data types. */
++#include <stdlib.h>
++#include <stddef.h>
++#include <sys/types.h>
++#ifdef __cplusplus
++#include <cmath>
++#else
++#include <math.h>
++#endif
++typedef __int64 int64_t;
++typedef unsigned __int64 uint64_t;
++typedef signed int int32_t;
++typedef unsigned int uint32_t;
++typedef short int16_t;
++typedef unsigned short uint16_t;
++typedef signed char int8_t;
++typedef unsigned char uint8_t;
++#if defined(_WIN64)
++  typedef signed __int64 ssize_t;
++#else
++  typedef signed int ssize_t;
++#endif
++
++#ifndef INT8_MAX
++# define INT8_MAX 127
++#endif
++#ifndef INT8_MIN
++# define INT8_MIN -128
++#endif
++#ifndef UINT8_MAX
++# define UINT8_MAX 255
++#endif
++#ifndef INT16_MAX
++# define INT16_MAX 32767
++#endif
++#ifndef INT16_MIN
++# define INT16_MIN -32768
++#endif
++#ifndef UINT16_MAX
++# define UINT16_MAX 65535
++#endif
++#ifndef INT32_MAX
++# define INT32_MAX 2147483647
++#endif
++#ifndef INT32_MIN
++/* MSC treats -2147483648 as -(2147483648U). */
++# define INT32_MIN (-INT32_MAX - 1)
++#endif
++#ifndef UINT32_MAX
++# define UINT32_MAX 4294967295U
++#endif
++/* Certain compatibility updates to VC++ introduce the `cstdint'
++ * header, which defines the INT*_C macros. On default installs they
++ * are absent. */
++#ifndef INT8_C
++# define INT8_C(C)   C##i8
++#endif
++#ifndef UINT8_C
++# define UINT8_C(C)  C##ui8
++#endif
++#ifndef INT16_C
++# define INT16_C(C)  C##i16
++#endif
++#ifndef UINT16_C
++# define UINT16_C(C) C##ui16
++#endif
++#ifndef INT32_C
++# define INT32_C(C)  C##i32
++#endif
++#ifndef UINT32_C
++# define UINT32_C(C) C##ui32
++#endif
++#ifndef INT64_C
++# define INT64_C(C)  C##i64
++#endif
++#ifndef UINT64_C
++# define UINT64_C(C) C##ui64
++#endif
++
++#ifndef PRId64
++# define PRId64 "I64d"
++#endif
++#ifndef PRIi64
++# define PRIi64 "I64i"
++#endif
++#ifndef PRIo64
++# define PRIo64 "I64o"
++#endif
++#ifndef PRIu64
++# define PRIu64 "I64u"
++#endif
++#ifndef PRIx64
++# define PRIx64 "I64x"
++#endif
++#ifndef PRIX64
++# define PRIX64 "I64X"
++#endif
++
++#endif /* _MSC_VER */
++
++/* Set defaults for constants which we cannot find. */
++#if !defined(INT64_MAX)
++# define INT64_MAX 9223372036854775807LL
++#endif
++#if !defined(INT64_MIN)
++# define INT64_MIN ((-INT64_MAX)-1)
++#endif
++#if !defined(UINT64_MAX)
++# define UINT64_MAX 0xffffffffffffffffULL
++#endif
++
++#if __GNUC__ > 3
++#define END_WITH_NULL __attribute__((sentinel))
++#else
++#define END_WITH_NULL
++#endif
++
++#ifndef HUGE_VALF
++#define HUGE_VALF (float)HUGE_VAL
++#endif
++
++#endif  /* SUPPORT_DATATYPES_H */
+diff -Nur cctools-862/include/llvm-c/lto.h cctools-862-AnV/include/llvm-c/lto.h
+--- cctools-862/include/llvm-c/lto.h	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/lto.h	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,361 @@
++/*===-- llvm-c/lto.h - LTO Public C Interface ---------------------*- C -*-===*\
++|*                                                                            *|
++|*                     The LLVM Compiler Infrastructure                       *|
++|*                                                                            *|
++|* This file is distributed under the University of Illinois Open Source      *|
++|* License. See LICENSE.TXT for details.                                      *|
++|*                                                                            *|
++|*===----------------------------------------------------------------------===*|
++|*                                                                            *|
++|* This header provides public interface to an abstract link time optimization*|
++|* library.  LLVM provides an implementation of this interface for use with   *|
++|* llvm bitcode files.                                                        *|
++|*                                                                            *|
++\*===----------------------------------------------------------------------===*/
++
++#ifndef LLVM_C_LTO_H
++#define LLVM_C_LTO_H
++
++#include <stddef.h>
++#include <sys/types.h>
++
++#ifndef __cplusplus
++#if !defined(_MSC_VER)
++#include <stdbool.h>
++typedef bool lto_bool_t;
++#else
++/* MSVC in particular does not have anything like _Bool or bool in C, but we can
++   at least make sure the type is the same size.  The implementation side will
++   use C++ bool. */
++typedef unsigned char lto_bool_t;
++#endif
++#else
++typedef bool lto_bool_t;
++#endif
++
++/**
++ * @defgroup LLVMCLTO LTO
++ * @ingroup LLVMC
++ *
++ * @{
++ */
++
++#define LTO_API_VERSION 7
++
++typedef enum {
++    LTO_SYMBOL_ALIGNMENT_MASK              = 0x0000001F, /* log2 of alignment */
++    LTO_SYMBOL_PERMISSIONS_MASK            = 0x000000E0,
++    LTO_SYMBOL_PERMISSIONS_CODE            = 0x000000A0,
++    LTO_SYMBOL_PERMISSIONS_DATA            = 0x000000C0,
++    LTO_SYMBOL_PERMISSIONS_RODATA          = 0x00000080,
++    LTO_SYMBOL_DEFINITION_MASK             = 0x00000700,
++    LTO_SYMBOL_DEFINITION_REGULAR          = 0x00000100,
++    LTO_SYMBOL_DEFINITION_TENTATIVE        = 0x00000200,
++    LTO_SYMBOL_DEFINITION_WEAK             = 0x00000300,
++    LTO_SYMBOL_DEFINITION_UNDEFINED        = 0x00000400,
++    LTO_SYMBOL_DEFINITION_WEAKUNDEF        = 0x00000500,
++    LTO_SYMBOL_SCOPE_MASK                  = 0x00003800,
++    LTO_SYMBOL_SCOPE_INTERNAL              = 0x00000800,
++    LTO_SYMBOL_SCOPE_HIDDEN                = 0x00001000,
++    LTO_SYMBOL_SCOPE_PROTECTED             = 0x00002000,
++    LTO_SYMBOL_SCOPE_DEFAULT               = 0x00001800,
++    LTO_SYMBOL_SCOPE_DEFAULT_CAN_BE_HIDDEN = 0x00002800
++} lto_symbol_attributes;
++
++typedef enum {
++    LTO_DEBUG_MODEL_NONE         = 0,
++    LTO_DEBUG_MODEL_DWARF        = 1
++} lto_debug_model;
++
++typedef enum {
++    LTO_CODEGEN_PIC_MODEL_STATIC         = 0,
++    LTO_CODEGEN_PIC_MODEL_DYNAMIC        = 1,
++    LTO_CODEGEN_PIC_MODEL_DYNAMIC_NO_PIC = 2
++} lto_codegen_model;
++
++typedef enum {
++    LTO_INTERNALIZE_FULL   = 0,
++    LTO_INTERNALIZE_NONE   = 1,
++    LTO_INTERNALIZE_HIDDEN = 2
++} lto_internalize_strategy;
++
++/** opaque reference to a loaded object module */
++typedef struct LTOModule*         lto_module_t;
++
++/** opaque reference to a code generator */
++typedef struct LTOCodeGenerator*  lto_code_gen_t;
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/**
++ * Returns a printable string.
++ */
++extern const char*
++lto_get_version(void);
++
++
++/**
++ * Returns the last error string or NULL if last operation was successful.
++ */
++extern const char*
++lto_get_error_message(void);
++
++/**
++ * Checks if a file is a loadable object file.
++ */
++extern lto_bool_t
++lto_module_is_object_file(const char* path);
++
++
++/**
++ * Checks if a file is a loadable object compiled for requested target.
++ */
++extern lto_bool_t
++lto_module_is_object_file_for_target(const char* path,
++                                     const char* target_triple_prefix);
++
++
++/**
++ * Checks if a buffer is a loadable object file.
++ */
++extern lto_bool_t
++lto_module_is_object_file_in_memory(const void* mem, size_t length);
++
++
++/**
++ * Checks if a buffer is a loadable object compiled for requested target.
++ */
++extern lto_bool_t
++lto_module_is_object_file_in_memory_for_target(const void* mem, size_t length,
++                                              const char* target_triple_prefix);
++
++
++/**
++ * Loads an object file from disk.
++ * Returns NULL on error (check lto_get_error_message() for details).
++ */
++extern lto_module_t
++lto_module_create(const char* path);
++
++
++/**
++ * Loads an object file from memory.
++ * Returns NULL on error (check lto_get_error_message() for details).
++ */
++extern lto_module_t
++lto_module_create_from_memory(const void* mem, size_t length);
++
++/**
++ * Loads an object file from disk. The seek point of fd is not preserved.
++ * Returns NULL on error (check lto_get_error_message() for details).
++ */
++extern lto_module_t
++lto_module_create_from_fd(int fd, const char *path, size_t file_size);
++
++/**
++ * Loads an object file from disk. The seek point of fd is not preserved.
++ * Returns NULL on error (check lto_get_error_message() for details).
++ */
++extern lto_module_t
++lto_module_create_from_fd_at_offset(int fd, const char *path, size_t file_size,
++                                    size_t map_size, off_t offset);
++
++
++/**
++ * Frees all memory internally allocated by the module.
++ * Upon return the lto_module_t is no longer valid.
++ */
++extern void
++lto_module_dispose(lto_module_t mod);
++
++
++/**
++ * Returns triple string which the object module was compiled under.
++ */
++extern const char*
++lto_module_get_target_triple(lto_module_t mod);
++
++/**
++ * Sets triple string with which the object will be codegened.
++ */
++extern void
++lto_module_set_target_triple(lto_module_t mod, const char *triple);
++
++
++/**
++ * Returns the number of symbols in the object module.
++ */
++extern unsigned int
++lto_module_get_num_symbols(lto_module_t mod);
++
++
++/**
++ * Returns the name of the ith symbol in the object module.
++ */
++extern const char*
++lto_module_get_symbol_name(lto_module_t mod, unsigned int index);
++
++
++/**
++ * Returns the attributes of the ith symbol in the object module.
++ */
++extern lto_symbol_attributes
++lto_module_get_symbol_attribute(lto_module_t mod, unsigned int index);
++
++/**
++ * Diagnostic severity.
++ */
++typedef enum {
++  LTO_DS_ERROR,
++  LTO_DS_WARNING,
++  LTO_DS_NOTE
++} lto_codegen_diagnostic_severity_t;
++
++/**
++ * Diagnostic handler type.
++ * \p severity defines the severity.
++ * \p diag is the actual diagnostic.
++ * The diagnostic is not prefixed by any of severity keyword, e.g., 'error: '.
++ * \p ctxt is used to pass the context set with the diagnostic handler.
++ */
++typedef void (*lto_diagnostic_handler_t)(
++    lto_codegen_diagnostic_severity_t severity, const char *diag, void *ctxt);
++
++/**
++ * Set a diagnostic handler and the related context (void *).
++ * This is more general than lto_get_error_message, as the diagnostic handler
++ * can be called at anytime within lto.
++ */
++extern void lto_codegen_set_diagnostic_handler(lto_code_gen_t,
++                                               lto_diagnostic_handler_t,
++                                               void *);
++
++/**
++ * Instantiates a code generator.
++ * Returns NULL on error (check lto_get_error_message() for details).
++ */
++extern lto_code_gen_t
++lto_codegen_create(void);
++
++
++/**
++ * Frees all code generator and all memory it internally allocated.
++ * Upon return the lto_code_gen_t is no longer valid.
++ */
++extern void
++lto_codegen_dispose(lto_code_gen_t);
++
++
++
++/**
++ * Add an object module to the set of modules for which code will be generated.
++ * Returns true on error (check lto_get_error_message() for details).
++ */
++extern lto_bool_t
++lto_codegen_add_module(lto_code_gen_t cg, lto_module_t mod);
++
++
++
++/**
++ * Sets if debug info should be generated.
++ * Returns true on error (check lto_get_error_message() for details).
++ */
++extern lto_bool_t
++lto_codegen_set_debug_model(lto_code_gen_t cg, lto_debug_model);
++
++
++/**
++ * Sets which PIC code model to generated.
++ * Returns true on error (check lto_get_error_message() for details).
++ */
++extern lto_bool_t
++lto_codegen_set_pic_model(lto_code_gen_t cg, lto_codegen_model);
++
++
++/**
++ * Sets the cpu to generate code for.
++ */
++extern void
++lto_codegen_set_cpu(lto_code_gen_t cg, const char *cpu);
++
++
++/**
++ * Sets the location of the assembler tool to run. If not set, libLTO
++ * will use gcc to invoke the assembler.
++ */
++extern void
++lto_codegen_set_assembler_path(lto_code_gen_t cg, const char* path);
++
++/**
++ * Sets extra arguments that libLTO should pass to the assembler.
++ */
++extern void
++lto_codegen_set_assembler_args(lto_code_gen_t cg, const char **args,
++                               int nargs);
++
++/**
++ * Sets the strategy to use during internalize.  Default strategy is
++ * LTO_INTERNALIZE_FULL.
++ */
++extern void
++lto_codegen_set_internalize_strategy(lto_code_gen_t cg,
++                                     lto_internalize_strategy);
++
++/**
++ * Tells LTO optimization passes that this symbol must be preserved
++ * because it is referenced by native code or a command line option.
++ */
++extern void
++lto_codegen_add_must_preserve_symbol(lto_code_gen_t cg, const char* symbol);
++
++/**
++ * Writes a new object file at the specified path that contains the
++ * merged contents of all modules added so far.
++ * Returns true on error (check lto_get_error_message() for details).
++ */
++extern lto_bool_t
++lto_codegen_write_merged_modules(lto_code_gen_t cg, const char* path);
++
++/**
++ * Generates code for all added modules into one native object file.
++ * On success returns a pointer to a generated mach-o/ELF buffer and
++ * length set to the buffer size.  The buffer is owned by the
++ * lto_code_gen_t and will be freed when lto_codegen_dispose()
++ * is called, or lto_codegen_compile() is called again.
++ * On failure, returns NULL (check lto_get_error_message() for details).
++ */
++extern const void*
++lto_codegen_compile(lto_code_gen_t cg, size_t* length);
++
++/**
++ * Generates code for all added modules into one native object file.
++ * The name of the file is written to name. Returns true on error.
++ */
++extern lto_bool_t
++lto_codegen_compile_to_file(lto_code_gen_t cg, const char** name);
++
++
++/**
++ * Sets options to help debug codegen bugs.
++ */
++extern void
++lto_codegen_debug_options(lto_code_gen_t cg, const char *);
++
++/**
++ * Initializes LLVM disassemblers.
++ * FIXME: This doesn't really belong here.
++ */
++extern void
++lto_initialize_disassembler(void);
++
++#ifdef __cplusplus
++}
++#endif
++
++/**
++ * @}
++ */
++
++#endif
+diff -Nur cctools-862/include/mach/arm/_structs.h cctools-862-AnV/include/mach/arm/_structs.h
+--- cctools-862/include/mach/arm/_structs.h	2014-11-02 06:48:02.000000000 +0100
++++ cctools-862-AnV/include/mach/arm/_structs.h	2014-12-02 16:59:40.000000000 +0100
+@@ -177,7 +177,7 @@
+ } __attribute__((aligned(16)));
+ 
+ #else
+-#error Unknown architecture.
++/* #error Unknown architecture. */
+ #endif
+ 
+ #endif /* __DARWIN_UNIX03 */
+diff -Nur cctools-862/include/mach/arm/thread_state.h cctools-862-AnV/include/mach/arm/thread_state.h
+--- cctools-862/include/mach/arm/thread_state.h	2014-11-02 06:48:02.000000000 +0100
++++ cctools-862-AnV/include/mach/arm/thread_state.h	2014-12-02 16:59:40.000000000 +0100
+@@ -8,6 +8,9 @@
+ #ifndef _MACH_ARM_THREAD_STATE_H_
+ #define _MACH_ARM_THREAD_STATE_H_
+ 
++#include "_structs.h"
++#include "thread_status.h"
++
+ #define ARM_THREAD_STATE_MAX	(272)
+ 
+ #if defined (__arm__)
+diff -Nur cctools-862/include/mach-o/nlist.h cctools-862-AnV/include/mach-o/nlist.h
+--- cctools-862/include/mach-o/nlist.h	2014-11-02 06:48:03.000000000 +0100
++++ cctools-862-AnV/include/mach-o/nlist.h	2014-12-02 16:59:40.000000000 +0100
+@@ -75,7 +75,7 @@
+  */
+ struct nlist {
+ 	union {
+-#ifndef __LP64__
++#if !defined(__LP64__) || defined(__APPLE__)
+ 		char *n_name;	/* for use when in-core */
+ #endif
+ 		uint32_t n_strx;	/* index into the string table */
+diff -Nur cctools-862/include/mach-o/prune_trie.h cctools-862-AnV/include/mach-o/prune_trie.h
+--- cctools-862/include/mach-o/prune_trie.h	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/include/mach-o/prune_trie.h	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,54 @@
++/* -*- mode: C++; c-basic-offset: 4; tab-width: 4 -*- 
++ *
++ * Copyright (c) 2008 Apple Inc. All rights reserved.
++ *
++ * @APPLE_LICENSE_HEADER_START@
++ * 
++ * This file contains Original Code and/or Modifications of Original Code
++ * as defined in and that are subject to the Apple Public Source License
++ * Version 2.0 (the 'License'). You may not use this file except in
++ * compliance with the License. Please obtain a copy of the License at
++ * http://www.opensource.apple.com/apsl/ and read it before using this
++ * file.
++ * 
++ * The Original Code and all software distributed under the License are
++ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
++ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
++ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
++ * Please see the License for the specific language governing rights and
++ * limitations under the License.
++ * 
++ * @APPLE_LICENSE_HEADER_END@
++ */
++
++#include <stdint.h>
++
++
++#if __cplusplus
++extern "C" {
++#endif /* __cplusplus */
++
++
++/*
++ * prune_trie() is a C vended function that is used by strip(1) to prune out
++ * defined exported symbols from the export trie.  It is passed a pointer to
++ * the start of bytes of the the trie and the size.  The prune() funciton
++ * passed is called with each symbol name in the trie to determine if it is
++ * to be pruned (retuning 1) or not (returning 0).  It writes the new trie
++ * back into the trie buffer and returns the new size in trie_new_size.
++ * If the pruning succeeds, NULL is returned.  If there was an error processing
++ * the trie (e.f. it is malformed), then an error message string is returned.
++ * The error string can be freed.
++ */
++extern const char*
++prune_trie(
++	uint8_t*	trie_start,
++	uint32_t	trie_start_size,
++	int			(*prune)(const char *name),
++	uint32_t*	trie_new_size);
++
++
++#if __cplusplus
++}
++#endif /* __cplusplus */
+diff -Nur cctools-862/include/mach-o/rld.h cctools-862-AnV/include/mach-o/rld.h
+--- cctools-862/include/mach-o/rld.h	2014-11-02 06:48:03.000000000 +0100
++++ cctools-862-AnV/include/mach-o/rld.h	2014-12-02 16:59:40.000000000 +0100
+@@ -27,9 +27,13 @@
+ #ifndef _MACHO_RLD_H_
+ #define _MACHO_RLD_H_
+ 
+-#include <streams/streams.h>
++//#include <streams/streams.h>
+ #include <mach-o/loader.h>
+ 
++#ifndef NXStream
++#define NXStream void
++#endif
++
+ extern long rld_load(
+     NXStream *stream,
+     struct mach_header **header_addr,
+diff -Nur cctools-862/include/mach-o/swap.h cctools-862-AnV/include/mach-o/swap.h
+--- cctools-862/include/mach-o/swap.h	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/include/mach-o/swap.h	2014-12-02 16:59:40.000000000 +0100
+@@ -35,6 +35,11 @@
+ extern "C" {
+ #endif /* __cplusplus */
+ 
++#ifndef SWAP_LONG
++#define SWAP_LONG OSSwapInt32
++#endif
++
++#ifndef _STUFF_BYTESEX_H_
+ extern void swap_fat_header(
+     struct fat_header *fat_header,
+     enum NXByteOrder target_byte_order);
+@@ -243,6 +248,7 @@
+     struct dylib_table_of_contents *tocs,
+     uint32_t ntocs,
+     enum NXByteOrder target_byte_sex);
++#endif
+ 
+ #ifdef __cplusplus
+ }
+diff -Nur cctools-862/include/standalone/libsa.h cctools-862-AnV/include/standalone/libsa.h
+--- cctools-862/include/standalone/libsa.h	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/include/standalone/libsa.h	2014-12-02 16:59:40.000000000 +0100
+@@ -42,7 +42,7 @@
+ extern int bzero(char *b, int length);
+ #endif
+ #endif
+-extern void *memset(void *s, int c, size_t n);
++//extern void *memset(void *s, int c, size_t n);
+ 
+ /*
+  * These are defined internally by GCC
+@@ -64,14 +64,14 @@
+  */
+ 
+ extern int slvprintf(char *buffer, int len, const char *fmt, va_list arg);
+-extern int sprintf(char *s, const char *format, ...);
++//extern int sprintf(char *s, const char *format, ...);
+ 
+-extern char *strcat(char *s1, const char *s2);
++//extern char *strcat(char *s1, const char *s2);
+ extern int strcmp(const char *s1, const char *s2);
+-extern char *strcpy(char *s1, const char *s2);
++//extern char *strcpy(char *s1, const char *s2);
+ char *strerror(int errnum);
+ extern int strncmp(const char *s1, const char *s2, size_t n);
+-extern char *strncpy(char *s1, const char *s2, size_t n);
++//extern char *strncpy(char *s1, const char *s2, size_t n);
+ extern long strtol(
+     const char *nptr,
+     char **endptr,
+@@ -90,12 +90,12 @@
+ #else
+ extern port_t task_self_;
+ #endif
+-extern kern_return_t vm_allocate(
++/*extern kern_return_t vm_allocate(
+     mach_port_t target_task,
+     vm_address_t *address,
+     vm_size_t size,
+     boolean_t anywhere
+-);
++);*/
+ extern kern_return_t vm_deallocate(
+     mach_port_t target_task,
+     vm_address_t address,
+diff -Nur cctools-862/include/stuff/bytesex.h cctools-862-AnV/include/stuff/bytesex.h
+--- cctools-862/include/stuff/bytesex.h	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/include/stuff/bytesex.h	2014-12-02 16:59:40.000000000 +0100
+@@ -33,6 +33,11 @@
+ #define __private_extern__ __declspec(private_extern)
+ #endif
+ 
++#if defined(__APPLE__)
++#undef __private_extern__
++#define __private_extern__
++#endif
++
+ #include <mach-o/fat.h>
+ #include <mach-o/loader.h>
+ #include <mach/m68k/thread_status.h>
+@@ -54,8 +59,11 @@
+ #include <mach-o/nlist.h>
+ #include <mach-o/reloc.h>
+ #include <mach-o/ranlib.h>
++
+ #include "stuff/bool.h"
+ 
++#include <mach/i386/_structs.h>
++
+ enum byte_sex {
+     UNKNOWN_BYTE_SEX,
+     BIG_ENDIAN_BYTE_SEX,
+@@ -88,6 +96,7 @@
+ __private_extern__ enum byte_sex get_host_byte_sex(
+     void);
+ 
++#ifndef _MACH_O_SWAP_H_
+ __private_extern__ void swap_fat_header(
+     struct fat_header *fat_header,
+     enum byte_sex target_byte_sex);
+@@ -178,6 +187,7 @@
+ __private_extern__ void swap_thread_command(
+     struct thread_command *ut,
+     enum byte_sex target_byte_sex);
++#endif
+ 
+ __private_extern__ void swap_m68k_thread_state_regs(
+     struct m68k_thread_state_regs *cpu,
+@@ -234,7 +244,7 @@
+ /* current i386 thread states */
+ #if i386_THREAD_STATE == 1
+ __private_extern__ void swap_i386_float_state(
+-    struct __darwin_i386_float_state *fpu,
++    _STRUCT_X86_FLOAT_STATE32 *fpu,
+     enum byte_sex target_byte_sex);
+ 
+ __private_extern__ void swap_i386_exception_state(
+@@ -311,6 +321,7 @@
+     arm_thread_state64_t *cpu,
+     enum byte_sex target_byte_sex);
+ 
++#ifndef _MACH_O_SWAP_H_
+ __private_extern__ void swap_ident_command(
+     struct ident_command *id_cmd,
+     enum byte_sex target_byte_sex);
+@@ -371,6 +382,7 @@
+     struct source_version_command *sv,
+     enum byte_sex target_byte_sex);
+ 
++#ifndef _MACH_O_SWAP_H_
+ __private_extern__ void swap_nlist(
+     struct nlist *symbols,
+     uint32_t nsymbols,
+@@ -390,6 +402,7 @@
+     struct relocation_info *relocs,
+     uint32_t nrelocs,
+     enum byte_sex target_byte_sex);
++#endif
+ 
+ __private_extern__ void swap_indirect_symbols(
+     uint32_t *indirect_symbols,
+@@ -420,6 +433,7 @@
+     struct twolevel_hint *hints,
+     uint32_t nhints,
+     enum byte_sex target_byte_sex);
++#endif
+ 
+ __private_extern__ void swap_data_in_code_entry(
+     struct data_in_code_entry *dices,
+diff -Nur cctools-862/include/stuff/errors.h cctools-862-AnV/include/stuff/errors.h
+--- cctools-862/include/stuff/errors.h	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/include/stuff/errors.h	2014-12-02 16:59:40.000000000 +0100
+@@ -25,6 +25,7 @@
+  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  * POSSIBILITY OF SUCH DAMAGE.
+  */
++
+ #import "mach/mach.h"
+ 
+ /* user defined (imported) */
+diff -Nur cctools-862/include/stuff/macosx_deployment_target.h cctools-862-AnV/include/stuff/macosx_deployment_target.h
+--- cctools-862/include/stuff/macosx_deployment_target.h	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/include/stuff/macosx_deployment_target.h	2014-12-02 16:59:40.000000000 +0100
+@@ -20,6 +20,10 @@
+  * 
+  * @APPLE_LICENSE_HEADER_END@
+  */
++
++#ifndef MACOSX_DEPLOYMENT_TARGET_H
++#define MACOSX_DEPLOYMENT_TARGET_H 1
++
+ #include <mach/mach.h>
+ 
+ struct macosx_deployment_target {
+@@ -33,3 +37,5 @@
+ 
+ __private_extern__ void put_macosx_deployment_target(
+     char *target);
++
++#endif
+diff -Nur cctools-862/include/stuff/ofile.h cctools-862-AnV/include/stuff/ofile.h
+--- cctools-862/include/stuff/ofile.h	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/include/stuff/ofile.h	2014-12-02 16:59:40.000000000 +0100
+@@ -142,7 +142,12 @@
+     enum bool dylib_flat,
+     enum bool use_member_syntax,
+     void (*processor)(struct ofile *ofile, char *arch_name, void *cookie),
+-    void *cookie);
++    void *cookie
++#ifdef OTOOL_NG_SUPPORT    
++    , uint64_t start_offset);
++#else
++    );
++#endif
+ #ifdef OFI
+ __private_extern__ NSObjectFileImageReturnCode ofile_map(
+ #else
+@@ -152,7 +157,12 @@
+     const struct arch_flag *arch_flag,	/* can be NULL */
+     const char *object_name,		/* can be NULL */
+     struct ofile *ofile,
+-    enum bool archives_with_fat_objects);
++    enum bool archives_with_fat_objects
++#ifdef OTOOL_NG_SUPPORT    
++    , uint64_t start_offset);
++#else
++    );
++#endif    
+ #ifdef OFI
+ __private_extern__ NSObjectFileImageReturnCode ofile_map_from_memory(
+ #else
+diff -Nur cctools-862/ld/4byte_literals.c cctools-862-AnV/ld/4byte_literals.c
+--- cctools-862/ld/4byte_literals.c	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/ld/4byte_literals.c	2014-12-02 16:59:40.000000000 +0100
+@@ -31,6 +31,7 @@
+  * 4 bytes in all input files.
+  */
+ #include <stdlib.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+diff -Nur cctools-862/ld/8byte_literals.c cctools-862-AnV/ld/8byte_literals.c
+--- cctools-862/ld/8byte_literals.c	2014-11-02 06:48:04.000000000 +0100
++++ cctools-862-AnV/ld/8byte_literals.c	2014-12-02 16:59:40.000000000 +0100
+@@ -31,6 +31,7 @@
+  * 8 bytes in all input files.
+  */
+ #include <stdlib.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+diff -Nur cctools-862/ld/Makefile cctools-862-AnV/ld/Makefile
+--- cctools-862/ld/Makefile	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/Makefile	2014-12-02 17:14:19.000000000 +0100
+@@ -1,6 +1,7 @@
++CC=clang
+ export USE_APPLE_PB_SUPPORT = all
+ RC_OS = macos
+-OFLAG = -Os
++OFLAG = -Ofast
+ ifneq "$(RC_MAJOR_RELEASE_TRAIN)" "Tiger"
+ KERN = -fno-builtin -finline -fno-keep-inline-functions -fsigned-bitfields \
+        -msoft-float -nostdinc \
+@@ -32,13 +33,13 @@
+ 
+ ifneq "" "$(SDKROOT)"
+   SDK = -isysroot $(SDKROOT)
+-  CC = $(shell xcrun -find -sdk $(SDKROOT) cc)
+   LIBTOOL = $(shell xcrun -find -sdk $(SDKROOT) libtool)
+   RANLIB = $(shell xcrun -find -sdk $(SDKROOT) ranlib)
+   NMEDIT = $(shell xcrun -find -sdk $(SDKROOT) nmedit)
+   SEG_HACK = $(shell xcrun -find -sdk $(SDKROOT) seg_hack)
+ endif
+-CFLAGS = -g -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) -Wall \
++
++CFLAGS = -arch i386 -arch x86_64 -g0 -I/usr/include/c++/4.2.1 -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) -Wall \
+ 	 $(GCC_FLAGS) $(SDK)
+ 
+ ifeq "macos" "$(RC_OS)"
+@@ -88,12 +89,12 @@
+ 	 4byte_literals.c 8byte_literals.c literal_pointers.c dylibs.c \
+ 	 indirect_sections.c mod_sections.c i860_reloc.c ppc_reloc.c \
+ 	 m88k_reloc.c hppa_reloc.c sparc_reloc.c coalesced_sections.c uuid.c \
+-	 debugcompunit.c debugline.c arm_reloc.c
++	 debugcompunit.c debugline.c arm_reloc.c map_fd.c
+ OBJS = $(CFILES:.c=.o)
+ INSTALL_FILES = $(CFILES) $(HFILES) Makefile notes \
+ 		librld.ofileList
+ 
+-all:	$(OFILE_DIRS) $(SYMROOT) ld_build kld_build lib_ofiles
++all:	$(OFILE_DIRS) $(SYMROOT) ld_build # lib_ofiles kld_build
+ 
+ macos_lib_ofiles:
+ 
+diff -Nur cctools-862/ld/arm_reloc.c cctools-862-AnV/ld/arm_reloc.c
+--- cctools-862/ld/arm_reloc.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/arm_reloc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -368,7 +368,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 
+ 		/*
+ 		 * If we are being called only to get the references for this
+diff -Nur cctools-862/ld/coalesced_sections.c cctools-862-AnV/ld/coalesced_sections.c
+--- cctools-862/ld/coalesced_sections.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/coalesced_sections.c	2014-12-02 16:59:40.000000000 +0100
+@@ -616,7 +616,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		/*
+ 		 * Is the merged symbol for this external relocation entry
+ 		 * defined in the output file.
+diff -Nur cctools-862/ld/cstring_literals.c cctools-862-AnV/ld/cstring_literals.c
+--- cctools-862/ld/cstring_literals.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/cstring_literals.c	2014-12-02 16:59:40.000000000 +0100
+@@ -31,6 +31,7 @@
+  * like: "foo\0bar" can not be in this type of section.
+  */
+ #include <stdlib.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <limits.h>
+diff -Nur cctools-862/ld/dylibs.c cctools-862-AnV/ld/dylibs.c
+--- cctools-862/ld/dylibs.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/dylibs.c	2014-12-02 16:59:40.000000000 +0100
+@@ -20,6 +20,7 @@
+  * 
+  * @APPLE_LICENSE_HEADER_END@
+  */
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+diff -Nur cctools-862/ld/fvmlibs.c cctools-862-AnV/ld/fvmlibs.c
+--- cctools-862/ld/fvmlibs.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/fvmlibs.c	2014-12-02 16:59:40.000000000 +0100
+@@ -28,6 +28,7 @@
+  * This file contains the routines to manage the fixed VM shared libraries
+  * that the output file uses.
+  */
++#include "../include/stuff/macosx_deployment_target.h"
+ #include <stdio.h>
+ #include <stdarg.h>
+ #include <strings.h>
+diff -Nur cctools-862/ld/generic_reloc.c cctools-862-AnV/ld/generic_reloc.c
+--- cctools-862/ld/generic_reloc.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/generic_reloc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -27,6 +27,7 @@
+  * This file contains the routines to do generic relocation.  Which can be used
+  * for such machines that have simple 1, 2, and 4 byte relocation lengths.
+  */
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+@@ -366,7 +367,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 
+ 		/*
+ 		 * If we are being called only to get the references for this
+diff -Nur cctools-862/ld/generic_reloc.h cctools-862-AnV/ld/generic_reloc.h
+--- cctools-862/ld/generic_reloc.h	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/generic_reloc.h	2014-12-02 16:59:40.000000000 +0100
+@@ -24,6 +24,13 @@
+ #define __private_extern__ __declspec(private_extern)
+ #endif
+ 
++#include "../include/stuff/bytesex.h"
++#include "../include/stuff/arch.h"
++#include "../include/stuff/macosx_deployment_target.h"
++
++#undef SWAP_LONG
++#define SWAP_LONG OSSwapInt32
++
+ /*
+  * Global types, variables and routines declared in the file generic_reloc.c.
+  *
+diff -Nur cctools-862/ld/hppa_reloc.c cctools-862-AnV/ld/hppa_reloc.c
+--- cctools-862/ld/hppa_reloc.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/hppa_reloc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -380,7 +380,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		/*
+ 		 * If the symbol is undefined (or common) or a global coalesced 
+ 		 * symbol where we need to force an external relocation entry
+diff -Nur cctools-862/ld/i860_reloc.c cctools-862-AnV/ld/i860_reloc.c
+--- cctools-862/ld/i860_reloc.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/i860_reloc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -366,7 +366,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		/*
+ 		 * If the symbol is undefined (or common) or a global coalesced 
+ 		 * symbol where we need to force an external relocation entry
+diff -Nur cctools-862/ld/indirect_sections.c cctools-862-AnV/ld/indirect_sections.c
+--- cctools-862/ld/indirect_sections.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/indirect_sections.c	2014-12-02 16:59:40.000000000 +0100
+@@ -28,6 +28,7 @@
+  * lazy and non-lazy symbol pointer sections as well as symbol stub sections). 
+  */
+ #include <stdlib.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+@@ -273,7 +274,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		/*
+ 		 * If the indirect symbol table entry is for a private extern
+ 		 * it is an error.
+@@ -386,7 +387,7 @@
+ 		    }
+ 		    if(indr_symbol == NULL)
+ 			indr_symbol = (struct merged_symbol *)
+-				(merged_symbol->nlist.n_value);
++				(uint64_t)(merged_symbol->nlist.n_value);
+ 		    merged_symbol = indr_symbol;
+ 		}
+ 
+@@ -744,7 +745,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		/*
+ 		 * For multi module dynamic shared library format files the
+ 		 * merged sections that could have had external relocation
+diff -Nur cctools-862/ld/layout.c cctools-862-AnV/ld/layout.c
+--- cctools-862/ld/layout.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/layout.c	2014-12-02 16:59:40.000000000 +0100
+@@ -39,6 +39,8 @@
+  * set up.
+  */
+ #include <stdlib.h>
++#include <stdint.h>
++#include <wchar.h>
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+diff -Nur cctools-862/ld/ld.c cctools-862-AnV/ld/ld.c
+--- cctools-862/ld/ld.c	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/ld.c	2014-12-02 17:31:22.000000000 +0100
+@@ -858,6 +858,8 @@
+ 				  "decimal number less than 32", argv[i]);
+ 		    }
+ #endif /* DEBUG */
++            else if(strcmp(p, "demangle") == 0){
++            }
+ 		    else
+ 			goto unknown_flag;
+ 		    break;
+@@ -2059,12 +2061,13 @@
+ 	 * the handling of the cpusubtypes.
+ 	 */
+ 	if(arch_flag.name != NULL){
+-
++#if 0
+ 	    /*
+ 	     * 64-bit architectures are an error.
+ 	     */
+ 	    if(arch_flag.cputype & CPU_ARCH_ABI64)
+ 		fatal("does not support 64-bit architectures");
++#endif
+ 
+ 	    family_arch_flag = get_arch_family_from_cputype(arch_flag.cputype);
+ 	    if(family_arch_flag == NULL)
+@@ -2920,7 +2923,8 @@
+ 		       strcmp(p, "dylib") == 0 ||
+ 		       strcmp(p, "dylinker") == 0 ||
+ 		       strcmp(p, "dynamic") == 0 ||
+-		       strcmp(p, "dead_strip") == 0)
++		       strcmp(p, "dead_strip") == 0 ||
++               strcmp(p, "demangle") == 0)
+ 			break;
+ 		    i++;
+ 		    break;
+@@ -2959,6 +2963,7 @@
+ 	    }
+ 	}
+ 
++#if 0
+  	/*
+ 	 * If the architecture was not specified, and was inferred
+ 	 * from the object files, if it is a 64-bit architecture it is an error.
+@@ -2967,6 +2972,7 @@
+ 	    arch_flag.cputype & CPU_ARCH_ABI64){
+ 	    fatal("does not support 64-bit architectures");
+ 	}
++#endif
+ 
+ 	/*
+ 	 * Now search the libraries on the dynamic shared libraries search list
+@@ -3138,7 +3144,9 @@
+     kern_return_t r;
+     struct stat stat_buf;
+     unsigned long j, file_size, line;
+-    char *file_name, *library_name, *file_addr, *name, *end;
++    char *file_name = NULL, *library_name = NULL, *file_addr = NULL, *name = NULL, *end = NULL;
++
++    stat_buf.st_size = 0;
+ 
+ 	/*
+ 	 * If there is no file name then it is not on the list and return FALSE.
+diff -Nur cctools-862/ld/ld.h cctools-862-AnV/ld/ld.h
+--- cctools-862/ld/ld.h	2014-11-02 06:48:05.000000000 +0100
++++ cctools-862-AnV/ld/ld.h	2014-12-02 16:59:40.000000000 +0100
+@@ -24,6 +24,14 @@
+ #define __private_extern__ __declspec(private_extern)
+ #endif
+ 
++#if defined(__APPLE__)
++#undef __private_extern__
++#define __private_extern__
++#endif
++
++#include "../include/stuff/bytesex.h"
++#include "../include/stuff/arch.h"
++#include "../include/stuff/macosx_deployment_target.h"
+ /*
+  * Global types, variables and routines declared in the file ld.c.
+  *
+@@ -92,7 +100,12 @@
+ /* the pagesize of the machine this program is running on, getpagesize() value*/
+ __private_extern__ unsigned long host_pagesize;
+ /* the byte sex of the machine this program is running on */
++
++#ifndef _MACH_O_SWAP_H_
+ __private_extern__ enum byte_sex host_byte_sex;
++#else
++__private_extern__ enum NXByteOrder host_byte_sex;
++#endif
+ 
+ /* name of output file */
+ __private_extern__ char *outputfile;
+Binary files cctools-862/ld/ld_dir/4byte_literals.o and cctools-862-AnV/ld/ld_dir/4byte_literals.o differ
+Binary files cctools-862/ld/ld_dir/8byte_literals.o and cctools-862-AnV/ld/ld_dir/8byte_literals.o differ
+Binary files cctools-862/ld/ld_dir/arm_reloc.o and cctools-862-AnV/ld/ld_dir/arm_reloc.o differ
+Binary files cctools-862/ld/ld_dir/coalesced_sections.o and cctools-862-AnV/ld/ld_dir/coalesced_sections.o differ
+Binary files cctools-862/ld/ld_dir/cstring_literals.o and cctools-862-AnV/ld/ld_dir/cstring_literals.o differ
+Binary files cctools-862/ld/ld_dir/debugcompunit.o and cctools-862-AnV/ld/ld_dir/debugcompunit.o differ
+Binary files cctools-862/ld/ld_dir/debugline.o and cctools-862-AnV/ld/ld_dir/debugline.o differ
+Binary files cctools-862/ld/ld_dir/dylibs.o and cctools-862-AnV/ld/ld_dir/dylibs.o differ
+Binary files cctools-862/ld/ld_dir/fvmlibs.o and cctools-862-AnV/ld/ld_dir/fvmlibs.o differ
+Binary files cctools-862/ld/ld_dir/generic_reloc.o and cctools-862-AnV/ld/ld_dir/generic_reloc.o differ
+Binary files cctools-862/ld/ld_dir/hppa_reloc.o and cctools-862-AnV/ld/ld_dir/hppa_reloc.o differ
+Binary files cctools-862/ld/ld_dir/i860_reloc.o and cctools-862-AnV/ld/ld_dir/i860_reloc.o differ
+Binary files cctools-862/ld/ld_dir/indirect_sections.o and cctools-862-AnV/ld/ld_dir/indirect_sections.o differ
+Binary files cctools-862/ld/ld_dir/layout.o and cctools-862-AnV/ld/ld_dir/layout.o differ
+Binary files cctools-862/ld/ld_dir/ld.NEW and cctools-862-AnV/ld/ld_dir/ld.NEW differ
+Binary files cctools-862/ld/ld_dir/ld.o and cctools-862-AnV/ld/ld_dir/ld.o differ
+Binary files cctools-862/ld/ld_dir/ld.private.o and cctools-862-AnV/ld/ld_dir/ld.private.o differ
+Binary files cctools-862/ld/ld_dir/literal_pointers.o and cctools-862-AnV/ld/ld_dir/literal_pointers.o differ
+Binary files cctools-862/ld/ld_dir/m88k_reloc.o and cctools-862-AnV/ld/ld_dir/m88k_reloc.o differ
+Binary files cctools-862/ld/ld_dir/map_fd.o and cctools-862-AnV/ld/ld_dir/map_fd.o differ
+Binary files cctools-862/ld/ld_dir/mod_sections.o and cctools-862-AnV/ld/ld_dir/mod_sections.o differ
+Binary files cctools-862/ld/ld_dir/objects.o and cctools-862-AnV/ld/ld_dir/objects.o differ
+Binary files cctools-862/ld/ld_dir/pass1.o and cctools-862-AnV/ld/ld_dir/pass1.o differ
+Binary files cctools-862/ld/ld_dir/pass2.o and cctools-862-AnV/ld/ld_dir/pass2.o differ
+Binary files cctools-862/ld/ld_dir/ppc_reloc.o and cctools-862-AnV/ld/ld_dir/ppc_reloc.o differ
+Binary files cctools-862/ld/ld_dir/rld.o and cctools-862-AnV/ld/ld_dir/rld.o differ
+Binary files cctools-862/ld/ld_dir/sections.o and cctools-862-AnV/ld/ld_dir/sections.o differ
+Binary files cctools-862/ld/ld_dir/sets.o and cctools-862-AnV/ld/ld_dir/sets.o differ
+Binary files cctools-862/ld/ld_dir/sparc_reloc.o and cctools-862-AnV/ld/ld_dir/sparc_reloc.o differ
+Binary files cctools-862/ld/ld_dir/specs.o and cctools-862-AnV/ld/ld_dir/specs.o differ
+Binary files cctools-862/ld/ld_dir/symbols.o and cctools-862-AnV/ld/ld_dir/symbols.o differ
+Binary files cctools-862/ld/ld_dir/test and cctools-862-AnV/ld/ld_dir/test differ
+Binary files cctools-862/ld/ld_dir/uuid.o and cctools-862-AnV/ld/ld_dir/uuid.o differ
+diff -Nur cctools-862/ld/literal_pointers.c cctools-862-AnV/ld/literal_pointers.c
+--- cctools-862/ld/literal_pointers.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/literal_pointers.c	2014-12-02 16:59:40.000000000 +0100
+@@ -37,6 +37,7 @@
+  * all input files.
+  */
+ #include <stdlib.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+@@ -380,7 +381,7 @@
+ 	     */
+ 	    if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		merged_symbol = (struct merged_symbol *)
+-				merged_symbol->nlist.n_value;
++				(uint64_t)merged_symbol->nlist.n_value;
+ 	    /*
+ 	     * If the symbol is a common symbol it is an error
+ 	     * because it not a pointer to a literal.
+diff -Nur cctools-862/ld/m88k_reloc.c cctools-862-AnV/ld/m88k_reloc.c
+--- cctools-862/ld/m88k_reloc.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/m88k_reloc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -369,7 +369,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		/*
+ 		 * If the symbol is undefined (or common) or a global coalesced 
+ 		 * symbol where we need to force an external relocation entry
+diff -Nur cctools-862/ld/map_fd.c cctools-862-AnV/ld/map_fd.c
+--- cctools-862/ld/map_fd.c	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/ld/map_fd.c	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,31 @@
++#include <mach/mach.h>
++#include <mach/mach_error.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/types.h>
++#include <sys/mman.h>
++#include <sys/attr.h>
++#include <errno.h>
++
++kern_return_t map_fd(int fd,
++                     vm_offset_t offset,
++                     vm_offset_t *va,
++                     boolean_t findspace,
++                     vm_size_t size)
++{
++
++  void *addr = NULL;
++
++  addr = mmap(0, size, PROT_READ|PROT_WRITE,
++	      MAP_PRIVATE|MAP_FILE, fd, offset);
++
++  if(addr == (void *)-1) {
++    return 1;
++  }
++
++  *va = (vm_offset_t)addr;
++
++  return 0;
++}
++
+diff -Nur cctools-862/ld/mod_sections.c cctools-862-AnV/ld/mod_sections.c
+--- cctools-862/ld/mod_sections.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/mod_sections.c	2014-12-02 16:59:40.000000000 +0100
+@@ -28,6 +28,7 @@
+  * termination function pointer sections. 
+  */
+ #include <stdlib.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+diff -Nur cctools-862/ld/objects.c cctools-862-AnV/ld/objects.c
+--- cctools-862/ld/objects.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/objects.c	2014-12-02 16:59:40.000000000 +0100
+@@ -32,6 +32,7 @@
+ #include <stdio.h>
+ #include <limits.h>
+ #include <mach/mach.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #else /* defined(KLD) && defined(__STATIC__) */
+ #include <mach/mach.h>
+ #include <mach/kern_return.h>
+@@ -426,7 +427,7 @@
+ 		    merged_symbol = fine_reloc->merged_symbol;
+ 		    if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 			merged_symbol = (struct merged_symbol *)
+-					merged_symbol->nlist.n_value;
++					(uint64_t)merged_symbol->nlist.n_value;
+ 		    return(merged_symbol->nlist.n_value);
+ 		}
+ 	    }
+@@ -448,7 +449,7 @@
+ 		merged_symbol = fine_reloc->merged_symbol;
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		return(merged_symbol->nlist.n_value);
+ 	    }
+ 	}
+@@ -464,7 +465,7 @@
+ 		    merged_symbol = fine_reloc->merged_symbol;
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		return(merged_symbol->nlist.n_value);
+ 	    }
+ 	    else{
+@@ -531,7 +532,7 @@
+ 		    merged_symbol = fine_reloc->merged_symbol;
+ 		    if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 			merged_symbol = (struct merged_symbol *)
+-					merged_symbol->nlist.n_value;
++					(uint64_t)merged_symbol->nlist.n_value;
+ 		    ref->ref_type = LIVE_REF_SYMBOL;
+ 		    ref->merged_symbol = merged_symbol;
+ 		    return;
+@@ -555,7 +556,7 @@
+ 		merged_symbol = fine_reloc->merged_symbol;
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		ref->ref_type = LIVE_REF_SYMBOL;
+ 		ref->merged_symbol = merged_symbol;
+ 		return;
+@@ -573,7 +574,7 @@
+ 		    merged_symbol = fine_reloc->merged_symbol;
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		ref->ref_type = LIVE_REF_SYMBOL;
+ 		ref->merged_symbol = merged_symbol;
+ 		return;
+@@ -713,7 +714,7 @@
+ 	    merged_symbol = fine_reloc->merged_symbol;
+ 	    if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		merged_symbol = (struct merged_symbol *)
+-				merged_symbol->nlist.n_value;
++				(uint64_t)merged_symbol->nlist.n_value;
+ 	    return(merged_symbol->nlist.n_sect);
+ 	}
+ 	else{
+diff -Nur cctools-862/ld/pass1.c cctools-862-AnV/ld/pass1.c
+--- cctools-862/ld/pass1.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/pass1.c	2014-12-02 17:49:23.000000000 +0100
+@@ -23,12 +23,16 @@
+ #ifdef SHLIB
+ #include "shlib.h"
+ #endif /* SHLIB */
++
++#include "ld.h"
++
+ /*
+  * This file contains the routines that drives pass1 of the link-editor.  In
+  * pass1 the objects needed from archives are selected for loading and all of
+  * the things that need to be merged from the input objects are merged into
+  * tables (for output and relocation on the second pass).
+  */
++#include <mach-o/swap.h>
+ #include <stdlib.h>
+ #include <stdarg.h>
+ #include <string.h>
+@@ -61,7 +65,6 @@
+ #include "stuff/guess_short_name.h"
+ #include "stuff/macosx_deployment_target.h"
+ 
+-#include "ld.h"
+ #include "pass1.h"
+ #include "live_refs.h"
+ #include "objects.h"
+@@ -93,10 +96,10 @@
+ __private_extern__ unsigned long nld_library_paths = 0;
+ 
+ /* the standard directories to search for -lx names */
+-__private_extern__ char *standard_dirs[] = {
+-    "/lib/",
+-    "/usr/lib/",
+-    "/usr/local/lib/",
++__private_extern__ char *standard_dirs[4] = {
++    (char *)"/lib/",
++    (char *)"/usr/lib/",
++    (char *)"/usr/local/lib/",
+     NULL
+ };
+ 
+@@ -108,20 +111,20 @@
+ __private_extern__ unsigned long nframework_dirs = 0;
+ 
+ /* the standard framework directories to search for "-framework Foo" names */
+-__private_extern__ char *standard_framework_dirs[] = {
++__private_extern__ char *standard_framework_dirs[FDIRCNT] = {
+ #ifdef __OPENSTEP__
+-    "/LocalLibrary/Frameworks/",
+-    "/NextLibrary/Frameworks/",
++    (char *)"/LocalLibrary/Frameworks/",
++    (char *)"/NextLibrary/Frameworks/",
+ #else /* !defined(__OPENSTEP__) */
+ 
+ #ifdef __GONZO_BUNSEN_BEAKER__
+-    "/Local/Library/Frameworks/",
++    (char *)"/Local/Library/Frameworks/",
+ #else /* !defined(__BUNSEN_BEAKER__) */
+-    "/Library/Frameworks/",
++    (char *)"/Library/Frameworks/",
+ #endif /* __BUNSEN_BEAKER__ */
+ 
+-    "/Network/Library/Frameworks/",
+-    "/System/Library/Frameworks/",
++    (char *)"/Network/Library/Frameworks/",
++    (char *)"/System/Library/Frameworks/",
+ #endif /* __OPENSTEP__ */
+     NULL
+ };
+@@ -926,6 +929,7 @@
+ 	    }
+ 	    if(fat_archs[i].offset %
+ 	       (1 << fat_archs[i].align) != 0){
++#if 0
+ 		if(ar_name != NULL)
+ 		    error("fat file: %s(%.*s) offset: %u for cputype (%d) "
+ 			  "cpusubtype (%d)) not aligned on it's alignment "
+@@ -938,7 +942,9 @@
+ 			  "(2^%u)", file_name, fat_archs[i].offset,
+ 			  fat_archs[i].cputype, fat_archs[i].cpusubtype,
+ 			  fat_archs[i].align);
+-		return;
++#endif
++
++            return;
+ 	    }
+ 	}
+ 	for(i = 0; i < fat_header->nfat_arch; i++){
+@@ -1386,6 +1392,7 @@
+ 	     * 68k machines but will have to change when this is on a real
+ 	     * machine.
+ 	     */
++#if 0
+ #if defined(mc68000) || defined(__i386__)
+ 	    if(ranlibs[i].ran_off % sizeof(short) != 0){
+ 		error("malformed table of contents in: %s (ranlib struct %lu "
+@@ -1401,6 +1408,7 @@
+ 		return;
+ 	    }
+ #endif
++#endif
+ 	}
+ 
+ #ifndef RLD
+@@ -4513,11 +4521,13 @@
+ 	    l = *lc;
+ 	    if(cur_obj->swapped)
+ 		swap_load_command(&l, host_byte_sex);
++#if 0
+ 	    if(l.cmdsize % sizeof(long) != 0){
+ 		error_with_cur_obj("load command %lu size not a multiple of "
+ 				   "sizeof(long)", i);
+ 		return;
+ 	    }
++#endif
+ 	    if(l.cmdsize <= 0){
+ 		error_with_cur_obj("load command %lu size is less than or equal"
+ 				   " to zero", i);
+@@ -5602,11 +5612,13 @@
+ 	dyst = NULL;
+ 	lc = load_commands;
+ 	for(i = 0; i < mh->ncmds; i++){
++#if 0
+ 	    if(lc->cmdsize % sizeof(long) != 0){
+ 		error_with_cur_obj("load command %lu size not a multiple of "
+ 				   "sizeof(long)", i);
+ 		return;
+ 	    }
++#endif
+ 	    if(lc->cmdsize <= 0){
+ 		error_with_cur_obj("load command %lu size is less than or equal"
+ 				   " to zero", i);
+@@ -5836,6 +5848,7 @@
+ unsigned long cmd)
+ {
+ 	if(size != 0){
++#if 0
+ 	    if(offset % align != 0){
+ #ifdef mc68000
+ 		/*
+@@ -5850,6 +5863,11 @@
+ #endif /* mc68000 */
+ 		return;
+ 	    }
++#else
++        if(offset % align != 0){
++            align = 1;
++        }
++#endif
+ 	    if(offset > cur_obj->obj_size){
+ 		error_with_cur_obj("%s in load command %lu extends past the "
+ 				   "end of the file", offset_str, cmd);
+@@ -5883,6 +5901,7 @@
+ char *sectname)
+ {
+ 	if(size != 0){
++#if 0
+ 	    if(offset % align != 0){
+ #ifdef mc68000
+ 		/*
+@@ -5899,6 +5918,11 @@
+ #endif /* mc68000 */
+ 		return;
+ 	    }
++#else
++        if(offset % align != 0){
++            align = 1;
++        }
++#endif
+ 	    if(offset > cur_obj->obj_size){
+ 		error_with_cur_obj("%s of section %lu (%.16s,%.16s) in load "
+ 		    "command %lu extends past the end of the file", offset_str,
+diff -Nur cctools-862/ld/pass1.h cctools-862-AnV/ld/pass1.h
+--- cctools-862/ld/pass1.h	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/pass1.h	2014-12-02 16:59:40.000000000 +0100
+@@ -48,7 +48,7 @@
+ __private_extern__ unsigned long nld_library_paths;
+ 
+ /* the standard directories to search for -lx filenames */
+-__private_extern__ char *standard_dirs[];
++__private_extern__ char *standard_dirs[4];
+ 
+ /*
+  * The user specified directories to search for "-framework Foo" names, and the
+@@ -58,7 +58,13 @@
+ __private_extern__ unsigned long nframework_dirs;
+ 
+ /* the standard framework directories to search for "-framework Foo" names */
+-__private_extern__ char *standard_framework_dirs[];
++#ifdef __OPENSTEP__
++#define FDIRCNT 3
++#else
++#define FDIRCNT 4
++#endif
++
++__private_extern__ char *standard_framework_dirs[FDIRCNT];
+ 
+ /* the pointer to the head of the base object file's segments */
+ __private_extern__ struct merged_segment *base_obj_segments;
+diff -Nur cctools-862/ld/ppc_reloc.c cctools-862-AnV/ld/ppc_reloc.c
+--- cctools-862/ld/ppc_reloc.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/ppc_reloc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -403,7 +403,7 @@
+ 		 */
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 
+ 		/*
+ 		 * If we are being called only to get the references for this
+diff -Nur cctools-862/ld/rld.c cctools-862-AnV/ld/rld.c
+--- cctools-862/ld/rld.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/rld.c	2014-12-02 16:59:40.000000000 +0100
+@@ -59,8 +59,8 @@
+ #include <mach-o/kld.h>
+ #else /* !defined(KLD) */
+ #include <mach-o/rld.h>
+-#include <streams/streams.h>
+-#include <objc/zone.h>
++//#include <streams/streams.h>
++//#include <objc/zone.h>
+ #endif /* KLD */
+ #include <mach-o/rld_state.h>
+ #include <mach-o/ldsyms.h>
+diff -Nur cctools-862/ld/sections.c cctools-862-AnV/ld/sections.c
+--- cctools-862/ld/sections.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/sections.c	2014-12-02 16:59:40.000000000 +0100
+@@ -30,6 +30,7 @@
+  * them).  The merged section list becomes the output files's section list.
+  */
+ #include <stdlib.h>
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdio.h>
+ #include <mach/mach.h>
+@@ -1274,8 +1275,8 @@
+ 			error_with_cur_obj("can't use -sectorder or -dead_strip"
+ 			    " with objects that contain more than one section "
+ 			    "with the same name (section %d and %ld are both "
+-			    "named (%.16s,%.16s))", cur_obj->cur_section_map -
+-			    cur_obj->section_maps + 1, j + 1, ms->s.segname,
++			    "named (%.16s,%.16s))", (int)(cur_obj->cur_section_map -
++			    cur_obj->section_maps + 1), j + 1, ms->s.segname,
+ 			    ms->s.sectname);
+ 			return;
+ 		    }
+@@ -3525,7 +3526,7 @@
+ 		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR &&
+ 		   merged_symbol->defined_in_dylib == FALSE)
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		if(merged_symbol->nlist.n_type == (N_EXT | N_UNDF) ||
+ 		   merged_symbol->nlist.n_type == (N_EXT | N_PBUD) ||
+ 		   (merged_symbol->nlist.n_type == (N_EXT | N_INDR) &&
+@@ -4321,7 +4322,7 @@
+ 				merged_symbol = undefined_map->merged_symbol;
+ 			    if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 				merged_symbol = (struct merged_symbol *)
+-						merged_symbol->nlist.n_value;
++						(uint64_t)merged_symbol->nlist.n_value;
+ 			    value = merged_symbol->nlist.n_value;
+ 			    if((merged_symbol->nlist.n_desc & N_ARM_THUMB_DEF))
+ 				value |= 1;
+@@ -4443,7 +4444,7 @@
+ 			    merged_symbol = undefined_map->merged_symbol;
+ 			if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 			    merged_symbol = (struct merged_symbol *)
+-					    merged_symbol->nlist.n_value;
++					    (uint64_t)merged_symbol->nlist.n_value;
+ 			value = merged_symbol->nlist.n_value;
+ 			if((merged_symbol->nlist.n_desc & N_ARM_THUMB_DEF))
+ 			    value |= 1;
+@@ -5799,7 +5800,7 @@
+ 	/* N_INDR symbols have had their indirection resolved at this point. */
+ 	if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
+ 	    merged_symbol = (struct merged_symbol *)
+-			    merged_symbol->nlist.n_value;
++			    (uint64_t)merged_symbol->nlist.n_value;
+ 
+ 	/*
+ 	 * Find the fine_reloc for this symbol if any.  That will be in the
+@@ -6207,7 +6208,7 @@
+ 		ref->merged_symbol->live = TRUE;
+ 		if((ref->merged_symbol->nlist.n_type & N_TYPE) == N_INDR){
+ 		    indr_merged_symbol = (struct merged_symbol *)
+-				    ref->merged_symbol->nlist.n_value;
++				    (uint64_t)ref->merged_symbol->nlist.n_value;
+ 		    indr_merged_symbol->live = TRUE;
+ 		}
+ 	    }
+diff -Nur cctools-862/ld/sparc_reloc.c cctools-862-AnV/ld/sparc_reloc.c
+--- cctools-862/ld/sparc_reloc.c	2014-11-02 06:48:06.000000000 +0100
++++ cctools-862-AnV/ld/sparc_reloc.c	2014-12-02 16:59:40.000000000 +0100
+@@ -381,7 +381,7 @@
+ 		 */
+ 		if(merged_symbol->nlist.n_type == (N_EXT | N_INDR))
+ 		    merged_symbol = (struct merged_symbol *)
+-				    merged_symbol->nlist.n_value;
++				    (uint64_t)merged_symbol->nlist.n_value;
+ 		/*
+ 		 * If the symbol is undefined (or common) or a global coalesced 
+ 		 * symbol where we need to force an external relocation entry
+diff -Nur cctools-862/ld/specs.c cctools-862-AnV/ld/specs.c
+--- cctools-862/ld/specs.c	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/ld/specs.c	2014-12-02 16:59:40.000000000 +0100
+@@ -27,6 +27,7 @@
+  * This file contains the routines to manage the structures that hold the
+  * command line specifications about segment and sections.
+  */
++#include "../include/stuff/macosx_deployment_target.h"
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <stdlib.h>
+ #include <stdio.h>
+diff -Nur cctools-862/ld/symbols.c cctools-862-AnV/ld/symbols.c
+--- cctools-862/ld/symbols.c	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/ld/symbols.c	2014-12-02 16:59:40.000000000 +0100
+@@ -459,7 +459,7 @@
+     unsigned long section_type, library_ordinal;
+ 
+ 	/* check the n_strx field of this symbol */
+-	if(symbol->n_un.n_strx < 0 ||
++	if(/*symbol->n_un.n_strx < 0 ||*/
+ 	   (uint32_t)symbol->n_un.n_strx >= cur_obj->symtab->strsize){
+ 	    error_with_cur_obj("bad string table index (%d) for symbol %lu",
+ 			       symbol->n_un.n_strx, index);
+@@ -3938,7 +3938,7 @@
+ 
+ 	if(merged_symbol->nlist.n_type == (N_INDR | N_EXT))
+ 	    indr_symbol_name = ((struct merged_symbol *)
+-			(merged_symbol->nlist.n_value))->nlist.n_un.n_name;
++			(uint64_t)(merged_symbol->nlist.n_value))->nlist.n_un.n_name;
+ 	else
+ 	    indr_symbol_name = "error in trace_symbol()";
+ 	trace_symbol(merged_symbol->nlist.n_un.n_name, &(merged_symbol->nlist),
+@@ -4568,8 +4568,8 @@
+ 		    if(only_referenced_dynamically == TRUE)
+ 			continue;
+ 		}
++        mark_it_live:
+ #ifdef DEBUG
+-mark_it_live:
+ 		if(((debug & (1 << 25)) || (debug & (1 << 26)))){
+ 		    print("** In mark_globals_live() ");
+ 		    if(merged_symbol->nlist.n_desc & N_NO_DEAD_STRIP)
+@@ -5559,7 +5559,7 @@
+ 		    indr_symbols[0] = merged_symbol;
+ 		    indr_depth = 1;
+ 		    indr_symbol = (struct merged_symbol *)
+-						(merged_symbol->nlist.n_value);
++						(uint64_t)(merged_symbol->nlist.n_value);
+ 		    while(indr_symbol->nlist.n_type == (N_EXT | N_INDR) &&
+ 		          indr_symbol->nlist.n_value != 0){
+ 			for(j = 0; j < indr_depth; j++){
+@@ -5573,7 +5573,7 @@
+ 				not_from_dylibs++;
+ 			    indr_symbols[indr_depth++] = indr_symbol;
+ 			    indr_symbol = (struct merged_symbol *)
+-						(indr_symbol->nlist.n_value);
++						(uint64_t)(indr_symbol->nlist.n_value);
+ 			}
+ 			else{
+ 			    error("indirect symbol loop:");
+@@ -6840,7 +6840,7 @@
+ 		    }
+ 		    if(indr_symbol == NULL)
+ 			indr_symbol = (struct merged_symbol *)
+-				(merged_symbol->nlist.n_value);
++				(uint64_t)(merged_symbol->nlist.n_value);
+ 
+ 		    /*
+ 		     * Check to see if this symbol is defined (not undefined or
+@@ -7724,7 +7724,7 @@
+ 			 * indr symbol.  Else make it an undefined symbol.
+ 			 */
+ 			indr_symbol = (struct merged_symbol *)
+-				      (merged_symbol->nlist.n_value);
++				      (uint64_t)(merged_symbol->nlist.n_value);
+ 			if(indr_symbol->nlist.n_type != (N_EXT | N_UNDF)){
+ 			    merged_symbol->nlist.n_type = N_PBUD | N_EXT;
+ 			    merged_symbol->nlist.n_sect = NO_SECT;
+@@ -7978,7 +7978,7 @@
+ 		else{
+ 		    if(merged_symbol->nlist.n_type == (N_EXT | N_INDR)){
+ 			indr_symbol = (struct merged_symbol *)
+-				    (merged_symbol->nlist.n_value);
++				    (uint64_t)(merged_symbol->nlist.n_value);
+ 			n_pext = indr_symbol->nlist.n_type & N_PEXT;
+ 		    }
+ 		    else{
+@@ -8044,7 +8044,7 @@
+ 		else{
+ 		    if(merged_symbol->nlist.n_type == (N_EXT | N_INDR)){
+ 			indr_symbol = (struct merged_symbol *)
+-				    (merged_symbol->nlist.n_value);
++				    (uint64_t)(merged_symbol->nlist.n_value);
+ 			n_pext = indr_symbol->nlist.n_type & N_PEXT;
+ 		    }
+ 		    else{
+@@ -8913,7 +8913,7 @@
+ 		    break;
+ 		case N_INDR:
+ 		    print("N_INDR for %s\n", ((struct merged_symbol *)
+-				(nlist->n_value))->nlist.n_un.n_name);
++				(uint64_t)(nlist->n_value))->nlist.n_un.n_name);
+ 		    break;
+ 		default:
+ 		    print("unknown 0x%x\n", (unsigned int)(nlist->n_type));
+diff -Nur cctools-862/libmacho/Makefile cctools-862-AnV/libmacho/Makefile
+--- cctools-862/libmacho/Makefile	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/libmacho/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -1,3 +1,4 @@
++CC=clang
+ LEGACY = -D_MACH_I386_THREAD_STATUS_FPSTATE_LEGACY_FIELD_NAMES_ \
+ 	 -D_ARCHITECTURE_I386_FPU_FPSTATE_LEGACY_FIELD_NAMES_
+ 
+@@ -18,10 +19,10 @@
+ 
+ ifeq "cctools_ofiles_Sim" "$(RC_ProjectName)"
+   S = _sim
+-  DEPENDENT_LIBS = -nodefaultlibs -umbrella System -L/usr/lib/system \
++  DEPENDENT_LIBS = -umbrella System -L/usr/lib/system \
+ 		   -ldyld$S -lsystem$S_c -lcompiler_rt$S -Wl,-upward-lSystem
+ else
+-  DEPENDENT_LIBS = -nodefaultlibs -umbrella System -L/usr/lib/system \
++  DEPENDENT_LIBS = -umbrella System -L/usr/lib/system \
+ 		   -ldyld $(LIBMALLOC) -lsystem_c -lsystem_kernel \
+ 		   -lcompiler_rt
+ endif
+@@ -40,8 +41,8 @@
+   RANLIB = ranlib
+ endif
+ 
+-OFLAG = -Os
+-CFLAGS = $(OFLAG) -g -Wall $(LEGACY) \
++OFLAG = -Ofast
++CFLAGS = -arch i386 -arch x86_64 $(OFLAG) -g0 -Wall $(LEGACY) \
+ 	 -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) $(SDK)
+ PG = -pg
+ 
+@@ -306,7 +307,7 @@
+ 		-o $(SYMROOT)/$@ $(OBJS) \
+ 		-install_name $(INSTALL_NAME) \
+ 		-compatibility_version 1 \
+-		-current_version $(RC_ProjectSourceVersion) \
++		-current_version 9 \
+ 		$(DEPENDENT_LIBS)
+ 	$(DSYMUTIL) $(SYMROOT)/$@
+ 
+diff -Nur cctools-862/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist cctools-862-AnV/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist
+--- cctools-862/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++	<dict>
++		<key>CFBundleDevelopmentRegion</key>
++		<string>English</string>
++		<key>CFBundleIdentifier</key>
++		<string>com.apple.xcode.dsym.libmacho.dylib</string>
++		<key>CFBundleInfoDictionaryVersion</key>
++		<string>6.0</string>
++		<key>CFBundlePackageType</key>
++		<string>dSYM</string>
++		<key>CFBundleSignature</key>
++		<string>????</string>
++		<key>CFBundleShortVersionString</key>
++		<string>1.0</string>
++		<key>CFBundleVersion</key>
++		<string>1</string>
++	</dict>
++</plist>
+diff -Nur cctools-862/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist cctools-862-AnV/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist
+--- cctools-862/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++	<dict>
++		<key>CFBundleDevelopmentRegion</key>
++		<string>English</string>
++		<key>CFBundleIdentifier</key>
++		<string>com.apple.xcode.dsym.libmacho_debug.dylib</string>
++		<key>CFBundleInfoDictionaryVersion</key>
++		<string>6.0</string>
++		<key>CFBundlePackageType</key>
++		<string>dSYM</string>
++		<key>CFBundleSignature</key>
++		<string>????</string>
++		<key>CFBundleShortVersionString</key>
++		<string>1.0</string>
++		<key>CFBundleVersion</key>
++		<string>1</string>
++	</dict>
++</plist>
+diff -Nur cctools-862/libmacho/dynamic_obj/libmacho.ofileList cctools-862-AnV/libmacho/dynamic_obj/libmacho.ofileList
+--- cctools-862/libmacho/dynamic_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/dynamic_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,9 @@
++arch.o
++getsecbyname.o
++getsegbyname.o
++get_end.o
++swap.o
++i386_swap.o
++m68k_swap.o
++sparc_swap.o
++ppc_swap.o
+diff -Nur cctools-862/libmacho/dynamic_profile_obj/libmacho.ofileList cctools-862-AnV/libmacho/dynamic_profile_obj/libmacho.ofileList
+--- cctools-862/libmacho/dynamic_profile_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/dynamic_profile_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,9 @@
++arch.o
++getsecbyname.o
++getsegbyname.o
++get_end.o
++swap.o
++i386_swap.o
++m68k_swap.o
++sparc_swap.o
++ppc_swap.o
+diff -Nur cctools-862/libmacho/optimized_obj/libmacho.ofileList cctools-862-AnV/libmacho/optimized_obj/libmacho.ofileList
+--- cctools-862/libmacho/optimized_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/optimized_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,9 @@
++arch.o
++getsecbyname.o
++getsegbyname.o
++get_end.o
++swap.o
++i386_swap.o
++m68k_swap.o
++sparc_swap.o
++ppc_swap.o
+diff -Nur cctools-862/libmacho/profile_obj/libmacho.ofileList cctools-862-AnV/libmacho/profile_obj/libmacho.ofileList
+--- cctools-862/libmacho/profile_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/profile_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,9 @@
++arch.o
++getsecbyname.o
++getsegbyname.o
++get_end.o
++swap.o
++i386_swap.o
++m68k_swap.o
++sparc_swap.o
++ppc_swap.o
+diff -Nur cctools-862/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist cctools-862-AnV/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist
+--- cctools-862/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++	<dict>
++		<key>CFBundleDevelopmentRegion</key>
++		<string>English</string>
++		<key>CFBundleIdentifier</key>
++		<string>com.apple.xcode.dsym.libmacho_profile.dylib</string>
++		<key>CFBundleInfoDictionaryVersion</key>
++		<string>6.0</string>
++		<key>CFBundlePackageType</key>
++		<string>dSYM</string>
++		<key>CFBundleSignature</key>
++		<string>????</string>
++		<key>CFBundleShortVersionString</key>
++		<string>1.0</string>
++		<key>CFBundleVersion</key>
++		<string>1</string>
++	</dict>
++</plist>
+diff -Nur cctools-862/libmacho/static_obj/libmacho.ofileList cctools-862-AnV/libmacho/static_obj/libmacho.ofileList
+--- cctools-862/libmacho/static_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/libmacho/static_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,9 @@
++arch.o
++getsecbyname.o
++getsegbyname.o
++get_end.o
++swap.o
++i386_swap.o
++m68k_swap.o
++sparc_swap.o
++ppc_swap.o
+diff -Nur cctools-862/libstuff/Makefile cctools-862-AnV/libstuff/Makefile
+--- cctools-862/libstuff/Makefile	2014-11-02 06:48:08.000000000 +0100
++++ cctools-862-AnV/libstuff/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -1,3 +1,5 @@
++CC=clang -arch i386 -arch x86_64
++
+ LEGACY = -D_MACH_I386_THREAD_STATUS_FPSTATE_LEGACY_FIELD_NAMES_ \
+ 	 -D_ARCHITECTURE_I386_FPU_FPSTATE_LEGACY_FIELD_NAMES_
+ 
+@@ -8,6 +10,7 @@
+        -I$(NEXT_ROOT)/System/Library/Frameworks/Kernel.framework/Headers/libsa \
+        -I$(NEXT_ROOT)/System/Library/Frameworks/Kernel.framework/Headers/bsd \
+        -I$(NEXT_ROOT)/System/Library/Frameworks/Kernel.framework/Headers \
++       -I$(NEXT_ROOT)/usr/include \
+        -DKERNEL -DKERNEL_PRIVATE -DAPPLE -DNeXT -DLIBSA_PRIVATE
+ 
+ ifneq "" "$(SDKROOT)"
+@@ -18,9 +21,11 @@
+   LIBTOOL = libtool
+ endif
+ 
+-OFLAG = -Os
++OFLAG = -Ofast
++# apply otool-ng patches
++OTOOL_NG = -DOTOOL_NG_SUPPORT
+ LTO = -DLTO_SUPPORT
+-G = -g
++G = -g0
+ CFLAGS = $(OFLAG) $(LTO) $(G) -I$(SRCROOT)/../include -Wall $(LEGACY) $(SDK)
+ PG = -pg
+ 
+@@ -34,6 +39,8 @@
+ OFILE_DIR = $(OBJROOT)
+ VPATH = $(OFILE_DIR)
+ 
++EFITOOLS=efitools
++
+ ifeq "$(EFITOOLS)" "efitools"
+ 	COFF_BYTESEX = coff_bytesex.c
+ else
+@@ -50,13 +57,13 @@
+ OBJS = $(CFILES:.c=.o) apple_version.o
+ INSTALL_FILES = $(CFILES) Makefile notes
+ 
+-ifeq "$(OLD_LIBKLD)" "YES"
++#ifeq "$(OLD_LIBKLD)" "YES"
+ 	STATIC_KLD = static_kld
+-else
+-	STATIC_KLD = 
+-endif
++#else
++#	STATIC_KLD = 
++#endif
+ 
+-all: $(OFILE_DIRS) $(SYMROOT) dynamic profile $(STATIC_KLD)
++all: $(OFILE_DIRS) $(SYMROOT) dynamic profile static $(STATIC_KLD)
+ 
+ lib_static_ofiles: $(STATIC_KLD)
+ 
+@@ -220,8 +227,14 @@
+ .c.o:
+ 	$(CC) $(CFLAGS) $(RC_CFLAGS) $(COPTS) -c -o $(OFILE_DIR)/$*.o $<
+ 
++llvm.o: llvm.c
++	$(CC) -std=c11 $(CFLAGS) $(RC_CFLAGS) $(COPTS) -c \
++		-I/Developer/usr/local/include \
++		-I$(DT_TOOLCHAIN_DIR)/usr/local/include \
++		-o $(OFILE_DIR)/$*.o $<
++
+ lto.o: lto.c
+-	$(CC) -std=c99 $(CFLAGS) $(RC_CFLAGS) $(COPTS) -c \
++	$(CC) -std=c11 $(CFLAGS) $(RC_CFLAGS) $(COPTS) -c \
+ 		-I/Developer/usr/local/include \
+ 		-I$(DT_TOOLCHAIN_DIR)/usr/local/include \
+ 		-o $(OFILE_DIR)/$*.o $<
+Binary files cctools-862/libstuff/SymLoc.o and cctools-862-AnV/libstuff/SymLoc.o differ
+diff -Nur cctools-862/libstuff/allocate.c cctools-862-AnV/libstuff/allocate.c
+--- cctools-862/libstuff/allocate.c	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/libstuff/allocate.c	2014-12-02 16:59:40.000000000 +0100
+@@ -76,7 +76,7 @@
+ 
+ 	len = strlen(s) + 1;
+ 	r = (char *)allocate(len);
+-	strcpy(r, s);
++	strlcpy(r, s, strlen(s));
+ 	return(r);
+ }
+ 
+@@ -110,11 +110,11 @@
+ 	*s = '\0';
+ 
+ 	if(args != NULL){
+-	    (void)strcat(s, args);
++	    (void)strlcat(s, args, size);
+ 	    va_start(ap, args);
+ 	    p = (char *)va_arg(ap, char *);
+ 	    while(p != NULL){
+-		(void)strcat(s, p);
++		(void)strlcat(s, p, size);
+ 		p = (char *)va_arg(ap, char *);
+ 	    }
+ 	    va_end(ap);
+Binary files cctools-862/libstuff/allocate.o and cctools-862-AnV/libstuff/allocate.o differ
+Binary files cctools-862/libstuff/arch.o and cctools-862-AnV/libstuff/arch.o differ
+Binary files cctools-862/libstuff/arch_usage.o and cctools-862-AnV/libstuff/arch_usage.o differ
+Binary files cctools-862/libstuff/best_arch.o and cctools-862-AnV/libstuff/best_arch.o differ
+diff -Nur cctools-862/libstuff/breakout.c cctools-862-AnV/libstuff/breakout.c
+--- cctools-862/libstuff/breakout.c	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/libstuff/breakout.c	2014-12-02 16:59:40.000000000 +0100
+@@ -116,7 +116,11 @@
+ 	 * Rely on the ofile_*() routines to do all the checking and only
+ 	 * return valid ofiles files broken out.
+ 	 */
++#ifdef OTOOL_NG_SUPPORT	 
++	if(ofile_map(filename, NULL, NULL, ofile, FALSE, 0) == FALSE){
++#else
+ 	if(ofile_map(filename, NULL, NULL, ofile, FALSE) == FALSE){
++#endif		
+ 	    free(ofile);
+ 	    return(NULL);
+ 	}
+Binary files cctools-862/libstuff/breakout.o and cctools-862-AnV/libstuff/breakout.o differ
+diff -Nur cctools-862/libstuff/bytesex.c cctools-862-AnV/libstuff/bytesex.c
+--- cctools-862/libstuff/bytesex.c	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/libstuff/bytesex.c	2014-12-02 16:59:40.000000000 +0100
+@@ -207,6 +207,14 @@
+ #include "stuff/bool.h"
+ #include "stuff/bytesex.h"
+ 
++#if !__DARWIN_UNIX03
++#define __x x
++#define __r r
++#define __sp sp
++#define __cpsr cpsr
++#define __fp fp
++#endif
++
+ __private_extern__
+ long long
+ SWAP_LONG_LONG(
+Binary files cctools-862/libstuff/bytesex.o and cctools-862-AnV/libstuff/bytesex.o differ
+Binary files cctools-862/libstuff/checkout.o and cctools-862-AnV/libstuff/checkout.o differ
+Binary files cctools-862/libstuff/coff_bytesex.o and cctools-862-AnV/libstuff/coff_bytesex.o differ
+Binary files cctools-862/libstuff/crc32.o and cctools-862-AnV/libstuff/crc32.o differ
+diff -Nur cctools-862/libstuff/dylib_roots.c cctools-862-AnV/libstuff/dylib_roots.c
+--- cctools-862/libstuff/dylib_roots.c	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/libstuff/dylib_roots.c	2014-12-02 16:59:40.000000000 +0100
+@@ -99,8 +99,13 @@
+ 		    goto try_to_find_in_dstroot;
+ 		}
+ 	    }
++#ifdef OTOOL_NG_SUPPORT
++	    ofile_process(image_file_name, NULL, 0, TRUE,
++			  TRUE, TRUE, FALSE, check_for_dylib, &block, 0);
++#else	    
+ 	    ofile_process(image_file_name, NULL, 0, TRUE,
+ 			  TRUE, TRUE, FALSE, check_for_dylib, &block);
++#endif	   
+ 	    if(block.check_result == TRUE)
+ 		return(image_file_name);
+ 	    free(image_file_name);
+@@ -177,8 +182,13 @@
+ 		 * it back to FALSE.
+ 		 */
+ 		block.check_result = TRUE;
++#ifdef OTOOL_NG_SUPPORT		
++		ofile_process(ftsent->fts_path, NULL, 0, TRUE,
++			      TRUE, TRUE, FALSE, check_for_dylib,&block, 0);
++#else
+ 		ofile_process(ftsent->fts_path, NULL, 0, TRUE,
+ 			      TRUE, TRUE, FALSE, check_for_dylib,&block);
++#endif		
+ 		if(block.check_result == TRUE){
+ 		    image_file_name = allocate(ftsent->fts_pathlen + 1);
+ 		    strcpy(image_file_name, ftsent->fts_path);
+Binary files cctools-862/libstuff/dylib_roots.o and cctools-862-AnV/libstuff/dylib_roots.o differ
+Binary files cctools-862/libstuff/dylib_table.o and cctools-862-AnV/libstuff/dylib_table.o differ
+Binary files cctools-862/libstuff/errors.o and cctools-862-AnV/libstuff/errors.o differ
+Binary files cctools-862/libstuff/execute.o and cctools-862-AnV/libstuff/execute.o differ
+Binary files cctools-862/libstuff/fatal_arch.o and cctools-862-AnV/libstuff/fatal_arch.o differ
+Binary files cctools-862/libstuff/fatals.o and cctools-862-AnV/libstuff/fatals.o differ
+Binary files cctools-862/libstuff/get_arch_from_host.o and cctools-862-AnV/libstuff/get_arch_from_host.o differ
+Binary files cctools-862/libstuff/get_toc_byte_sex.o and cctools-862-AnV/libstuff/get_toc_byte_sex.o differ
+Binary files cctools-862/libstuff/guess_short_name.o and cctools-862-AnV/libstuff/guess_short_name.o differ
+Binary files cctools-862/libstuff/hash_string.o and cctools-862-AnV/libstuff/hash_string.o differ
+Binary files cctools-862/libstuff/hppa.o and cctools-862-AnV/libstuff/hppa.o differ
+Binary files cctools-862/libstuff/libstuff_kld.a and cctools-862-AnV/libstuff/libstuff_kld.a differ
+diff -Nur cctools-862/libstuff/llvm.c cctools-862-AnV/libstuff/llvm.c
+--- cctools-862/libstuff/llvm.c	2014-11-02 06:48:08.000000000 +0100
++++ cctools-862-AnV/libstuff/llvm.c	2014-12-02 16:59:40.000000000 +0100
+@@ -1,5 +1,6 @@
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <strings.h>
+ #include <libc.h>
+ #include <sys/file.h>
+ #include <dlfcn.h>
+@@ -8,6 +9,11 @@
+ #include "stuff/allocate.h"
+ #include <mach-o/dyld.h>
+ 
++#ifdef _BUILD_LIB_
++#undef __private_extern__
++#define __private_extern__
++#endif
++
+ /*
+  * The disassembler API is currently exported from libLTO.dylib.  Eventually we
+  * plan to include it (along with the current libLTO APIs) in a generic
+Binary files cctools-862/libstuff/llvm.o and cctools-862-AnV/libstuff/llvm.o differ
+diff -Nur cctools-862/libstuff/lto.c cctools-862-AnV/libstuff/lto.c
+--- cctools-862/libstuff/lto.c	2014-11-02 06:48:08.000000000 +0100
++++ cctools-862-AnV/libstuff/lto.c	2014-12-02 16:59:40.000000000 +0100
+@@ -2,6 +2,7 @@
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <strings.h>
+ #include <libc.h>
+ #include <sys/file.h>
+ #include <dlfcn.h>
+Binary files cctools-862/libstuff/lto.o and cctools-862-AnV/libstuff/lto.o differ
+Binary files cctools-862/libstuff/macosx_deployment_target.o and cctools-862-AnV/libstuff/macosx_deployment_target.o differ
+diff -Nur cctools-862/libstuff/ofile.c cctools-862-AnV/libstuff/ofile.c
+--- cctools-862/libstuff/ofile.c	2014-11-02 06:48:08.000000000 +0100
++++ cctools-862-AnV/libstuff/ofile.c	2014-12-02 16:59:40.000000000 +0100
+@@ -200,7 +200,12 @@
+ enum bool dylib_flat,
+ enum bool use_member_syntax,
+ void (*processor)(struct ofile *ofile, char *arch_name, void *cookie),
+-void *cookie)
++void *cookie
++#ifdef OTOOL_NG_SUPPORT
++, uint64_t start_offset)
++#else
++)
++#endif
+ {
+     char *member_name, *p, *arch_name;
+     uint32_t len, i;
+@@ -231,8 +236,14 @@
+ #ifdef OTOOL
+ 	otool_first_ofile_map = TRUE;
+ #endif /* OTOOL */
++#ifdef OTOOL_NG_SUPPORT	
++	if(ofile_map(name, NULL, NULL, &ofile, FALSE, start_offset) == FALSE)
++		return;
++#else
+ 	if(ofile_map(name, NULL, NULL, &ofile, FALSE) == FALSE)
+-	    return;
++		return;
++#endif		
++	    
+ #ifdef OTOOL
+ 	otool_first_ofile_map = FALSE;
+ #endif /* OTOOL */
+@@ -420,8 +431,13 @@
+ #endif /* __arm__ */
+ 
+ 		ofile_unmap(&ofile);
++#ifdef OTOOL_NG_SUPPORT		
++		if(ofile_map(name, NULL, NULL, &ofile, FALSE, start_offset) == FALSE)
++		    return;
++#else
+ 		if(ofile_map(name, NULL, NULL, &ofile, FALSE) == FALSE)
+ 		    return;
++#endif		
+ 		if(ofile_first_arch(&ofile) == FALSE){
+ 		    ofile_unmap(&ofile);
+ 		    return;
+@@ -540,8 +556,13 @@
+ 	     * so do all the architectures in the fat file
+ 	     */
+ 	    ofile_unmap(&ofile);
++#ifdef OTOOL_NG_SUPPORT	    
++	    if(ofile_map(name, NULL, NULL, &ofile, FALSE, start_offset) == FALSE)
++		return;
++#else
+ 	    if(ofile_map(name, NULL, NULL, &ofile, FALSE) == FALSE)
+ 		return;
++#endif	
+ 	    if(ofile_first_arch(&ofile) == FALSE){
+ 		ofile_unmap(&ofile);
+ 		return;
+@@ -835,7 +856,12 @@
+ const struct arch_flag *arch_flag,	/* can be NULL */
+ const char *object_name,		/* can be NULL */
+ struct ofile *ofile,
+-enum bool archives_with_fat_objects)
++enum bool archives_with_fat_objects
++#ifdef OTOOL_NG_SUPPORT
++, uint64_t start_offset)
++#else
++)
++#endif
+ {
+     int fd;
+     struct stat stat_buf;
+@@ -868,8 +894,19 @@
+ 	
+ 	addr = NULL;
+ 	if(size != 0){
++#ifdef OTOOL_NG_SUPPORT	
++		if (start_offset > size)
++		{
++			error("ERROR: specified file offset higher than file size!");
++			close(fd);
++			return(FALSE);
++		}	
++	    addr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_FILE|MAP_PRIVATE, fd,
++		        start_offset);
++#else
+ 	    addr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_FILE|MAP_PRIVATE, fd,
+ 		        0);
++#endif	   
+ 	    if((intptr_t)addr == -1){
+ 		system_error("can't map file: %s", file_name);
+ 		close(fd);
+Binary files cctools-862/libstuff/ofile.o and cctools-862-AnV/libstuff/ofile.o differ
+Binary files cctools-862/libstuff/ofile_error.o and cctools-862-AnV/libstuff/ofile_error.o differ
+Binary files cctools-862/libstuff/ofile_get_word.o and cctools-862-AnV/libstuff/ofile_get_word.o differ
+Binary files cctools-862/libstuff/print.o and cctools-862-AnV/libstuff/print.o differ
+Binary files cctools-862/libstuff/reloc.o and cctools-862-AnV/libstuff/reloc.o differ
+Binary files cctools-862/libstuff/rnd.o and cctools-862-AnV/libstuff/rnd.o differ
+Binary files cctools-862/libstuff/seg_addr_table.o and cctools-862-AnV/libstuff/seg_addr_table.o differ
+Binary files cctools-862/libstuff/set_arch_flag_name.o and cctools-862-AnV/libstuff/set_arch_flag_name.o differ
+Binary files cctools-862/libstuff/swap_headers.o and cctools-862-AnV/libstuff/swap_headers.o differ
+Binary files cctools-862/libstuff/symbol_list.o and cctools-862-AnV/libstuff/symbol_list.o differ
+Binary files cctools-862/libstuff/unix_standard_mode.o and cctools-862-AnV/libstuff/unix_standard_mode.o differ
+diff -Nur cctools-862/libstuff/version_number.c cctools-862-AnV/libstuff/version_number.c
+--- cctools-862/libstuff/version_number.c	2014-11-02 06:48:08.000000000 +0100
++++ cctools-862-AnV/libstuff/version_number.c	2014-12-02 16:59:40.000000000 +0100
+@@ -47,7 +47,7 @@
+ 
+ 	*value = 0;
+ 	p = allocate(strlen(argument) + 1);
+-	strcpy(p, argument);
++	strlcpy(p, argument, strlen(argument));
+ 
+ 	y = NULL;
+ 	z = NULL;
+Binary files cctools-862/libstuff/version_number.o and cctools-862-AnV/libstuff/version_number.o differ
+diff -Nur cctools-862/libstuff/vm_flush_cache.c cctools-862-AnV/libstuff/vm_flush_cache.c
+--- cctools-862/libstuff/vm_flush_cache.c	2014-11-02 06:48:08.000000000 +0100
++++ cctools-862-AnV/libstuff/vm_flush_cache.c	2014-12-02 16:59:40.000000000 +0100
+@@ -40,11 +40,11 @@
+ vm_size_t size)
+ {
+ #ifdef __m68k__
+-	asm("trap #2");
++	__asm__("trap #2");
+ #endif
+ #ifdef __i386__
+-	asm("jmp 1f");
+-	asm("1: nop");
++	__asm__("jmp 1f");
++	__asm__("1: nop");
+ #endif
+ #ifdef __m88k__
+ 	user_cache_flush(address, size);
+@@ -79,12 +79,12 @@
+ 				    &value));
+ #endif
+ #ifdef __m68k__
+-	asm("trap #2");
++	__asm__("trap #2");
+ 	return(KERN_SUCCESS);
+ #endif
+ #ifdef __i386__
+-	asm("jmp 1f");
+-	asm("1: nop");
++	__asm__("jmp 1f");
++	__asm__("1: nop");
+ 	return(KERN_SUCCESS);
+ #endif
+ }
+Binary files cctools-862/libstuff/vm_flush_cache.o and cctools-862-AnV/libstuff/vm_flush_cache.o differ
+Binary files cctools-862/libstuff/writeout.o and cctools-862-AnV/libstuff/writeout.o differ
+diff -Nur cctools-862/man/gprof.1 cctools-862-AnV/man/gprof.1
+--- cctools-862/man/gprof.1	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/man/gprof.1	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,284 @@
++.\"	$OpenBSD: gprof.1,v 1.4 1996/10/15 23:55:56 deraadt Exp $
++.\"	$NetBSD: gprof.1,v 1.6 1995/11/21 22:24:55 jtc Exp $
++.\"
++.\" Copyright (c) 1983, 1990, 1993
++.\"	The Regents of the University of California.  All rights reserved.
++.\"
++.\" Redistribution and use in source and binary forms, with or without
++.\" modification, are permitted provided that the following conditions
++.\" are met:
++.\" 1. Redistributions of source code must retain the above copyright
++.\"    notice, this list of conditions and the following disclaimer.
++.\" 2. Redistributions in binary form must reproduce the above copyright
++.\"    notice, this list of conditions and the following disclaimer in the
++.\"    documentation and/or other materials provided with the distribution.
++.\" 3. All advertising materials mentioning features or use of this software
++.\"    must display the following acknowledgement:
++.\"	This product includes software developed by the University of
++.\"	California, Berkeley and its contributors.
++.\" 4. Neither the name of the University nor the names of its contributors
++.\"    may be used to endorse or promote products derived from this software
++.\"    without specific prior written permission.
++.\"
++.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++.\" SUCH DAMAGE.
++.\"
++.\"	@(#)gprof.1	8.1 (Berkeley) 6/6/93
++.\"
++.TH GPROF 1 "July 28, 2005" "Apple Computer, Inc."
++.SH NAME
++gprof \- display call graph profile data
++.SH SYNOPSIS
++.B gprof
++[ \fIoptions\fR ] [ a.out [ gmon.out ... ] ]
++.SH DESCRIPTION
++.I gprof
++produces an execution profile of a C, Pascal, or Fortran77 program.
++The effect of called routines is incorporated in the profile of each caller.
++The profile data is taken from the call graph profile file
++.RI ( gmon.out
++by default), which is created by programs
++compiled with the 
++.B \-pg
++option of 
++.IR cc ,
++.IR pc ,
++and
++.IR f77 .
++The symbol table in the
++named object file
++.RI ( a.out
++by default)
++is read and correlated with the
++call graph profile file.
++If more than one profile file is specified,
++the
++.I gprof
++output shows the sum of the profile information in the given profile files.
++.PP
++First, a flat profile is given.
++This listing gives the total execution times
++and call counts for each of the functions
++in the program, sorted by decreasing time.
++.PP
++Next, these times are propagated along the edges of the call graph.
++Cycles are discovered, and calls into a cycle are made to share the time 
++of the cycle.
++A second listing shows the functions
++sorted according to the time they represent
++including the time of their call graph descendents.
++Below each function entry is shown its (direct) call graph children,
++and how their times are propagated to this function.
++A similar display above the function shows how this function's time and the
++time of its descendents is propagated to its (direct) call graph parents.
++.PP
++Cycles are also shown, with an entry for the cycle as a whole as well as a 
++listing of the members of the cycle and their contributions to the
++time and call counts of the cycle.
++.SH "UNIVERSAL FILE SUPPORT"
++.I gprof
++accepts a ``universal'' file for the
++.I a.out
++file, using the host architecture from the file.  (It is an error if the 
++``universal'' file does not contain the host architecture.)
++.SH OPTIONS
++.TP 
++The following options are available:
++.TP
++.B \-a
++suppresses the displaying of statically declared functions.
++If this option is given, all relevant information about the static function
++(such as time samples, calls to other functions, calls from other functions)
++belongs to the function loaded just before the static function in the
++.I a.out
++file.
++.TP
++.B \-b
++suppresses the displaying of a description of each field in the profile.
++.TP
++.B \-c
++the static call graph of the program is discovered by a heuristic
++which examines the text space of the object file.
++Static-only parents or children are indicated
++with call counts of 0.  (The 
++.B \-c
++option is currently not supported.)
++.TP
++.BI \-e " name"
++suppresses the displaying of the graph profile entry for routine
++.I name
++and all its descendants
++(unless they have other ancestors that aren't suppressed).
++More than one
++.B \-e
++option may be given.
++Only one
++.I name
++may be given with each
++.B \-e
++option.
++.TP
++.BI \-E " name"
++suppresses the displaying of the graph profile entry for routine
++.I name
++(and its descendants) as 
++.BR \-e ,
++above, and also excludes the time spent in
++.I name
++(and its descendants) from the total and percentage time computations.
++(For example,
++.B \-E
++.I mcount
++and all of the other
++.IR monitor (3)
++routines are excluded by default.)
++.TP
++.BI \-f " name"
++displays the graph profile entry of only the specified routine
++.I name
++and its descendants.
++More than one
++.B \-f
++option may be given.
++Only one
++.I name
++may be given with each
++.B \-f
++option.
++.TP
++.BI \-F " name"
++displays the graph profile entry of only the routine
++.I name
++and its descendants (as 
++.BR \-f,
++above) and also uses only the times of the displayed routines
++in total time and percentage computations.
++More than one
++.B \-F
++option may be given.
++Only one
++.I name
++may be given with each
++.B \-F
++option.
++The
++.B \-F
++option
++overrides
++the
++.B \-E
++option.
++.TP
++.B \-s
++a profile file
++.I gmon.sum
++is produced which represents
++the sum of the profile information in all the specified profile files.
++This summary profile file may be given to subsequent
++executions of gprof (probably also with a
++.BR \-s )
++to accumulate profile data across several runs of an
++.I a.out
++file.
++.TP
++.B \-S
++produces four order files suitable as input to 
++.IR ld (1):
++.I gmon.order
++is an ordering based on a closest is best algorithm,
++.I callf.order
++is based on call frequency,
++.I callo.order
++is based on call order and
++.I time.order
++is based on time.
++The order files contain only those functions which were called or
++sampled (including spontaneous functions). For library functions to
++appear correctly in the order file, a 
++.I whatsloaded
++file produced by
++.IR ld (1)
++should exist in the working directory. Filenames in the order file
++will be missing for: files compiled without the 
++.BR \-g
++option, assembly files, and stripped executables.
++This option does not work with executables that have already been scattered.
++The
++.I gmon.order
++file can take a long time to produce and can be suppressed with the
++.B \-x
++option.
++.TP
++.B \-z
++displays routines which have zero usage (as indicated by call counts
++and accumulated time).
++This is useful in conjunction with the 
++.B \-c
++option for discovering which routines were never called.
++.SH FILES
++.ta 1.5i
++a.out	
++the namelist and text space.
++.br
++gmon.out	
++dynamic call graph and profile.
++.br
++gmon.sum	
++summarized dynamic call graph and profile.
++.br
++gmon.order	
++ordering based on closest is best algorithm.
++.br
++callf.order	
++ordering based on call frequency.
++.br
++callo.order	
++ordering based on call order.
++.br
++time.order	
++ordering based on time.
++.SH "SEE ALSO"
++monitor(3), profil(2), cc(1)
++.br
++dyld(1) and the DYLD_IMAGE_SUFFIX environment variable
++.br
++``gprof: A Call Graph Execution Profiler'', by
++Graham, S.L., Kessler, P.B., McKusick, M.K.;
++.IR "Proceedings of the SIGPLAN '82 Symposium on Compiler Construction" ,
++SIGPLAN Notices, Vol. 17, No. 6, pp. 120-126, June 1982.
++.SH BUGS
++Beware of quantization errors.
++The granularity of the sampling is shown, but remains
++statistical at best.
++We assume that the time for each execution of a function
++can be expressed by the total time for the function divided
++by the number of times the function is called.
++Thus the time propagated along the call graph arcs to parents of that
++function is directly proportional to the number of times that
++arc is traversed.
++.PP
++Parents which are not themselves profiled will have the time of 
++their profiled children propagated to them, but they will appear
++to be spontaneously invoked in the call graph listing, and will
++not have their time propagated further.
++Similarly, signal catchers, even though profiled, will appear
++to be spontaneous (although for more obscure reasons).
++Any profiled children of signal catchers should have their times
++propagated properly, unless the signal catcher was invoked during 
++the execution of the profiling routine, in which case all is lost.
++.PP
++The profiled program must call 
++.IR exit (2)
++or return normally for the profiling information to be saved
++in the 
++.B gmon.out 
++file.
+diff -Nur cctools-862/misc/Makefile cctools-862-AnV/misc/Makefile
+--- cctools-862/misc/Makefile	2014-11-02 06:48:10.000000000 +0100
++++ cctools-862-AnV/misc/Makefile	2014-12-02 16:59:40.000000000 +0100
+@@ -1,5 +1,7 @@
+ export USE_APPLE_PB_SUPPORT = all
+ 
++CC=clang
++
+ ifneq "" "$(SDKROOT)"
+   SDK = -isysroot $(SDKROOT)
+   CC = $(shell xcrun -find -sdk $(SDKROOT) cc)
+@@ -11,10 +13,10 @@
+   LIBTOOL = libtool
+ endif
+ 
+-OFLAG = -Os
++OFLAG = -Ofast
+ LTO = -DLTO_SUPPORT
+ TRIE = -DTRIE_SUPPORT
+-CFLAGS = $(OFLAG) $(LTO) $(TRIE) -g -Wall \
++CFLAGS = -arch i386 -arch x86_64 $(OFLAG) $(LTO) $(TRIE) -g0 -Wall \
+ 	 -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) $(SDK) \
+ 	 -I$(DT_TOOLCHAIN_DIR)/usr/local/include
+ 
+@@ -36,8 +38,8 @@
+ 
+ BINDIR = /bin
+ USRBINDIR = /usr/bin
+-LOCBINDIR = /usr/local/bin
+-LOCLIBDIR = /usr/local/lib
++LOCBINDIR = $(USRBINDIR)
++LOCLIBDIR = /usr/lib
+ 
+ CFILES1 = libtool.c
+ CFILES2 = lipo.c size.c strings.c nm.c checksyms.c inout.c \
+diff -Nur cctools-862/misc/libtool.c cctools-862-AnV/misc/libtool.c
+--- cctools-862/misc/libtool.c	2014-11-02 06:48:10.000000000 +0100
++++ cctools-862-AnV/misc/libtool.c	2014-12-02 16:59:40.000000000 +0100
+@@ -1374,8 +1374,11 @@
+ 			    }
+ 			}
+ 		    }
+-		    else if(ofiles[i].arch_type == OFILE_Mach_O ||
+-		            ofiles[i].arch_type == OFILE_LLVM_BITCODE){
++		    else if(ofiles[i].arch_type == OFILE_Mach_O
++#ifdef LTO_SUPPORT
++		           || ofiles[i].arch_type == OFILE_LLVM_BITCODE
++#endif		           
++		           ){
+ 			if(cmd_flags.ranlib == TRUE){
+ 			    error("for architecture: %s file: %s is not an "
+ 				  "archive (no processing done on this file)",
+diff -Nur cctools-862/otool/Makefile cctools-862-AnV/otool/Makefile
+--- cctools-862/otool/Makefile	2014-11-02 06:48:11.000000000 +0100
++++ cctools-862-AnV/otool/Makefile	2014-12-02 17:58:08.000000000 +0100
+@@ -1,5 +1,12 @@
+ export USE_APPLE_PB_SUPPORT = all
+ 
++CC = clang -arch x86_64
++CXX = clang -arch x86_64
++LD = clang -arch x86_64 
++STRIP = strip
++AR = ar cru
++RANLIB = ranlib
++
+ ifeq "$(EFITOOLS)" "efitools"
+ 	EFI_SUPPORT = -DEFI_SUPPORT
+ endif
+@@ -13,15 +20,17 @@
+   DSYMUTIL = dsymutil
+ endif
+ 
+-OFLAG = -Os
++OFLAG = -g0 -Ofast
+ LTO = -DLTO_SUPPORT
++# apply otool-ng patches
++OTOOL_NG = -DOTOOL_NG_SUPPORT
++
+ LEGACY = -D_MACH_I386_THREAD_STATUS_FPSTATE_LEGACY_FIELD_NAMES_ \
+ 	 -D_ARCHITECTURE_I386_FPU_FPSTATE_LEGACY_FIELD_NAMES_
+-CFLAGS = $(OFLAG) $(LTO) -g -Wall -I$(SRCROOT)/../include \
++CFLAGS = $(OFLAG) $(LTO) $(OTOOL_NG) -g -Wall -I$(SRCROOT)/../include \
+ 	 -I$(SRCROOT) $(LEGACY) $(EFI_SUPPORT) $(SDK)
+ 
+-LIBSTUFF = -L$(SYMROOT)/../libstuff -lstuff
+-CXXLIB = -stdlib=libc++
++CXXLIB = -stdlib=libc++ -lc++
+ 
+ MKDIRS = /bin/mkdir -p
+ SRCROOT = .
+@@ -30,6 +39,9 @@
+ OFILE_DIR = $(OBJROOT)
+ VPATH = $(OFILE_DIR)
+ 
++LIBSTUFF = $(SRCROOT)/../libstuff/libstuff.a
++LIBSTUFFBIN = -L$(SRCROOT)/../libstuff -lstuff
++
+ BINDIR = /bin
+ USRBINDIR = /usr/bin
+ 
+@@ -37,6 +49,27 @@
+ 	 m88k_disasm.c i386_disasm.c ppc_disasm.c hppa_disasm.c \
+ 	 sparc_disasm.c print_objc.c notify.c arm_disasm.c \
+ 	 print_objc2_64bit.c print_objc2_32bit.c dyld_bind_info.c arm64_disasm.c
++LIBCFILES = ofile_print.c m68k_disasm.c i860_disasm.c \
++	 m88k_disasm.c i386_disasm.c ppc_disasm.c hppa_disasm.c \
++	 sparc_disasm.c print_objc.c notify.c arm_disasm.c \
++	 print_objc2_64bit.c print_objc2_32bit.c dyld_bind_info.c arm64_disasm.c \
++	../libstuff/SymLoc.c ../libstuff/allocate.c ../libstuff/arch.c \
++	../libstuff/arch_usage.c ../libstuff/best_arch.c ../libstuff/breakout.c \
++	../libstuff/bytesex.c ../libstuff/checkout.c ../libstuff/coff_bytesex.c \
++	../libstuff/crc32.c ../libstuff/dylib_roots.c ../libstuff/dylib_table.c \
++	../libstuff/dynamic_obj/apple_version.c ../libstuff/errors.c ../libstuff/execute.c \
++	../libstuff/fatal_arch.c ../libstuff/fatals.c ../libstuff/get_arch_from_host.c \
++	../libstuff/get_toc_byte_sex.c ../libstuff/guess_short_name.c ../libstuff/hash_string.c \
++	../libstuff/hppa.c ../libstuff/llvm.c ../libstuff/lto.c \
++	../libstuff/macosx_deployment_target.c ../libstuff/ofile.c ../libstuff/ofile_error.c \
++	../libstuff/ofile_get_word.c ../libstuff/print.c ../libstuff/profile_obj/apple_version.c \
++	../libstuff/reloc.c ../libstuff/rnd.c ../libstuff/seg_addr_table.c \
++	../libstuff/set_arch_flag_name.c ../libstuff/static_kld_obj/apple_version.c \
++	../libstuff/static_obj/apple_version.c ../libstuff/swap_headers.c ../libstuff/symbol_list.c \
++	../libstuff/unix_standard_mode.c ../libstuff/version_number.c ../libstuff/vm_flush_cache.c \
++	../libstuff/writeout.c
++
++EFITOOLS=efitools
+ ifeq "$(EFITOOLS)" "efitools"
+ 	CFILES += coff_print.c
+ endif
+@@ -44,31 +77,47 @@
+ 	 sparc_disasm.h m88k_disasm.h i386_disasm.h ppc_disasm.h hppa_disasm.h \
+ 	 notify.h arm_disasm.h dyld_bind_info.h arm64_disasm.h cxa_demangle.h
+ OBJS = $(CFILES:.c=.o) ofile.o
++LIBOBJS = $(LIBCFILES:.c=.o) libmain.o
+ INSTALL_FILES = $(CFILES) $(HFILES) Makefile notes
+ 
++LIBRARY = libdisasm.a
+ PRODUCT = otool
+-all: $(OFILE_DIR) $(SYMROOT) $(PRODUCT).NEW
++all: $(OFILE_DIR) $(SYMROOT) $(PRODUCT).NEW $(LIBRARY)
++
++$(LIBRARY): $(OFILE_DIR) $(LIBOBJS)
++	$(AR) $@ $(LIBOBJS)
++	-rm -Rf stuff
++	$(RANLIB) $@
+ 
+ $(PRODUCT).NEW:	$(OFILE_DIR) $(SYMROOT) $(OBJS)
+ 	$(CC) $(RC_CFLAGS) -nostdlib -r -o $(OBJROOT)/private.o \
+-		$(OBJS) $(LIBSTUFF)
++		$(OBJS) $(LIBSTUFFBIN)
+ 	$(CXX) $(RC_CFLAGS) $(SDK) -o $(SYMROOT)/$@ $(OBJROOT)/private.o \
+-		$(LIBSTUFF) $(CXXLIB)
+-	$(DSYMUTIL) $(SYMROOT)/$@
++		$(LIBSTUFFBIN) $(CXXLIB)
++	$(STRIP) $(SYMROOT)/$@
++#	$(DSYMUTIL) $(SYMROOT)/$@
+ 
+ .c.o:
+ 	$(CC) $(CFLAGS) $(RC_CFLAGS) -c -o $(OFILE_DIR)/$*.o $<
+ 
++libmain.o: main.c
++	$(CC) $(CFLAGS) $(RC_CFLAGS) -D_BUILD_LIB_=1 -c -o $(OFILE_DIR)/$@ $<
++
+ ofile.o: $(SRCROOT)/../libstuff/ofile.c
+ 	$(CC) $(CFLAGS) $(RC_CFLAGS) -c -o $(OFILE_DIR)/$*.o \
+ 		$(SRCROOT)/../libstuff/ofile.c -DOTOOL
+ 
++llvm.o: $(SRCROOT)/../libstuff/llvm.c
++	$(CC) $(CFLAGS) $(RC_CFLAGS) -c -o $(OFILE_DIR)/$*.o \
++		$(SRCROOT)/../libstuff/ofile.c -DOTOOL -D_BUILD_LIB_
++
+ clean: shlib_clean
+ 	-rm -f $(SYMROOT)/$(PRODUCT).NEW
++	-rm -f *.a
+ 	-rm -r -f *dSYM
+ 
+ shlib_clean:
+-	-cd $(OFILE_DIR); rm -f $(OBJS) private.o
++	-cd $(OFILE_DIR); rm -f $(OBJS) *.o
+ 	-rm -f make.out
+ 
+ install: all
+diff -Nur cctools-862/otool/combineobjs.sh cctools-862-AnV/otool/combineobjs.sh
+--- cctools-862/otool/combineobjs.sh	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/otool/combineobjs.sh	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,38 @@
++#!/bin/sh
++
++mkdir -p stuff
++
++cd stuff32
++
++for i in *.o; do \
++export O64DIR=`ls -1d ../stuff64`
++export O64=`basename $O64DIR`
++if [ "$i" = "$O64" ]; then
++ lipo -create -output ../stuff/$i $i ../stuff64/$i
++else \
++  cp $i ../stuff/$i
++fi
++done
++
++cd ..
++
++cd stuff
++for i in *.o; do \
++export O32DIR=`ls -1d ../stuff32/$i`
++export O32=`basename $O32DIR`
++if [ "$i" = "$O32" ]; then \
++echo 0 > /dev/null
++else \
++cp $O32 .
++fi
++done
++
++export O32=
++export O64=
++export O32DIR=
++export O64DIR=
++
++-rm -Rf stuff32 stuff64 libstuffx86.a libstuffx64.a
++
++cd ..
++
+diff -Nur cctools-862/otool/extra.txt cctools-862-AnV/otool/extra.txt
+--- cctools-862/otool/extra.txt	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/otool/extra.txt	2014-12-02 16:59:40.000000000 +0100
+@@ -0,0 +1,42 @@
++../libstuff/SymLoc.c
++../libstuff/allocate.c
++../libstuff/arch.c
++../libstuff/arch_usage.c
++../libstuff/best_arch.c
++../libstuff/breakout.c
++../libstuff/bytesex.c
++../libstuff/checkout.c
++../libstuff/coff_bytesex.c
++../libstuff/crc32.c
++../libstuff/dylib_roots.c
++../libstuff/dylib_table.c
++../libstuff/dynamic_obj/apple_version.c
++../libstuff/errors.c
++../libstuff/execute.c
++../libstuff/fatal_arch.c
++../libstuff/fatals.c
++../libstuff/get_arch_from_host.c
++../libstuff/get_toc_byte_sex.c
++../libstuff/guess_short_name.c
++../libstuff/hash_string.c
++../libstuff/hppa.c
++../libstuff/llvm.c
++../libstuff/lto.c
++../libstuff/macosx_deployment_target.c
++../libstuff/ofile.c
++../libstuff/ofile_error.c
++../libstuff/ofile_get_word.c
++../libstuff/print.c
++../libstuff/profile_obj/apple_version.c
++../libstuff/reloc.c
++../libstuff/rnd.c
++../libstuff/seg_addr_table.c
++../libstuff/set_arch_flag_name.c
++../libstuff/static_kld_obj/apple_version.c
++../libstuff/static_obj/apple_version.c
++../libstuff/swap_headers.c
++../libstuff/symbol_list.c
++../libstuff/unix_standard_mode.c
++../libstuff/version_number.c
++../libstuff/vm_flush_cache.c
++../libstuff/writeout.c
+diff -Nur cctools-862/otool/main.c cctools-862-AnV/otool/main.c
+--- cctools-862/otool/main.c	2014-11-02 06:48:11.000000000 +0100
++++ cctools-862-AnV/otool/main.c	2014-12-02 17:03:00.000000000 +0100
+@@ -57,6 +57,11 @@
+ #include "arm64_disasm.h"
+ #include "llvm-c/Disassembler.h"
+ 
++#ifdef _BUILD_LIB_
++#undef static
++#define static
++#endif
++
+ /* Name of this program for error messages (argv[0]) */
+ char *progname = NULL;
+ 
+@@ -95,6 +100,10 @@
+ enum bool Qflag = FALSE; /* use otool's disassembler */
+ enum bool qflag = FALSE; /* use 'C' Public llvm-mc disassembler */
+ enum bool jflag = FALSE; /* print opcode bytes */
++#ifdef OTOOL_NG_SUPPORT
++enum bool zflag = FALSE; /* change PIE flag */
++uint64_t start_offset;   /* offset to start reading mach-o header from */
++#endif
+ char *pflag = NULL; 	 /* procedure name to start disassembling from */
+ char *segname = NULL;	 /* name of the section to print the contents of */
+ char *sectname = NULL;
+@@ -306,10 +315,16 @@
+     char *object_addr,
+     uint32_t object_size);
+ 
++#ifdef OTOOL_NG_SUPPORT
++static void modify_pie_flag(struct ofile *ofile);
++static void modify_pie_flag_aux(char *start);
++#endif
++
+ /* apple_version is created by the libstuff/Makefile */
+ extern char apple_version[];
+ char *version = apple_version;
+ 
++#ifndef _BUILD_LIB_
+ int
+ main(
+ int argc,
+@@ -430,6 +445,19 @@
+ 		object_processing = TRUE;
+ 		continue;
+ 	    }
++#ifdef OTOOL_NG_SUPPORT	   
++	    if (argv[i][1] == 'O')
++	    {
++	    	if (argc <= i + 1)
++	    	{
++	    		error("-O requires and argument (offset value)");
++	    		usage();
++	    	}
++	    	start_offset = strtoul(argv[i + 1], NULL, 0);
++	    	i++;
++	    	continue;
++	    }	    	
++#endif	    	
+ 	    for(j = 1; argv[i][j] != '\0'; j++){
+ 		switch(argv[i][j]){
+ 		case 'V':
+@@ -533,6 +561,12 @@
+ 		case 'Z':
+ 		    Zflag = TRUE;
+ 		    break;
++#ifdef OTOOL_NG_SUPPORT
++		case 'z':
++			zflag = TRUE;
++			object_processing = TRUE;
++			break;
++#endif
+ 		case 'm':
+ 		    use_member_syntax = FALSE;
+ 		    break;
+@@ -558,6 +592,16 @@
+ 	/*
+ 	 * Check for correctness of arguments.
+ 	 */
++#ifdef OTOOL_NG_SUPPORT
++	if(!fflag && !aflag && !hflag && !lflag && !Lflag && !tflag && !dflag &&
++	   !oflag && !Oflag && !rflag && !Tflag && !Mflag && !Rflag && !Iflag &&
++	   !Cflag && !print_bind_info &&
++	   !Hflag && !Gflag && !Sflag && !cflag && !iflag && !Dflag &&!segname &&
++	   !zflag){
++	    error("one of -fahlLtdoOrTMRIHCGScisz must be specified");
++	    usage();
++	}
++#else
+ 	if(!fflag && !aflag && !hflag && !lflag && !Lflag && !tflag && !dflag &&
+ 	   !oflag && !Oflag && !rflag && !Tflag && !Mflag && !Rflag && !Iflag &&
+ 	   !Cflag && !print_bind_info && !version &&
+@@ -566,6 +610,7 @@
+ 		  "specified");
+ 	    usage();
+ 	}
++#endif
+ 	if(qflag && Qflag){
+ 	    error("can't specify both -q and -Q");
+ 	    usage();
+@@ -598,8 +643,13 @@
+ 	}
+ 
+ 	for(j = 0; j < nfiles; j++){
++#ifdef OTOOL_NG_SUPPORT		
++	    ofile_process(files[j], arch_flags, narch_flags, all_archs, TRUE,
++			  TRUE, use_member_syntax, processor, NULL, start_offset);
++#else
+ 	    ofile_process(files[j], arch_flags, narch_flags, all_archs, TRUE,
+ 			  TRUE, use_member_syntax, processor, NULL);
++#endif	    
+ 	}
+ 
+ 	if(errors)
+@@ -616,9 +666,15 @@
+ usage(
+ void)
+ {
++#ifdef OTOOL_NG_SUPPORT
++	fprintf(stderr,
++		"Usage: %s [-arch arch_type] [-fahlLDtdorSTMRIHGvVcXmqQjCzO] "
++		"[-mcpu=arg] [--version] <object file> ...\n", progname);
++#else
+ 	fprintf(stderr,
+ 		"Usage: %s [-arch arch_type] [-fahlLDtdorSTMRIHGvVcXmqQjC] "
+ 		"[-mcpu=arg] [--version] <object file> ...\n", progname);
++#endif
+ 
+ 	fprintf(stderr, "\t-f print the fat headers\n");
+ 	fprintf(stderr, "\t-a print the archive header\n");
+@@ -655,9 +711,14 @@
+ 	fprintf(stderr, "\t-mcpu=arg use `arg' as the cpu for disassembly\n");
+ 	fprintf(stderr, "\t-j print opcode bytes\n");
+ 	fprintf(stderr, "\t-C print linker optimization hints\n");
++#ifdef OTOOL_NG_SUPPORT	
++	fprintf(stderr, "\t-z modify current PIE flag\n");
++	fprintf(stderr, "\t-O <offset> file offset where to start reading Mach-O header from (default is 0)\n");
++#endif
+ 	fprintf(stderr, "\t--version print the version of %s\n", progname);
+ 	exit(EXIT_FAILURE);
+ }
++#endif
+ 
+ static
+ void
+@@ -971,6 +1032,12 @@
+ 				  ofile->mh64->flags, vflag);
+ 	}
+ 
++#ifdef OTOOL_NG_SUPPORT
++	if (zflag)
++	{
++		modify_pie_flag(ofile);
++	}
++#endif	
+ 	/*
+ 	 * Load commands.
+ 	 */
+@@ -3729,3 +3796,99 @@
+ 	return(0);
+ }
+ #endif /* !defined(__DYNAMIC__) */
++
++#ifdef OTOOL_NG_SUPPORT
++/* invert the PIE flag at fat and non-fat binaries */
++static void
++modify_pie_flag(struct ofile *ofile)
++{
++	if (ofile == NULL)
++	{
++		fprintf(stderr, "ERROR: ofile argument is NULL\n");
++		return;
++	}
++	/* the ofile struct contains the filename and pointer to alloc'ed memory with target contents */
++	uint32_t magic = *(uint32_t*)(ofile->file_addr);
++	if (magic == FAT_MAGIC) // byte order is little endian on internal buffer
++	{
++		printf("Target is a fat archive, modifying PIE flag for each arch...\n");
++		/* ofile structure already contains the all the FAT related information */
++		for (int i = 0 ; i < ofile->fat_header->nfat_arch; i++)
++		{
++			/* ofile also contains an array of struct fat_arch */
++			modify_pie_flag_aux((char*)(ofile->file_addr+ofile->fat_archs[i].offset));
++		}
++		/* otool swaps internally the byte order so we need to swap it back */
++		enum byte_sex host_byte_sex;
++		host_byte_sex = get_host_byte_sex();
++		swap_fat_arch(ofile->fat_archs, ofile->fat_header->nfat_arch, host_byte_sex);
++		swap_fat_header(ofile->fat_header, host_byte_sex);
++	}
++	else
++	{
++		modify_pie_flag_aux((char*)(ofile->file_addr));
++	}	
++
++	/* and now overwrite the modified file */
++	FILE *patched_file;
++	patched_file = fopen(ofile->file_name, "wb+");
++	if (patched_file == NULL) 
++	{
++		system_fatal("Can't open file %s", ofile->file_name);
++	}
++	
++	/* let's go command style! nothing can go wrong right ? :-) */
++	size_t bytes_written = fwrite(ofile->file_addr, sizeof(char), ofile->file_size, patched_file);
++	if (bytes_written != ofile->file_size)
++	{
++	 system_fatal("Write failed to %s", ofile->file_name);
++	}
++	
++	fclose(patched_file);
++}
++
++static void
++modify_pie_flag_aux(char *start)
++{
++	if (start == NULL)
++	{
++		fprintf(stderr, "ERROR: start argument is NULL\n");
++		return;
++	}
++	uint32_t magic = *(uint32_t*)(start);
++	if (magic == MH_MAGIC)
++	{
++		struct mach_header *mh = (struct mach_header*)(start);
++		uint32_t flags = mh->flags;
++		if (flags & MH_PIE)
++		{
++			printf("PIE flag is currently set. Removing...\n");
++			flags &= ~MH_PIE;
++		}
++		else
++		{
++			printf("PIE flag is currently not set. Setting up...\n");
++			flags |= MH_PIE;
++		}
++		/* update flag */
++		mh->flags = flags;
++	}
++	else if (magic == MH_MAGIC_64)
++	{
++		struct mach_header_64 *mh64 = (struct mach_header_64*)(start);
++		uint32_t flags = mh64->flags;
++		if (flags & MH_PIE)
++		{
++			printf("PIE flag is currently set. Removing...\n");
++			flags &= ~MH_PIE;
++		}
++		else
++		{
++			printf("PIE flag is currently not set. Setting up...\n");
++			flags |= MH_PIE;
++		}
++		/* update flag */
++		mh64->flags = flags;
++	}
++}
++#endif
+diff -Nur cctools-862/otool/ofile_print.c cctools-862-AnV/otool/ofile_print.c
+--- cctools-862/otool/ofile_print.c	2014-11-02 06:48:11.000000000 +0100
++++ cctools-862-AnV/otool/ofile_print.c	2014-12-02 16:59:40.000000000 +0100
+@@ -1882,6 +1882,10 @@
+     struct entry_point_command ep;
+     struct source_version_command sv;
+     uint64_t big_load_end;
++#ifdef OTOOL_NG_SUPPORT
++    /* store __TEXT segment vmaddr so we can compute the entrypoint in LC_MAIN */
++    uint64_t text_vmaddr = 0;
++#endif
+ 
+ 	host_byte_sex = get_host_byte_sex();
+ 	swapped = host_byte_sex != load_commands_byte_sex;
+@@ -1916,6 +1920,14 @@
+ 		    sg.vmaddr, sg.vmsize, sg.fileoff, sg.filesize,
+ 		    sg.maxprot, sg.initprot, sg.nsects, sg.flags,
+ 		    object_size, verbose);
++#ifdef OTOOL_NG_SUPPORT
++		/* copy the value of vmaddr into our variable to use later */
++		/* this is because LC_MAIN offset is from the __TEXT segment */
++		if (strncmp(sg.segname, "__TEXT", 16) == 0)
++		{
++			text_vmaddr = sg.vmaddr;
++		}
++#endif
+ 		p = (char *)lc + sizeof(struct segment_command);
+ 		for(j = 0 ; j < sg.nsects ; j++){
+ 		    if(p + sizeof(struct section) >
+@@ -1952,6 +1964,14 @@
+ 		    sg64.vmaddr, sg64.vmsize, sg64.fileoff, sg64.filesize,
+ 		    sg64.maxprot, sg64.initprot, sg64.nsects, sg64.flags,
+ 		    object_size, verbose);
++#ifdef OTOOL_NG_SUPPORT
++		/* copy the value of vmaddr into our variable to use later */
++		/* this is because LC_MAIN offset is from the __TEXT segment */
++		if (strncmp(sg64.segname, "__TEXT", 16) == 0)
++		{
++			text_vmaddr = sg64.vmaddr;
++		}
++#endif
+ 		p = (char *)lc + sizeof(struct segment_command_64);
+ 		for(j = 0 ; j < sg64.nsects ; j++){
+ 		    if(p + sizeof(struct section_64) >
+@@ -2303,7 +2323,11 @@
+ 		memcpy((char *)&ep, (char *)lc, size);
+ 		if(swapped)
+ 		    swap_entry_point_command(&ep, host_byte_sex);
++#ifdef OTOOL_NG_SUPPORT
++		print_entry_point_command(&ep, text_vmaddr);
++#else
+ 		print_entry_point_command(&ep);
++#endif
+ 		break;
+ 
+ 	    default:
+@@ -2515,7 +2539,11 @@
+ 	    printf("   vmaddr 0x%08x\n", (uint32_t)vmaddr);
+ 	    printf("   vmsize 0x%08x\n", (uint32_t)vmsize);
+ 	}
++#ifdef OTOOL_NG_SUPPORT
++	printf("  fileoff 0x%llx", fileoff);
++#else
+ 	printf("  fileoff %llu", fileoff);
++#endif
+ 	if(fileoff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2642,13 +2670,21 @@
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("    offset 0x%x", offset);
++#else
+ 	printf("    offset %u", offset);
++#endif
+ 	if(offset > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
+ 	printf("     align 2^%u (%d)\n", align, 1 << align);
++#ifdef OTOOL_NG_SUPPORT
++	printf("    reloff 0x%x", reloff);
++#else
+ 	printf("    reloff %u", reloff);
++#endif
+ 	if(reloff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2768,7 +2804,11 @@
+ 	    printf(" Incorrect size\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("  symoff 0x%x", st->symoff);
++#else
+ 	printf("  symoff %u", st->symoff);
++#endif
+ 	if(st->symoff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2792,7 +2832,11 @@
+ 	    else
+ 		printf("\n");
+ 	}
++#ifdef OTOOL_NG_SUPPORT
++	printf("  stroff 0x%x", st->stroff);
++#else
+ 	printf("  stroff %u", st->stroff);
++#endif
+ 	if(st->stroff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2858,7 +2902,11 @@
+ 	    printf(" (past the end of the symbol table)\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("         tocoff 0x%x", dyst->tocoff);
++#else
+ 	printf("         tocoff %u", dyst->tocoff);
++#endif
+ 	if(dyst->tocoff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2871,7 +2919,11 @@
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("      modtaboff 0x%x", dyst->modtaboff);
++#else
+ 	printf("      modtaboff %u", dyst->modtaboff);
++#endif
+ 	if(dyst->modtaboff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2891,7 +2943,11 @@
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("   extrefsymoff 0x%x", dyst->extrefsymoff);
++#else
+ 	printf("   extrefsymoff %u", dyst->extrefsymoff);
++#endif
+ 	if(dyst->extrefsymoff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2904,7 +2960,11 @@
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf(" indirectsymoff 0x%x", dyst->indirectsymoff);
++#else
+ 	printf(" indirectsymoff %u", dyst->indirectsymoff);
++#endif
+ 	if(dyst->indirectsymoff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2917,7 +2977,11 @@
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("      extreloff 0x%x", dyst->extreloff);
++#else
+ 	printf("      extreloff %u", dyst->extreloff);
++#endif
+ 	if(dyst->extreloff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2928,7 +2992,11 @@
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("      locreloff 0x%x", dyst->locreloff);
++#else
+ 	printf("      locreloff %u", dyst->locreloff);
++#endif
+ 	if(dyst->locreloff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2960,7 +3028,11 @@
+ 	    printf(" Incorrect size\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("  offset 0x%x", ss->offset);
++#else
+ 	printf("  offset %u", ss->offset);
++#endif
+ 	if(ss->offset > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -2996,11 +3068,19 @@
+ 	    printf("\n");
+ 	if(fl->fvmlib.name.offset < fl->cmdsize){
+ 	    p = (char *)lc + fl->fvmlib.name.offset;
++#ifdef OTOOL_NG_SUPPORT
++	    printf("          name %s (offset 0x%x)\n",
++#else
+ 	    printf("          name %s (offset %u)\n",
++#endif
+ 		   p, fl->fvmlib.name.offset);
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++	    printf("          name ?(bad offset 0x%x)\n",
++#else
+ 	    printf("          name ?(bad offset %u)\n",
++#endif
+ 		   fl->fvmlib.name.offset);
+ 	}
+ 	printf(" minor version %u\n", fl->fvmlib.minor_version);
+@@ -3041,11 +3121,19 @@
+ 	    printf("\n");
+ 	if(dl->dylib.name.offset < dl->cmdsize){
+ 	    p = (char *)lc + dl->dylib.name.offset;
++#ifdef OTOOL_NG_SUPPORT
++	    printf("         name %s (offset 0x%x)\n",
++#else
+ 	    printf("         name %s (offset %u)\n",
++#endif
+ 		   p, dl->dylib.name.offset);
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++	    printf("         name ?(bad offset 0x%x)\n",
++#else
+ 	    printf("         name ?(bad offset %u)\n",
++#endif
+ 		   dl->dylib.name.offset);
+ 	}
+ 	printf("   time stamp %u ", dl->dylib.timestamp);
+@@ -3088,11 +3176,19 @@
+ 	    printf("\n");
+ 	if(sub->umbrella.offset < sub->cmdsize){
+ 	    p = (char *)lc + sub->umbrella.offset;
++#ifdef OTOOL_NG_SUPPORT
++	    printf("         umbrella %s (offset 0x%x)\n",
++#else
+ 	    printf("         umbrella %s (offset %u)\n",
++#endif
+ 		   p, sub->umbrella.offset);
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++	    printf("         umbrella ?(bad offset 0x%x)\n",
++#else
+ 	    printf("         umbrella ?(bad offset %u)\n",
++#endif
+ 		   sub->umbrella.offset);
+ 	}
+ }
+@@ -3116,11 +3212,19 @@
+ 	    printf("\n");
+ 	if(usub->sub_umbrella.offset < usub->cmdsize){
+ 	    p = (char *)lc + usub->sub_umbrella.offset;
++#ifdef OTOOL_NG_SUPPORT
++	    printf("         sub_umbrella %s (offset 0x%x)\n",
++#else
+ 	    printf("         sub_umbrella %s (offset %u)\n",
++#endif
+ 		   p, usub->sub_umbrella.offset);
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++		printf("         sub_umbrella ?(bad offset 0x%x)\n",
++#else
+ 	    printf("         sub_umbrella ?(bad offset %u)\n",
++#endif
+ 		   usub->sub_umbrella.offset);
+ 	}
+ }
+@@ -3144,11 +3248,19 @@
+ 	    printf("\n");
+ 	if(lsub->sub_library.offset < lsub->cmdsize){
+ 	    p = (char *)lc + lsub->sub_library.offset;
++#ifdef OTOOL_NG_SUPPORT
++	    printf("         sub_library %s (offset 0x%x)\n",
++#else
+ 	    printf("         sub_library %s (offset %u)\n",
++#endif
+ 		   p, lsub->sub_library.offset);
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++		printf("         sub_library ?(bad offset 0x%x)\n",
++#else
+ 	    printf("         sub_library ?(bad offset %u)\n",
++#endif
+ 		   lsub->sub_library.offset);
+ 	}
+ }
+@@ -3172,11 +3284,19 @@
+ 	    printf("\n");
+ 	if(csub->client.offset < csub->cmdsize){
+ 	    p = (char *)lc + csub->client.offset;
++#ifdef OTOOL_NG_SUPPORT
++	    printf("         client %s (offset 0x%x)\n",
++#else
+ 	    printf("         client %s (offset %u)\n",
++#endif
+ 		   p, csub->client.offset);
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++		printf("         client ?(bad offset 0x%x)\n",
++#else
+ 	    printf("         client ?(bad offset %u)\n",
++#endif
+ 		   csub->client.offset);
+ 	}
+ }
+@@ -3202,11 +3322,19 @@
+ 	    printf("\n");
+ 	if(pbdylib->name.offset < pbdylib->cmdsize){
+ 	    p = (char *)lc + pbdylib->name.offset;
++#ifdef OTOOL_NG_SUPPORT
++	    printf("           name %s (offset 0x%x)\n",
++#else
+ 	    printf("           name %s (offset %u)\n",
++#endif
+ 		   p, pbdylib->name.offset);
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++		printf("           name ?(bad offset 0x%x)\n",
++#else
+ 	    printf("           name ?(bad offset %u)\n",
++#endif
+ 		   pbdylib->name.offset);
+ 	}
+ 	printf("       nmodules %u\n", pbdylib->nmodules);
+@@ -3214,7 +3342,11 @@
+ 	if(pbdylib->linked_modules.offset < pbdylib->cmdsize){
+ 	    p = (char *)lc + pbdylib->linked_modules.offset;
+ 	    if(verbose == TRUE){
++#ifdef OTOOL_NG_SUPPORT
++		printf(" linked_modules (offset 0x%x)\n",	    	
++#else
+ 		printf(" linked_modules (offset %u)\n",
++#endif
+ 			pbdylib->linked_modules.offset);
+ 		for(i = 0; i < pbdylib->nmodules; i++){
+ 		    if(((p[i/8] >> (i%8)) & 1) == 1)
+@@ -3231,11 +3363,19 @@
+ 		}
+ 		if(i <= pbdylib->nmodules)
+ 		    printf("...");
++#ifdef OTOOL_NG_SUPPORT		
++		printf(" (offset 0x%x)\n", pbdylib->linked_modules.offset);
++#else
+ 		printf(" (offset %u)\n", pbdylib->linked_modules.offset);
++#endif
+ 	    }
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT		
++		printf(" linked_modules ?(bad offset 0x%x)\n",
++#else			
+ 	    printf(" linked_modules ?(bad offset %u)\n",
++#endif	    	
+ 		   pbdylib->linked_modules.offset);
+ 	}
+ }
+@@ -3267,10 +3407,18 @@
+ 	    printf("\n");
+ 	if(dyld->name.offset < dyld->cmdsize){
+ 	    p = (char *)lc + dyld->name.offset;
++#ifdef OTOOL_NG_SUPPORT	    
++	    printf("         name %s (offset 0x%x)\n", p, dyld->name.offset);
++#else	    
+ 	    printf("         name %s (offset %u)\n", p, dyld->name.offset);
++#endif	    
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT		
++		printf("         name ?(bad offset 0x%x)\n", dyld->name.offset);
++#else
+ 	    printf("         name ?(bad offset %u)\n", dyld->name.offset);
++#endif	    
+ 	}
+ }
+ 
+@@ -3293,10 +3441,18 @@
+ 	    printf("\n");
+ 	if(ff->name.offset < ff->cmdsize){
+ 	    p = (char *)lc + ff->name.offset;
++#ifdef OTOOL_NG_SUPPORT	    
++	    printf("          name %s (offset 0x%x)\n", p, ff->name.offset);
++#else	    
+ 	    printf("          name %s (offset %u)\n", p, ff->name.offset);
++#endif	    
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT
++		printf("          name ?(bad offset 0x%x)\n", ff->name.offset);
++#else		
+ 	    printf("          name ?(bad offset %u)\n", ff->name.offset);
++#endif	    
+ 	}
+ 	printf("   header addr 0x%08x\n", (unsigned int)ff->header_addr);
+ }
+@@ -3366,7 +3522,11 @@
+ 	    printf(" Incorrect size\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT	
++	printf("  offset 0x%x", hints->offset);
++#else	
+ 	printf("  offset %u", hints->offset);
++#endif	
+ 	if(hints->offset > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -3454,7 +3614,11 @@
+ 	    printf(" Incorrect size\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT	
++	printf("  dataoff 0x%x", ld->dataoff);
++#else	
+ 	printf("  dataoff %u", ld->dataoff);
++#endif	
+ 	if(ld->dataoff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -3548,7 +3712,11 @@
+  */
+ void
+ print_entry_point_command(
++#ifdef OTOOL_NG_SUPPORT
++struct entry_point_command *ep, uint64_t text_vmaddr)
++#else
+ struct entry_point_command *ep)
++#endif
+ {
+ 	printf("       cmd LC_MAIN\n");
+ 	printf("   cmdsize %u", ep->cmdsize);
+@@ -3556,8 +3724,15 @@
+ 	    printf(" Incorrect size\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT	
++	printf("  entryoff 0x%llx\n", ep->entryoff);
++#else	
+ 	printf("  entryoff %llu\n", ep->entryoff);
++#endif	
+ 	printf(" stacksize %llu\n", ep->stacksize);
++#ifdef OTOOL_NG_SUPPORT
++	printf("entrypoint %p\n", (void*)(text_vmaddr + ep->entryoff));
++#endif
+ }
+ 
+ /*
+@@ -3579,10 +3754,18 @@
+ 	    printf("\n");
+ 	if(rpath->path.offset < rpath->cmdsize){
+ 	    p = (char *)lc + rpath->path.offset;
++#ifdef OTOOL_NG_SUPPORT	    
++	    printf("         path %s (offset 0x%x)\n", p, rpath->path.offset);
++#else	    
+ 	    printf("         path %s (offset %u)\n", p, rpath->path.offset);
++#endif	    
+ 	}
+ 	else{
++#ifdef OTOOL_NG_SUPPORT		
++		printf("         path ?(bad offset 0x%x)\n", rpath->path.offset);
++#else		
+ 	    printf("         path ?(bad offset %u)\n", rpath->path.offset);
++#endif	    
+ 	}
+ }
+ 
+@@ -3603,7 +3786,11 @@
+ 	    printf(" Incorrect size\n");
+ 	else
+ 	    printf("\n");
++#ifdef OTOOL_NG_SUPPORT
++	printf("    cryptoff  0x%x", ec->cryptoff);
++#else
+ 	printf("    cryptoff  %u", ec->cryptoff);
++#endif
+ 	if(ec->cryptoff > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -3714,8 +3901,11 @@
+ 	    printf(" Incorrect size\n");
+ 	else
+ 	    printf("\n");
+-
++#ifdef OTOOL_NG_SUPPORT
++	printf("     rebase_off 0x%x", dc->rebase_off);
++#else
+ 	printf("     rebase_off %u", dc->rebase_off);
++#endif
+ 	if(dc->rebase_off > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -3727,8 +3917,11 @@
+ 	    printf(" (past end of file)\n");
+ 	else
+ 	    printf("\n");
+-
++#ifdef OTOOL_NG_SUPPORT
++	printf("       bind_off 0x%x", dc->bind_off);
++#else
+ 	printf("       bind_off %u", dc->bind_off);
++#endif
+ 	if(dc->bind_off > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -3741,7 +3934,11 @@
+ 	else
+ 	    printf("\n");
+ 	    
++#ifdef OTOOL_NG_SUPPORT
++	printf("  weak_bind_off 0x%x", dc->weak_bind_off);
++#else
+ 	printf("  weak_bind_off %u", dc->weak_bind_off);
++#endif
+ 	if(dc->weak_bind_off > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -3754,7 +3951,11 @@
+ 	else
+ 	    printf("\n");
+ 
++#ifdef OTOOL_NG_SUPPORT
++	printf("  lazy_bind_off 0x%x", dc->lazy_bind_off);
++#else
+ 	printf("  lazy_bind_off %u", dc->lazy_bind_off);
++#endif
+ 	if(dc->lazy_bind_off > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+@@ -3767,7 +3968,11 @@
+ 	else
+ 	    printf("\n");
+ 	    
++#ifdef OTOOL_NG_SUPPORT
++	printf("     export_off 0x%x", dc->export_off);
++#else
+ 	printf("     export_off %u", dc->export_off);
++#endif
+ 	if(dc->export_off > object_size)
+ 	    printf(" (past end of file)\n");
+ 	else
+diff -Nur cctools-862/otool/ofile_print.h cctools-862-AnV/otool/ofile_print.h
+--- cctools-862/otool/ofile_print.h	2014-11-02 06:48:11.000000000 +0100
++++ cctools-862-AnV/otool/ofile_print.h	2014-12-02 16:59:40.000000000 +0100
+@@ -304,7 +304,11 @@
+     struct source_version_command *sv);
+ 
+ extern void print_entry_point_command(
++#ifdef OTOOL_NG_SUPPORT
++    struct entry_point_command *ep, uint64_t text_vmaddr);
++#else
+     struct entry_point_command *ep);
++#endif
+ 
+ extern void print_rpath_command(
+     struct rpath_command *rpath,
+diff -Nur cctools-862/otool/otool.h cctools-862-AnV/otool/otool.h
+--- cctools-862/otool/otool.h	2014-11-02 06:48:11.000000000 +0100
++++ cctools-862-AnV/otool/otool.h	2014-12-02 16:59:40.000000000 +0100
+@@ -61,6 +61,10 @@
+ extern enum bool qflag; /* use 'C' Public llvm-mc disassembler */
+ extern enum bool gflag; /* group the disassembly */
+ extern enum bool jflag; /* print opcode bytes */
++#ifdef OTOOL_NG_SUPPORT
++extern enum bool zflag; /* change PIE flag */
++extern uint64_t start_offset; /* offset to start reading mach-o header from */
++#endif
+ extern char *pflag; 	/* procedure name to start disassembling from */
+ extern char *segname,
+      *sectname;	    /* name of the section to print the contents of */
