@@ -223,12 +223,14 @@ uint16_t create_ms_dos_stub_checksum(uint16_t *buffer, int len)
 unsigned int calc_pe_checksum(unsigned char *buf, unsigned int peheader, unsigned int size)
 {
 	unsigned int checkSum = 0;
-	unsigned short	val;
+	unsigned short val = 0;
+	unsigned long vall = 0;
 	unsigned int cur = 0;
 
 	/* recalc checksum. */
 	while (cur < size) {
-		val = (unsigned short)(buf + cur);
+		vall = (unsigned long)buf;
+		val = (unsigned short)(vall & 0xFFFF) + cur;
 
 		if ((cur == peheader + 88) || (cur == peheader + 90))
 			val = 0;
@@ -311,7 +313,7 @@ int main(int argc, char **argv)
 		{
 			if (dosstub->e_magic != EFI_IMAGE_TE_SIGNATURE)
 			{
-				printf("ERROR: File %s (nr %d) has bad DOS header magic\n”, argv[curfile+2], (curfile+1));
+				printf("ERROR: File %s (nr %d) has bad DOS header magic\n", argv[curfile+2], (curfile+1));
 
 				return -3;
 			} else {
