@@ -5,12 +5,6 @@
 //	purpose:	main
 //********************************************************************
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 #include "StdAfx.h"
 #include "DebugUsb.h"
 

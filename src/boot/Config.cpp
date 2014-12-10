@@ -7,12 +7,6 @@
 
 #include "StdAfx.h"
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 //
 // symbol
 //

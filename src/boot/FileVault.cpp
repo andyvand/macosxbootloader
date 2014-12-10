@@ -5,10 +5,6 @@
 //	purpose:	FileVault
 //********************************************************************
 
-#ifdef __APPLE__
-#define _INT8_T 1
-#endif
-
 #include "StdAfx.h"
 #include "../rijndael/aes.h"
 #include "../rijndael/aesxts.h"

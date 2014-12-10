@@ -5,12 +5,6 @@
 //	purpose:	boot debugger
 //********************************************************************
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 #include "stdafx.h"
 #include "BootDebuggerPrivate.h"
 #include "Debug1394.h"

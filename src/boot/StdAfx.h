@@ -8,26 +8,26 @@
 #ifndef __STDAFX_H__
 #define __STDAFX_H__ 1
 
-#include "../../sdk/include/EfiTypes.h"
-
 #ifdef __APPLE__
 #define __leave
 #define __try if (1)
 #define __except(x) if (0 && (x))
 #define __finally if (1)
-#endif
+#define GNUPACK __attribute__((packed))
 
-#ifdef __APPLE__
 #ifndef nullptr
 #define nullptr 0
 #endif
-#endif
 
-#ifndef __APPLE__
-#define GNUPACK
+
+#ifndef _INT8_T
+#define _INT8_T 1
+#endif
 #else
 #define GNUPACK __attribute__((packed))
 #endif
+
+#include "../../sdk/include/EfiTypes.h"
 
 #define NOTHING
 #define BOOTAPI																__cdecl

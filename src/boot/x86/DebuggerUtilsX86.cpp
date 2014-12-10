@@ -8,12 +8,6 @@
 #include "../stdafx.h"
 #include "../BootDebuggerPrivate.h"
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 KPCR* BdPcr																	= nullptr;
 KPRCB* BdPrcb																= nullptr;
 UINT64 BdPcrPhysicalAddress													= 0;

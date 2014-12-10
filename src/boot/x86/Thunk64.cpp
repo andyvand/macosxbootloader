@@ -7,12 +7,6 @@
 
 #include "../stdafx.h"
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 extern UINT8* ArchThunk64BufferStart;
 extern UINT8* ArchThunk64BufferEnd;
 

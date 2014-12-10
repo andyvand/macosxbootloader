@@ -8,12 +8,6 @@
 #include "StdAfx.h"
 #include "PictData.h"
 
-#ifdef __APPLE__
-#ifndef nullptr
-#define nullptr 0
-#endif
-#endif
-
 //
 // global
 //
