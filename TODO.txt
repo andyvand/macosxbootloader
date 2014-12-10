@@ -31,3 +31,8 @@ Phase 4: Status - Completed!
 Phase 5: Status - Completed!
 
 1.) Add script for building installer packages (status: Done).
+
+2.) Clean up source code (status: Done).
+
+3.) Fix up boot time (status: Done).
+
