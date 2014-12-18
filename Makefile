@@ -203,7 +203,6 @@ newinstaller: bin/boot.efi
 	sudo $(INSTALL) $< macosxbootloaderinst/System/Library/CoreServices/boot.efi
 	sudo chown -R root:wheel macosxbootloaderinst
 	cd macosxbootloaderinst && sudo rm -f .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo cpio -o < ../macosxbootloader_pkg.txt > ../macosxbootloaderpkg/Payload && sudo rm -f .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo mkbom . ../macosxbootloaderpkg/Bom && cd ..
-	sudo cp -Rf Scripts macosxbootloaderpkg/Scripts
 	sudo rm -Rf macosxbootloaderinst
 	sudo cp -Rf Installer/PackageInfo macosxbootloaderpkg/PackageInfo
 	cd macosxbootloaderpkg && sudo rm -Rf .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo xar -cjf ../macosxbootloadercombopkg/macosxbootloader-1.0.pkg . && cd ..
@@ -211,6 +210,7 @@ newinstaller: bin/boot.efi
 	if [ $(PKGSIGNCERT) != "" ]; then sudo productsign --sign $(PKGSIGNCERT) macosxbootloadercombopkg/macosxbootloader-1.0.pkg macosxbootloadercombopkg/macosxbootloader-1.0-apple.pkg && sudo rm -Rf macosxbootloadercombopkg/macosxbootloader-1.0.pkg; else mv macosxbootloadercombopkg/macosxbootloader-1.0.pkg macosxbootloadercombopkg/macosxbootloader-1.0-apple.pkg; fi
 	sudo cp -Rf Installer/Resources macosxbootloadercombopkg/Resources
 	sudo cp -f Installer/Distribution macosxbootloadercombopkg/Distribution
+	sudo cp -Rf Scripts macosxbootloadercombopkg/Scripts
 	cd macosxbootloadercombopkg &&  sudo rm -Rf .DS_Store */.DS_Store */*/.DS_Store */*/*/.DS_Store && sudo productbuild --distribution Distribution --resources Resources --package-path $(PWD) ../macosxbootloader-apple.pkg && cd ..
 	sudo rm -Rf macosxbootloadercombopkg
 	if [ $(PKGSIGNCERT) != "" ]; then sudo productsign --sign $(PKGSIGNCERT) macosxbootloader-apple.pkg macosxbootloader.pkg && sudo rm -Rf macosxbootloader-apple.pkg; else mv macosxbootloader-apple.pkg macosxbootloader.pkg; fi
