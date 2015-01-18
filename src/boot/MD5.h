@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _MD5_H_
+#define _MD5_H_
+
 //
 // context
 //
@@ -42,3 +45,5 @@ VOID MD5Update(MD5_CONTEXT* md5Context, VOID CONST* byteBuffer, UINT32 bufferLen
 // finish
 //
 VOID MD5Final(UINT8* md5Result, MD5_CONTEXT* md5Context);
+
+#endif

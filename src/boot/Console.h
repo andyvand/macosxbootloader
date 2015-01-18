@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _CONSOLE_H_
+#define _CONSOLE_H_
+
 //
 // initialize
 //
@@ -71,3 +74,5 @@ VOID CsDrawPreview(HIBERNATE_PREVIEW* previewBuffer, UINT32 imageIndex, UINT8 pr
 // update progress
 //
 VOID CsUpdateProgress(UINT8 progressSaveUnder[HIBERNATE_PROGRESS_COUNT][HIBERNATE_PROGRESS_SAVE_UNDER_SIZE], UINTN prevBlob, UINTN currentBlob);
+
+#endif

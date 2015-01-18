@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _RUNTIMELIB_H_
+#define _RUNTIMELIB_H_
+
 #ifdef __APPLE__
 #undef BOOTAPI
 #define BOOTAPI
@@ -118,3 +121,5 @@ extern "C"
 	//
 	CHAR8* strlwr(CHAR8* stringBuffer);
 }
+
+#endif

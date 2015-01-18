@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _MEMORY_H_
+#define _MEMORY_H_
+
 //
 // initialize
 //
@@ -71,3 +74,5 @@ VOID MmGetKernelPhysicalRange(UINT64* lowerAddress, UINT64* upperAddress);
 // get kernel virtual start
 //
 UINT64 MmGetKernelVirtualStart();
+
+#endif

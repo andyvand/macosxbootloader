@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _ARCHDEFINE_H_
+#define _ARCHDEFINE_H_
+
 #define KDP_BREAKPOINT_TYPE													UINT8
 #define KDP_BREAKPOINT_VALUE												0xcc
 #define DBGKD_MAXSTREAM														16
@@ -1518,3 +1521,5 @@ VOID BOOTAPI ArchSetIdtRegister(KDESCRIPTOR* idtr);
 // set idt entry
 //
 VOID BOOTAPI ArchSetIdtEntry(UINT64 base, UINT32 index, UINT32 segCs, VOID* offset, UINT32 access);
+
+#endif

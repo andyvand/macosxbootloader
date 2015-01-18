@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _DEVICETREE_H_
+#define _DEVICETREE_H_
+
 //
 // device tree property
 //
@@ -103,3 +106,5 @@ VOID DevTreeFinalize();
 // flatten
 //
 EFI_STATUS DevTreeFlatten(VOID** flattenBuffer, UINT32* bufferLength);
+
+#endif

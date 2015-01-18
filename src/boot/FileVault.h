@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _FILEVAULT_H_
+#define _FILEVAULT_H_
+
 //
 // load and unlock core volume
 //
@@ -21,3 +24,5 @@ BOOLEAN FvFindCoreVolumeKey(UINT8 CONST* volumeIdent, UINT8* volumeKey, UINTN vo
 // setup device tree
 //
 EFI_STATUS FvSetupDeviceTree(UINT64* keyStorePhysicalAddress, UINTN* keyStoreSize, BOOLEAN setupDeviceTree);
+
+#endif

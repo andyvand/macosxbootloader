@@ -7,7 +7,12 @@
 
 #pragma once
 
+#ifndef _BASE64_H_
+#define _BASE64_H_
+
 //
 // decode
 //
 UINTN Base64Decode(CHAR8 CONST* inputString, UINTN inputLength, VOID* outputBuffer, UINTN* outputLength);
+
+#endif

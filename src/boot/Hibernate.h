@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _HIBERNATE_H_
+#define _HIBERNATE_H_
+
 #define HIBERNATE_PROGRESS_COUNT											19
 #define HIBERNATE_PROGRESS_SAVE_UNDER_SIZE									38
 #define HIBERNATE_PROGRESS_WIDTH											7
@@ -67,3 +70,5 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent);
 // continue resume
 //
 VOID HbContinueResumeFromHibernate(UINT8* coreStorageVolumeKey, UINTN coreStorageVolumeKeyLength);
+
+#endif

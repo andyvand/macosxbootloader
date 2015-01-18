@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _BOOTDEBUGGERPRIVATE_H_
+#define _BOOTDEBUGGERPRIVATE_H_
+
 //
 // arch define
 //
@@ -1608,3 +1611,5 @@ extern UINT32																BdNextPacketIdToSend;
 extern UINT32																BdPacketIdExpected;
 extern UINT32																BdNumberRetries;
 extern UINT32																BdRetryCount;
+
+#endif

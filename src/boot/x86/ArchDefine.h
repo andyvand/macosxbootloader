@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _ARCHDEFINE_H_
+#define _ARCHDEFINE_H_
+
 //
 // consts
 //
@@ -922,3 +925,5 @@ VOID BOOTAPI ArchSetIdtRegister(KDESCRIPTOR* idtr);
 // set idt entry
 //
 VOID ArchSetIdtEntry(UINT32 base, UINT32 index, UINT32 segCs, VOID* offset,UINT32 access);
+
+#endif

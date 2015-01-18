@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _OPTIONS_H_
+#define _OPTIONS_H_
+
 #define BOOT_MODE_NORMAL													0x000000
 #define BOOT_MODE_SAFE														0x000001
 #define BOOT_MODE_VERBOSE													0x000002
@@ -51,3 +54,5 @@ VOID BlSetBootMode(UINT32 setValue, UINT32 clearValue);
 // setup kernel command line
 //
 CHAR8* BlSetupKernelCommandLine(CHAR8 CONST* bootOptions, CHAR8 CONST* bootArgsVariable, CHAR8 CONST* kernelFlags);
+
+#endif

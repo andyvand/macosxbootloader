@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _GUIDDEFINE_H_
+#define _GUIDDEFINE_H_
+
 #include EFI_GUID_DEFINITION(Acpi)
 #include EFI_GUID_DEFINITION(SmBios)
 #include EFI_GUID_DEFINITION(AppleNVRAMVariable)
@@ -85,3 +88,5 @@ extern EFI_GUID																AppleImageCodecProtocolGuid;
 extern EFI_GUID																AppleDiskIoProtocolGuid;
 extern EFI_GUID																AppleSMCProtocolGuid;
 extern EFI_GUID																AppleFileVaultVariableGuid;
+
+#endif

@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _PEIMAGE_H_
+#define _PEIMAGE_H_
+
 //
 // get image nt header
 //
@@ -26,3 +29,5 @@ UINT32 PeImageGetChecksum(VOID* ntHeaders);
 // get entry point
 //
 VOID* PeImageGetEntryPoint(VOID* imageBase);
+
+#endif

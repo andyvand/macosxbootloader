@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _DEBUGUSB_H_
+#define _DEBUGUSB_H_
+
 #include "BootDebuggerPrivate.h"
 
 //
@@ -28,3 +31,5 @@ UINT32 BdUsbReceivePacket(UINT32 packetType, STRING* messageHeader, STRING* mess
 // close debug device
 //
 EFI_STATUS BdUsbCloseDebuggerDevice();
+
+#endif

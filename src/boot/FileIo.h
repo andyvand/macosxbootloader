@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _FILEIO_H_
+#define _FILEIO_H_
+
 //
 // open mode
 //
@@ -99,3 +102,5 @@ EFI_STATUS IoReadWholeFile(EFI_DEVICE_PATH_PROTOCOL* bootFilePath, CHAR8 CONST* 
 // load booter
 //
 EFI_STATUS IoLoadBooterWithRootUUID(EFI_DEVICE_PATH_PROTOCOL* bootFilePath, CHAR8 CONST* rootUUID, EFI_HANDLE* imageHandle);
+
+#endif

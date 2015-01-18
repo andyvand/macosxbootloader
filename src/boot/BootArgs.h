@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _BOOTARGS_H_
+#define _BOOTARGS_H_
+
 //
 // video
 //
@@ -234,3 +237,5 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 // finalize boot args
 //
 EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLine, EFI_HANDLE bootDeviceHandle, struct _MACH_O_LOADED_INFO* loadedInfo);
+
+#endif

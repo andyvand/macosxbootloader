@@ -7,7 +7,12 @@
 
 #pragma once
 
+#ifndef _CRC32_H_
+#define _CRC32_H_
+
 //
 // calc crc32
 //
 UINT32 BlCrc32(UINT32 crcValue, VOID CONST* inputBuffer, UINTN bufferLength);
+
+#endif

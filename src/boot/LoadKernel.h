@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _LOADKERNEL_H_
+#define _LOADKERNEL_H_
+
 #define CPU_ARCH_NONE														0x00000000
 #define CPU_ARCH_X86														0x00000007
 #define CPU_ARCH_X64														0x01000007
@@ -65,3 +68,5 @@ VOID LdrSetupKernelPath(EFI_DEVICE_PATH_PROTOCOL* filePath, CHAR8* fileName);
 // setup ramdisk path
 //
 VOID LdrSetupRamDiskPath(EFI_DEVICE_PATH_PROTOCOL* filePath, CHAR8* fileName);
+
+#endif

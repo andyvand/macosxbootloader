@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _BOOTDEBUGGER_H_
+#define _BOOTDEBUGGER_H_
+
 //
 // initialize boot debugger
 //
@@ -41,3 +44,5 @@ UINT32 DbgPrint(CHAR8 CONST* printFormat, ...);
 // destroy debugger
 //
 EFI_STATUS BdFinalize();
+
+#endif

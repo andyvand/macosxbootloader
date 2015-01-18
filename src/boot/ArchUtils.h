@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _ACPIUTILS_H_
+#define _ACPIUTILS_H_
+
 //
 // initialize phase 0
 //
@@ -116,3 +119,5 @@ VOID BOOTAPI ARCH_WRITE_REGISTER_UINT16(UINT16* port, UINT16 value);
 // write register uint32
 //
 VOID BOOTAPI ARCH_WRITE_REGISTER_UINT32(UINT32* port, UINT32 value);
+
+#endif

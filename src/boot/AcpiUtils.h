@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _ACPIUTILS_H_
+#define _ACPIUTILS_H_
+
 //
 // get fadt
 //
@@ -31,3 +34,5 @@ VOID AcpiDetectNVSMemory();
 // adjust memory map for acpi nvs memory
 //
 UINTN AcpiAdjustMemoryMap(EFI_MEMORY_DESCRIPTOR* memoryMap, UINTN memoryMapSize, UINTN descriptorSize);
+
+#endif

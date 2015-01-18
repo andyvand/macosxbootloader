@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _MACHO_H_ 
+#define _MACHO_H_
+
 //
 // loaded mach-o info
 //
@@ -74,3 +77,5 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
 // get symbol virtual address by name
 //
 UINT64 MachFindSymbolVirtualAddressByName(MACH_O_LOADED_INFO* loadedInfo, CHAR8 CONST* symbolName);
+
+#endif

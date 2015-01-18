@@ -7,6 +7,9 @@
 
 #pragma once
 
+#ifndef _MISCUTILS_H_
+#define _MISCUTILS_H_
+
 //
 // get memory capacity
 //
@@ -157,3 +160,4 @@ EFI_STATUS BlDecompressLZVN(VOID CONST* compressedBuffer, UINTN compressedSize, 
 	(((x) & 0x000000000000ff00ULL) << 40) | \
 	(((x) & 0x00000000000000ffULL) << 56))
 
+#endif
