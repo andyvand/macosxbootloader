@@ -5,8 +5,19 @@
 //	purpose:	arch utils
 //********************************************************************
 
+#include "stdafx.h"
 #include "../StdAfx.h"
 #include "ArchDefine.h"
+
+
+#ifdef _MSC_VER
+extern "C"
+{
+	void _local_unwind(void)
+	{
+	}
+}
+#endif
 
 //
 // global

@@ -37,6 +37,7 @@ Abstract:
 //
 #ifdef _MSC_VER
 #pragma pack()
+#undef  GNUPACK
 #define GNUPACK
 #else
 #define GNUPACK __attribute__((packed))

@@ -5,6 +5,8 @@
 //	purpose:	debugger routine
 //********************************************************************
 
+#include "stdafx.h"
+
 #include "../stdafx.h"
 #include "../BootDebuggerPrivate.h"
 

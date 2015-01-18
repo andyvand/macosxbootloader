@@ -1453,7 +1453,7 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
                             for(UINT32 i = 0; i < symbolTableCommand->SymbolCount; i ++, symbolEntry ++)
                             {
                                 if(symbolEntry->Type <= 0x1f)
-                                    symbolEntry->Value							+= LdrGetASLRDisplacement();
+									symbolEntry->Value							+= (UINT32)LdrGetASLRDisplacement();
                             }
                         }
 					}
@@ -1505,7 +1505,7 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
                                     try_leave(status = EFI_LOAD_ERROR);
 
                                 UINT32* address									= Add2Ptr(dataSegment, static_cast<INT32>(relocationInfo->SectionOffset), UINT32*);
-                                *address										+= LdrGetASLRDisplacement();
+								*address += (UINT32)LdrGetASLRDisplacement();
                             }
 						}
 					}
@@ -1518,7 +1518,7 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
                     // get info
                     //
                     SEGMENT_COMMAND* segmentCommand32						= _CR(theCommand, SEGMENT_COMMAND, Header);
-                    UINT32 segmentVirtualAddress							= segmentCommand32->VirtualAddress + LdrGetASLRDisplacement();
+					UINT32 segmentVirtualAddress = (UINT32)(segmentCommand32->VirtualAddress + LdrGetASLRDisplacement());
                     UINT32 segmentVirtualSize								= segmentCommand32->VirtualSize;
                     UINT32 segmentFileSize									= segmentCommand32->FileSize;
                     UINT32 segmentFileOffset								= segmentCommand32->FileOffset;
@@ -1592,11 +1592,11 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
                             SEGMENT_COMMAND* theSegment32					= MachpGetFirstSegment(Add2Ptr(physicalAddress, 0, MACH_HEADER*));
                             while(theSegment32)
                             {
-                                theSegment32->VirtualAddress				+= LdrGetASLRDisplacement();
+								theSegment32->VirtualAddress += (UINT32)LdrGetASLRDisplacement();
                                 SECTION* theSection32						= MachpGetFirstSection(theSegment32);
                                 while(theSection32)
                                 {
-                                    theSection32->Address					+= LdrGetASLRDisplacement();
+									theSection32->Address += (UINT32)LdrGetASLRDisplacement();
                                     theSection32							= MachpGetNextSection(theSegment32, theSection32);
                                 }
                                 theSegment32								= MachpGetNextSegment(Add2Ptr(physicalAddress, 0, MACH_HEADER*), theSegment32);
@@ -1862,7 +1862,7 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
                             for(UINT32 i = 0; i < symbolTableCommand->SymbolCount; i ++, symbolEntry ++)
                             {
                                 if(symbolEntry->Type <= 0x1f)
-                                    symbolEntry->Value							+= LdrGetASLRDisplacement();
+									symbolEntry->Value += (UINT32)LdrGetASLRDisplacement();
                             }
                         }
                     }
@@ -1914,7 +1914,7 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
                                     try_leave(status = EFI_LOAD_ERROR);
                                 
                                 UINT32* address									= Add2Ptr(dataSegment, static_cast<INT32>(relocationInfo->SectionOffset), UINT32*);
-                                *address										+= LdrGetASLRDisplacement();
+								*address += (UINT32)LdrGetASLRDisplacement();
                             }
                         }
                     }
@@ -1927,7 +1927,7 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
                     // get info
                     //
                     SEGMENT_COMMAND* segmentCommand32						= _CR(theCommand, SEGMENT_COMMAND, Header);
-                    UINT32 segmentVirtualAddress							= segmentCommand32->VirtualAddress + LdrGetASLRDisplacement();
+					UINT32 segmentVirtualAddress = (UINT32)(segmentCommand32->VirtualAddress + LdrGetASLRDisplacement());
                     UINT32 segmentVirtualSize								= segmentCommand32->VirtualSize;
                     UINT32 segmentFileSize									= segmentCommand32->FileSize;
                     UINT32 segmentFileOffset								= segmentCommand32->FileOffset;
@@ -1993,11 +1993,11 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
                             SEGMENT_COMMAND* theSegment32					= MachpGetFirstSegment(Add2Ptr(physicalAddress, 0, MACH_HEADER*));
                             while(theSegment32)
                             {
-                                theSegment32->VirtualAddress				+= LdrGetASLRDisplacement();
+								theSegment32->VirtualAddress += (UINT32)LdrGetASLRDisplacement();
                                 SECTION* theSection32						= MachpGetFirstSection(theSegment32);
                                 while(theSection32)
                                 {
-                                    theSection32->Address					+= LdrGetASLRDisplacement();
+									theSection32->Address += (UINT32)LdrGetASLRDisplacement();
                                     theSection32							= MachpGetNextSection(theSegment32, theSection32);
                                 }
                                 theSegment32								= MachpGetNextSegment(Add2Ptr(physicalAddress, 0, MACH_HEADER*), theSegment32);
@@ -2051,13 +2051,13 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
                     //
                     // Copy in
                     //
-                    memcpy((VOID *)physicalAddress, (fileBuffer + machOffset + segmentFileOffset), segmentFileSize);
+					memcpy((VOID *)physicalAddress, (fileBuffer + machOffset + segmentFileOffset), (UINTN)segmentFileSize);
 
                     //
                     // zero out
                     //
                     if(segmentFileSize != allocatedLength)
-                        EfiBootServices->SetMem(Add2Ptr(physicalAddress, segmentFileSize, VOID*), allocatedLength - segmentFileSize, 0);
+						EfiBootServices->SetMem(Add2Ptr(physicalAddress, segmentFileSize, VOID*), allocatedLength - (UINTN)segmentFileSize, 0);
                     
                     //
                     // first writable segment

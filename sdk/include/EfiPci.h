@@ -65,7 +65,7 @@ typedef union {
 } GNUPACK EFI_PCI_ROM_HEADER;
 
 #ifdef _MSC_VER
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #endif

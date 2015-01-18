@@ -30,7 +30,13 @@
 #include "../../sdk/include/EfiTypes.h"
 
 #define NOTHING
+
+#ifndef _MSC_VER
 #define BOOTAPI																__cdecl
+#else
+#define BOOTAPI
+#endif
+
 #define CHAR8_CONST_STRING(S)												static_cast<CHAR8 CONST*>(static_cast<VOID CONST*>(S))
 #define CHAR16_CONST_STRING(S)												static_cast<CHAR16 CONST*>(static_cast<VOID CONST*>(S))
 #define CHAR8_STRING(S)														static_cast<CHAR8*>(static_cast<VOID*>(S))

@@ -5,6 +5,8 @@
 //	purpose:	arch utils
 //********************************************************************
 
+#include "stdafx.h"
+
 #include "../stdafx.h"
 #include "ArchDefine.h"
 

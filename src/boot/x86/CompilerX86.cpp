@@ -5,6 +5,8 @@
 //	purpose:	compiler stub
 //********************************************************************
 
+#include "stdafx.h"
+
 #include "../stdafx.h"
 
 //

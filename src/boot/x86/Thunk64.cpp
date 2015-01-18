@@ -5,10 +5,21 @@
 //	purpose:	64bits thunk
 //********************************************************************
 
+#include "stdafx.h"
+
 #include "../stdafx.h"
 
 extern UINT8* ArchThunk64BufferStart;
 extern UINT8* ArchThunk64BufferEnd;
+
+#ifdef _MSC_VER
+extern "C"
+{
+	void _local_unwind2(void)
+	{
+	}
+}
+#endif
 
 //
 // 64 bits configuration table

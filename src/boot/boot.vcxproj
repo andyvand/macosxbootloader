@@ -76,6 +76,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.efi</TargetExt>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;_X86_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;_X86_;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AcpiUtils.h" />
     <ClInclude Include="Base64.h" />
@@ -180,8 +190,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)/Common.inc;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
@@ -193,12 +203,12 @@
   <ItemGroup>
     <CustomBuild Include="x64\PortRegisterIo.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)/Common.inc;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)/Common.inc;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</Message>
     </CustomBuild>
@@ -206,8 +216,8 @@
   <ItemGroup>
     <CustomBuild Include="x64\DebugTrap.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)/Common.inc;%(AdditionalInputs)</AdditionalInputs>
@@ -219,8 +229,8 @@
   <ItemGroup>
     <CustomBuild Include="x64\TransferRoutine.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)/Common.inc;%(AdditionalInputs)</AdditionalInputs>
@@ -236,16 +246,16 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)ThunkCode64.dat;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "$(IntDir)" &amp; nasm -o "$(IntDir)%(Filename).obj" -fwin32 -X vc "%(FullPath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "$(IntDir)" &amp; nasm -o "$(IntDir)%(Filename).obj" -fwin32 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "$(IntDir)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -fwin32 -DARCH64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "$(IntDir)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).obj" -fwin32 -DARCH64 -X vc "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</Message>
     </CustomBuild>
     <CustomBuild Include="x86\ThunkCode64.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).dat"  -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).dat" -DARCH64  -X vc "%(FullPath)"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).dat;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).dat"  -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "%(RootDir)%(Directory)" &amp; "C:\Users\Joris Schepers\AppData\Local\nasm\nasm" -o "$(IntDir)%(Filename).dat" -DARCH64 -X vc "%(FullPath)"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).dat;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</Message>

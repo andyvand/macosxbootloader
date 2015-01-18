@@ -42,7 +42,7 @@ Abstract:
 //
 // Status Code Type Definition
 //
-typedef UINT32  EFI_STATUS_CODE_TYPE;
+typedef UINT32 EFI_STATUS_CODE_TYPE;
 
 //
 // A Status Code Type is made up of the code type and severity
@@ -75,7 +75,7 @@ typedef UINT32  EFI_STATUS_CODE_TYPE;
 //
 // Status Code Value Definition
 //
-typedef UINT32  EFI_STATUS_CODE_VALUE;
+typedef UINT32 EFI_STATUS_CODE_VALUE;
 
 //
 // A Status Code Value is made up of the class, subclass, and

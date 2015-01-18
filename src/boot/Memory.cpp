@@ -158,10 +158,12 @@ VOID* MmAllocatePool(UINTN bufferLength)
 	return allocatedBuffer;
 }
 
+#ifndef _MSC_VER
 VOID* _alloca(UINTN length)
 {
     return MmAllocatePool(length);
 }
+#endif
 
 //
 // free

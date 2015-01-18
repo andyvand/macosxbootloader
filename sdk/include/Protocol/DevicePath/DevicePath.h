@@ -37,6 +37,8 @@ Abstract:
 
 #ifdef _MSC_VER
 #pragma pack(1)
+
+#undef  GNUPACK
 #define GNUPACK
 #else
 #define GNUPACK __attribute__((packed))
@@ -49,7 +51,7 @@ typedef struct {
 } GNUPACK EFI_DEVICE_PATH_PROTOCOL;
 
 #ifdef _MSC_VER
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #define EFI_END_ENTIRE_DEVICE_PATH            0xff

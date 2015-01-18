@@ -556,7 +556,7 @@ typedef struct {
 #define PCI_BAR_ALL         0xFF
 
 #ifdef _MSC_VER
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 //

@@ -53,7 +53,7 @@ typedef struct {
 } GNUPACK PCI_3_0_DATA_STRUCTURE;
 
 #ifdef _MSC_VER
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #endif
