@@ -7,8 +7,8 @@
 
 #pragma once
 
-#ifndef _ACPIUTILS_H_
-#define _ACPIUTILS_H_
+#ifndef _ACPI_UTILS_H_
+#define _ACPI_UTILS_H_
 
 //
 // get fadt
