@@ -1,0 +1,84 @@
+﻿Build started 1/18/2015 9:31:02 AM.
+     1>Project "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\boot\boot.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W4 /WX /MP /Od /Oy- /D _DEBUG /D _X86_ /D DEBUG /D _DEBUG /D DEBUG /D WIN32 /D _UNICODE /D UNICODE /D EFI_SPECIFICATION_VERSION=0x0001000a /D TIANO_RELEASE_VERSION=1 /GF /Gm- /EHsc /MDd /GS- /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\boot.pch" /Fo"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\\" /Fd"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt StdAfx.cpp
+         StdAfx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W4 /WX /MP /Od /Oy- /D _DEBUG /D _X86_ /D DEBUG /D _DEBUG /D DEBUG /D WIN32 /D _UNICODE /D UNICODE /D EFI_SPECIFICATION_VERSION=0x0001000a /D TIANO_RELEASE_VERSION=1 /GF /Gm- /EHsc /MDd /GS- /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\boot.pch" /Fo"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\\" /Fd"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt AcpiUtils.cpp Base64.cpp BootArgs.cpp Config.cpp Console.cpp FileIo.cpp FileVault.cpp Hibernate.cpp LoadDrivers.cpp LoadKernel.cpp MachO.cpp MD5.cpp MemoryMap.cpp NetBoot.cpp Options.cpp PanicDialog.cpp PlatformExpert.cpp SHA256.cpp BootDebugger.cpp Crc32.cpp Debug1394.cpp DebugUsb.cpp DevicePath.cpp DeviceTree.cpp GuidDefine.cpp Main.cpp Memory.cpp MiscUtils.cpp PeImage.cpp RuntimeLib.cpp x86\ArchUtilsX86.cpp x86\CompilerX86.cpp x86\DebuggerUtilsX86.cpp x86\Thunk64.cpp
+         AcpiUtils.cpp
+         Base64.cpp
+         BootArgs.cpp
+         Config.cpp
+         Console.cpp
+         FileIo.cpp
+         FileVault.cpp
+         Hibernate.cpp
+         LoadDrivers.cpp
+         LoadKernel.cpp
+         MachO.cpp
+         MD5.cpp
+         MemoryMap.cpp
+         NetBoot.cpp
+         Options.cpp
+         PanicDialog.cpp
+         PlatformExpert.cpp
+         SHA256.cpp
+         BootDebugger.cpp
+         Crc32.cpp
+         Debug1394.cpp
+         DebugUsb.cpp
+         DevicePath.cpp
+         DeviceTree.cpp
+         GuidDefine.cpp
+         Main.cpp
+         Memory.cpp
+         MiscUtils.cpp
+         PeImage.cpp
+         RuntimeLib.cpp
+         ArchUtilsX86.cpp
+         CompilerX86.cpp
+         DebuggerUtilsX86.cpp
+         Thunk64.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\bin\x86\Debug\boot.efi" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB /MANIFEST:NO /DEBUG /PDB:"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\bin\x86\Debug\boot.pdb" /SUBSYSTEM:EFI_APPLICATION /TLBID:1 /ENTRY:"EfiMain" /RELEASE /IMPLIB:"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\bin\x86\Debug\boot.lib" /MACHINE:X86 /SAFESEH:NO "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\ThunkCode32.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\AcpiUtils.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Base64.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\BootArgs.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Config.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Console.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\FileIo.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\FileVault.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Hibernate.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\LoadDrivers.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\LoadKernel.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\MachO.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\MD5.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\MemoryMap.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\NetBoot.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Options.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\PanicDialog.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\PlatformExpert.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\SHA256.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\BootDebugger.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Crc32.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Debug1394.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\DebugUsb.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\DevicePath.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\DeviceTree.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\GuidDefine.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Main.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Memory.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\MiscUtils.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\PeImage.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\RuntimeLib.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\StdAfx.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\ArchUtilsX86.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\CompilerX86.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\DebuggerUtilsX86.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\Thunk64.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\bin\x86\Debug\rijndael.lib"
+         boot.vcxproj -> C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\bin\x86\Debug\boot.efi
+     1>Done Building Project "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\boot\boot.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.30

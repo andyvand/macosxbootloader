@@ -1,0 +1,21 @@
+﻿Build started 1/18/2015 9:29:48 AM.
+     1>Project "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\rijndael\rijndael.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W4 /WX /MP /Od /Oy- /D _DEBUG /D DEBUG /D WIN32 /D _UNICODE /D UNICODE /D EFI_SPECIFICATION_VERSION=0x0001000a /D TIANO_RELEASE_VERSION=1 /GF /Gm- /EHsc /MDd /GS- /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\rijndael\\" /Fd"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\rijndael\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt aesxts.c aes_modes.c aescrypt.c aeskey.c aestab.c
+         aesxts.c
+         aes_modes.c
+         aescrypt.c
+         aeskey.c
+         aestab.c
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\bin\x86\Debug\rijndael.lib" /NOLOGO "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\rijndael\aesxts.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\rijndael\aes_modes.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\rijndael\aescrypt.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\rijndael\aeskey.obj"
+         "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\temp\x86\Debug\rijndael\aestab.obj"
+         rijndael.vcxproj -> C:\Users\Joris Schepers\Downloads\macosxbootloader\src\..\bin\x86\Debug\rijndael.lib
+     1>Done Building Project "C:\Users\Joris Schepers\Downloads\macosxbootloader\src\rijndael\rijndael.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.16
