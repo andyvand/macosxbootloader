@@ -103,7 +103,7 @@ LD=ld
 AR=ar
 STRIP = strip
 RANLIB=ranlib
-MTOC=mtoc -subsystem UEFI_APPLICATION -align 0x20
+MTOC="$(TOPDIR)/Prebuilt/mtoc" -subsystem UEFI_APPLICATION -align 0x20
 
 ### Architecture - Intel 32 bit / Intel 64 bit ###
 ifeq ("$(ARCH)", "i386")
@@ -166,7 +166,7 @@ MTOC=objconv -ed2022 -fwin64 -xs -nu
 endif
 endif
 
-NASM=nasm
+NASM="$(TOPDIR)/Prebuilt/nasm"
 
 ### Flags ###
 
