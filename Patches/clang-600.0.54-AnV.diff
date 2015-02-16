@@ -1,0 +1,23 @@
+diff -Nur clang-600.0.54/src/tools/clang/lib/CodeGen/BackendUtil.cpp clang-600.0.54-AnV/src/tools/clang/lib/CodeGen/BackendUtil.cpp
+--- clang-600.0.54/src/tools/clang/lib/CodeGen/BackendUtil.cpp	2014-11-02 06:43:36.000000000 +0100
++++ clang-600.0.54-AnV/src/tools/clang/lib/CodeGen/BackendUtil.cpp	2015-02-16 23:34:32.000000000 +0100
+@@ -623,11 +623,19 @@
+   if (AsmHelper.TM && !TDesc.empty()) {
+     std::string DLDesc =
+         AsmHelper.TM->getDataLayout()->getStringRepresentation();
++
++  /* AnV - clang fix for foreign targets */
++#if 0
+     if (DLDesc != TDesc) {
+       unsigned DiagID = Diags.getCustomDiagID(
+           DiagnosticsEngine::Error, "backend data layout '%0' does not match "
+                                     "expected target description '%1'");
+       Diags.Report(DiagID) << DLDesc << TDesc;
+     }
++#else
++    if (DLDesc != TDesc) {
++      DLDesc = TDesc;
++    }
++#endif
+   }
+ }
