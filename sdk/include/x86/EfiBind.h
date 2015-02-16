@@ -141,7 +141,7 @@ Abstract:
  
   #if _MSC_EXTENSIONS 
 
-    #ifdef __APPLE__
+    #if defined(__APPLE__) || defined(ARCH32)
         #define __int64 long long
         #define __int32 int
     #endif

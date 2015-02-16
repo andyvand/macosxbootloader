@@ -23,7 +23,7 @@ __aullshr:
 
 global __alldiv
 __alldiv:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rdi
 		push		rsi
 		push		rbx
@@ -111,7 +111,7 @@ __alldiv:
 		sbb			edx, 0
 
 	L8:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		pop			rbx
 		pop			rsi
 		pop			rdi
@@ -125,7 +125,7 @@ __alldiv:
 
 global __aulldiv
 __aulldiv:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rbx
 		push		rsi
 %else
@@ -183,7 +183,7 @@ __aulldiv:
 
 	LB:
 
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		pop			rsi
 		pop			rbx
 %else
@@ -195,7 +195,7 @@ __aulldiv:
 
 global __aullrem
 __aullrem:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rbx
 %else
 		push		ebx
@@ -251,7 +251,7 @@ __aullrem:
 		neg			eax
 		sbb			edx, 0
 	L1B:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		pop			rbx
 %else
 		pop			ebx
@@ -282,7 +282,7 @@ global __allshl
 
 global __allrem
 __allrem:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rbx
 		push		rdi
 %else
@@ -370,7 +370,7 @@ __allrem:
 		sbb			edx, 0
 
 	L2H:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		pop			rdi
 		pop			rbx
 %else
@@ -393,7 +393,7 @@ __aullmul:
 		ret			16
 
 	HARD:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rbx
 %else
 		push		ebx
@@ -406,7 +406,7 @@ __aullmul:
 		mov			eax, [esp + 8]
 		mul			ecx
 		add			edx, ebx
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		pop			rbx
 %else
 		pop			ebx
@@ -439,7 +439,7 @@ __allshr:
 
 global __aulldvrm
 __aulldvrm:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 	push		rsi
 %else
 	push		esi
@@ -511,7 +511,7 @@ __aulldvrm:
         mov			ecx, eax
         mov			eax, esi
 
-%ifdef ARCH64
+%ifdef ARCH64COMP
 	pop			rsi
 %else
         pop			esi
@@ -521,7 +521,7 @@ __aulldvrm:
 
 global __alldvrm
 __alldvrm:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 	push		rdi
         push		rsi
         push		rbp
@@ -634,7 +634,7 @@ __alldvrm:
         sbb			edx, 0
 
 	L4H:
-%ifdef ARCH64
+%ifdef ARCH64COMP
         pop			rbp
         pop			rsi
         pop			rdi
@@ -657,7 +657,7 @@ __chkstk:
 		test		[eax], eax
 		xchg		eax, esp
 		mov			eax, [eax]
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rax
 %else
 		push		eax
@@ -665,7 +665,7 @@ __chkstk:
 		retn
 
 	BIG_STACK:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rcx
 %else
 		push		ecx
@@ -685,7 +685,7 @@ __chkstk:
 		mov			esp, ecx
 		mov			ecx, [eax]
 		mov			eax, [eax+4]
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rax
 %else
 		push		eax
@@ -703,7 +703,7 @@ __except_handler3:
 
 global __SEH_epilog
 __SEH_epilog:
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		pop			rcx
 		pop			rdi
 		pop			rsi
@@ -715,7 +715,7 @@ __SEH_epilog:
 		pop			ebx
 %endif
 		leave
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rcx
 %else
 		push		ecx
@@ -727,7 +727,7 @@ global __SEH_prolog
 __SEH_prolog:
 		push		0
 		xor			eax,eax
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rax
 %else
 		push		eax
@@ -736,7 +736,7 @@ __SEH_prolog:
 		mov			[esp + 0x10], ebp
 		lea			ebp, [esp + 0x10]
 		sub			esp, eax
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rbx
 		push		rsi
 		push		rdi
@@ -747,7 +747,7 @@ __SEH_prolog:
 %endif
 		mov			eax, [ebp - 8]
 		mov			[ebp - 18h], esp
-%ifdef ARCH64
+%ifdef ARCH64COMP
 		push		rax
 %else
 		push		eax

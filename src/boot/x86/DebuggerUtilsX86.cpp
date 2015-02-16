@@ -260,6 +260,32 @@ VOID __declspec(naked) BdTrap01()
 		jmp			BdpTrapExit
 	}
 #else
+#ifdef ARCH32
+    __asm("push   $0x0\n"
+          "push   %ebp\n"
+          "push   %ebx\n"
+          "push   %esi\n"
+          "push   %edi\n"
+          "push   %fs\n"
+          "push   $0xffffffff\n"
+          "push   $0xffffffff\n"
+          "push   %eax\n"
+          "push   %ecx\n"
+          "push   %edx\n"
+          "push   %ds\n"
+          "push   %es\n"
+          "push   %gs\n"
+          "sub    $0x30,%esp\n"
+          "mov    %esp,%ebp\n"
+          "cld\n"
+          "andl   $0xfffffeff,0x70(%ebp)\n"
+          "mov    $0x80000004,%eax\n"
+          "mov    0x68(%ebp),%ebx\n"
+          "xor    %ecx,%ecx\n");
+
+    BdpTrapDispatch();
+    return BdpTrapExit();
+#else
 #ifdef GNU
     __asm("push   $0x0\n"
           "push   %ebp\n"
@@ -308,6 +334,7 @@ VOID __declspec(naked) BdTrap01()
           "xor    %ecx,%ecx\n"
           "call   __Z15BdpTrapDispatchv\n"
           "jmp    __Z11BdpTrapExitv\n");
+#endif
 #endif
 #endif
 }
@@ -346,6 +373,33 @@ VOID __declspec(naked) BdTrap03()
 		jmp			BdpTrapExit
 	}
 #else
+#ifdef ARCH32
+    __asm("push   $0x0\n"
+          "push   %ebp\n"
+          "push   %ebx\n"
+          "push   %esi\n"
+          "push   %edi\n"
+          "push   %fs\n"
+          "push   $0xffffffff\n"
+          "push   $0xffffffff\n"
+          "push   %eax\n"
+          "push   %ecx\n"
+          "push   %edx\n"
+          "push   %ds\n"
+          "push   %es\n"
+          "push   %gs\n"
+          "sub    $0x30,%esp\n"
+          "mov    %esp,%ebp\n"
+          "cld\n"
+          "decl   0x68(%ebp)\n"
+          "mov    $0x80000003,%eax\n"
+          "mov    0x68(%ebp),%ebx\n"
+          "mov    $0x0,%ecx\n"
+          "xor    %edx,%edx\n");
+
+    BdpTrapDispatch();
+    return BdpTrapExit();
+#else
 #ifdef GNU
     __asm("push   $0x0\n"
           "push   %ebp\n"
@@ -398,6 +452,7 @@ VOID __declspec(naked) BdTrap03()
           "jmp    __Z11BdpTrapExitv\n");
 #endif
 #endif
+#endif
 }
 
 //
@@ -433,6 +488,35 @@ loop_forever:
 		call		BdpTrapDispatch
 		jmp			loop_forever
 	}
+#else
+#ifdef ARCH32
+    __asm("push   $0x0\n"
+          "push   %ebp\n"
+          "push   %ebx\n"
+          "push   %esi\n"
+          "push   %edi\n"
+          "push   %fs\n"
+          "push   $0xffffffff\n"
+          "push   $0xffffffff\n"
+          "push   %eax\n"
+          "push   %ecx\n"
+          "push   %edx\n"
+          "push   %ds\n"
+          "push   %es\n"
+          "push   %gs\n"
+          "sub    $0x30,%esp\n"
+          "mov    %esp,%ebp\n"
+          "cld\n"
+          "Lloop_forever0d:\n"
+          "mov    $0xc0000005,%eax\n"
+          "mov    0x68(%ebp),%ebx\n"
+          "mov    $0x1,%ecx\n"
+          "mov    0x64(%ebp),%edx\n"
+          "and    $0xffff,%edx\n");
+
+    BdpTrapDispatch();
+
+    __asm("jmp    Lloop_forever0d\n");
 #else
 #ifdef GNU
     __asm("push   $0x0\n"
@@ -486,6 +570,7 @@ loop_forever:
           "and    $0xffff,%edx\n"
           "call   __Z15BdpTrapDispatchv\n"
           "jmp    Lloop_forever0d\n");
+#endif
 #endif
 #endif
 }
@@ -526,6 +611,37 @@ loop_forever:
 		jmp			loop_forever
 	}
 #else
+#ifdef ARCH32
+    __asm("push   $0x0\n"
+          "push   %ebp\n"
+          "push   %ebx\n"
+          "push   %esi\n"
+          "push   %edi\n"
+          "push   %fs\n"
+          "push   $0xffffffff\n"
+          "push   $0xffffffff\n"
+          "push   %eax\n"
+          "push   %ecx\n"
+          "push   %edx\n"
+          "push   %ds\n"
+          "push   %es\n"
+          "push   %gs\n"
+          "sub    $0x30,%esp\n"
+          "mov    %esp,%ebp\n"
+          "cld\n"
+          "Lloop_forever0e:\n"
+          "mov    $0xc0000005,%eax\n"
+          "mov    0x68(%ebp),%ebx\n"
+          "mov    $0x3,%ecx\n"
+          "mov    0x64(%ebp),%edx\n"
+          "and    $0x2,%edx\n"
+          "mov    %cr2,%edi\n"
+          "xor    %esi,%esi\n");
+
+    BdpTrapDispatch();
+
+    __asm("jmp    Lloop_forever0e\n");
+#else
 #ifdef GNU
     __asm("push   $0x0\n"
           "push   %ebp\n"
@@ -584,6 +700,7 @@ loop_forever:
           "jmp    Lloop_forever0e\n");
 #endif
 #endif
+#endif
 }
 
 //
@@ -621,6 +738,35 @@ VOID __declspec(naked) BdTrap2d()
 		call		BdpTrapDispatch
 		jmp			BdpTrapExit
 	}
+#else
+#ifdef ARCH32
+    __asm("push   $0x0\n"
+          "push   %ebp\n"
+          "push   %ebx\n"
+          "push   %esi\n"
+          "push   %edi\n"
+          "push   %fs\n"
+          "push   $0xffffffff\n"
+          "push   $0xffffffff\n"
+          "push   %eax\n"
+          "push   %ecx\n"
+          "push   %edx\n"
+          "push   %ds\n"
+          "push   %es\n"
+          "push   %gs\n"
+          "sub    $0x30,%esp\n"
+          "mov    %esp,%ebp\n"
+          "cld\n"
+          "mov    $0x80000003,%eax\n"
+          "mov    0x68(%ebp),%ebx\n"
+          "mov    $0x3,%ecx\n"
+          "xor    %edx,%edx\n"
+          "mov    0x44(%ebp),%edx\n"
+          "mov    0x40(%ebp),%edi\n"
+          "mov    0x3c(%ebp),%esi\n");
+
+    BdpTrapDispatch();
+    return BdpTrapExit();
 #else
 #ifdef GNU
     __asm("push   $0x0\n"
@@ -676,6 +822,7 @@ VOID __declspec(naked) BdTrap2d()
           "mov    0x3c(%ebp),%esi\n"
           "call   __Z15BdpTrapDispatchv\n"
           "jmp    __Z11BdpTrapExitv\n");
+#endif
 #endif
 #endif
 }

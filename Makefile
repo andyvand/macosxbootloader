@@ -97,8 +97,8 @@ else
 DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG -fstandalone-debug
 endif
 
-CC=gcc
-CXX=g++
+CC=/usr/bin/clang
+CXX=/usr/bin/clang
 LD=ld
 AR=ar
 STRIP = strip
@@ -109,15 +109,15 @@ MTOC="$(TOPDIR)/Prebuilt/mtoc" -subsystem UEFI_APPLICATION -align 0x20
 ifeq ("$(ARCH)", "i386")
 ARCHDIR = x86
 ARCHFLAGS = -arch i386
-ARCHLDFLAGS = -u __Z7EfiMainPvP17_EFI_SYSTEM_TABLE -e __Z7EfiMainPvP17_EFI_SYSTEM_TABLE -read_only_relocs suppress
-NASMFLAGS = -f macho -DAPPLEUSE
-ARCHCFLAGS = -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -DAPPLEEXTRA -Duint_8t=unsigned\ char -Duint_16t=unsigned\ short -Duint_32t=unsigned\ int -Duint_64t=unsigned\ long\ long -DBRG_UI8=1 -DBRG_UI16=1 -DBRG_UI32=1 -DBRG_UI64=1 -D__i386__=1
+ARCHLDFLAGS = -u ?EfiMain@@YAIPAXPAU_EFI_SYSTEM_TABLE@@@Z -e ?EfiMain@@YAIPAXPAU_EFI_SYSTEM_TABLE@@@Z -read_only_relocs suppress
+NASMFLAGS = -f macho -DARCH64 -DAPPLEUSE -DARCH32
+ARCHCFLAGS = -target i386-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -DAPPLEEXTRA -Duint_8t=unsigned\ char -Duint_16t=unsigned\ short -Duint_32t=unsigned\ int -Duint_64t=unsigned\ long\ long -DBRG_UI8=1 -DBRG_UI16=1 -DBRG_UI32=1 -DBRG_UI64=1 -D__i386__=1 -DARCH32=1 -D__APPLE__=1
 EXTRAOBJS="StartKernel.o"
 else
 ARCHDIR = x64
 ARCHFLAGS = -arch x86_64
 ARCHLDFLAGS =  -u ?EfiMain@@YA_KPEAXPEAU_EFI_SYSTEM_TABLE@@@Z -e ?EfiMain@@YA_KPEAXPEAU_EFI_SYSTEM_TABLE@@@Z
-NASMFLAGS = -f macho64 -DARCH64 -DAPPLEUSE
+NASMFLAGS = -f macho64 -DARCH64 -DAPPLEUSE -DARCH64COMP
 STRIP = strip
 ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -msoft-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -D__x86_64__=1
 EXTRAOBJS=
@@ -128,13 +128,13 @@ CXXFLAGS = "-Wall -Werror $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-exte
 LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -image_base 0x240 -compatibility_version 1.0 -current_version 2.1 -flat_namespace -print_statistics -map boot.map -sectalign __TEXT __text 0x20  -sectalign __TEXT __eh_frame  0x20 -sectalign __TEXT __ustring 0x20  -sectalign __TEXT __const 0x20   -sectalign __TEXT __ustring 0x20 -sectalign __DATA __data 0x20  -sectalign __DATA __bss 0x20  -sectalign __DATA __common 0x20 -final_output boot.efi"
 
 ifeq ("$(ARCH)", "i386")
-#AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
+AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
 AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
 #AESASMDEFS=-DASM_X86_V2C=1 -D_ASM_X86_V2C=1 -DNO_ENCRYPTION_TABLE=1 -DNO_DECRYPTION_TABLE=1
-AESASMDEFS=
+#AESASMDEFS=
 
 ### define ASM_X86_V1C for this object ###
-#EXTRAAESOBJS=aes_x86_v1.o
+EXTRAAESOBJS=aes_x86_v1.o
 
 ### define ASM_X86_V2 or ASM_X86_V2C for this object ###
 #EXTRAAESOBJS=aes_x86_v2.o

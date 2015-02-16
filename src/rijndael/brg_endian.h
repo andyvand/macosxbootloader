@@ -38,7 +38,7 @@
 #  include <sys/_endian.h>
 #elif defined( __FreeBSD__ ) || defined( __OpenBSD__ ) || defined( __NetBSD__ )
 #  include <sys/endian.h>
-#elif defined( BSD ) && ( BSD >= 199103 ) || defined( __APPLE__ ) || \
+#elif defined( BSD ) && ( BSD >= 199103 ) || defined( __APPLE__ ) || defined( ARCH32 ) || \
       defined( __CYGWIN32__ ) || defined( __DJGPP__ ) || defined( __osf__ )
 #  include <machine/endian.h>
 #elif defined( __linux__ ) || defined( __GNUC__ ) || defined( __GNU_LIBRARY__ )

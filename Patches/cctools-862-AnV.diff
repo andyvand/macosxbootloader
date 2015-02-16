@@ -1,6 +1,7 @@
+Binary files cctools-862/.DS_Store and cctools-862-AnV/.DS_Store differ
 diff -Nur cctools-862/Makefile cctools-862-AnV/Makefile
 --- cctools-862/Makefile	2014-11-02 07:19:11.000000000 +0100
-+++ cctools-862-AnV/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -15,6 +15,8 @@
  OLD_LIBKLD = NO
  BUILD_DYLIBS = YES
@@ -164,7 +165,7 @@ diff -Nur cctools-862/Makefile cctools-862-AnV/Makefile
  	    (cd man; $(MAKE) "RC_CFLAGS=$(RC_CFLAGS) $(HIDE)"		\
 diff -Nur cctools-862/ar/Makefile cctools-862-AnV/ar/Makefile
 --- cctools-862/ar/Makefile	2014-11-02 06:47:58.000000000 +0100
-+++ cctools-862-AnV/ar/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ar/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,13 +1,14 @@
  ifneq "" "$(SDKROOT)"
    SDK = -isysroot $(SDKROOT)
@@ -185,7 +186,7 @@ diff -Nur cctools-862/ar/Makefile cctools-862-AnV/ar/Makefile
  SRCROOT = .
 diff -Nur cctools-862/as/Makefile cctools-862-AnV/as/Makefile
 --- cctools-862/as/Makefile	2014-11-02 06:48:00.000000000 +0100
-+++ cctools-862-AnV/as/Makefile	2014-12-02 17:11:21.000000000 +0100
++++ cctools-862-AnV/as/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -2,14 +2,15 @@
  
  ifneq "" "$(SDKROOT)"
@@ -207,7 +208,7 @@ diff -Nur cctools-862/as/Makefile cctools-862-AnV/as/Makefile
  LIBSTUFF = -lstuff
 diff -Nur cctools-862/cbtlibs/Makefile cctools-862-AnV/cbtlibs/Makefile
 --- cctools-862/cbtlibs/Makefile	2014-11-02 06:48:01.000000000 +0100
-+++ cctools-862-AnV/cbtlibs/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/cbtlibs/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,5 +1,6 @@
 +CC=clang
  RC_OS = macos
@@ -227,7 +228,7 @@ diff -Nur cctools-862/cbtlibs/Makefile cctools-862-AnV/cbtlibs/Makefile
  SYMROOT = .
 diff -Nur cctools-862/efitools/Makefile cctools-862-AnV/efitools/Makefile
 --- cctools-862/efitools/Makefile	2014-11-02 06:48:01.000000000 +0100
-+++ cctools-862-AnV/efitools/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/efitools/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,3 +1,4 @@
 +CC=clang
  export USE_APPLE_PB_SUPPORT = all
@@ -244,9 +245,10 @@ diff -Nur cctools-862/efitools/Makefile cctools-862-AnV/efitools/Makefile
  	 -I$(SRCROOT) -I$(SRCROOT)/../include -I$(OFILE_DIR) $(SDK)
  LIBSTUFF = -L$(SYMROOT)/../libstuff -lstuff
  MKDIRS = /bin/mkdir -p
+Binary files cctools-862/efitools/boot.efi.tmp and cctools-862-AnV/efitools/boot.efi.tmp differ
 diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
 --- cctools-862/efitools/mtoc.c	2014-11-02 06:48:01.000000000 +0100
-+++ cctools-862-AnV/efitools/mtoc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/efitools/mtoc.c	2015-02-16 23:08:24.000000000 +0100
 @@ -46,6 +46,7 @@
  #include "coff/base_relocs.h"
  #include "mach-o/x86_64/reloc.h"
@@ -383,7 +385,33 @@ diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
  }
  
  
-@@ -2125,6 +2192,10 @@
+@@ -1782,7 +1849,9 @@
+     struct symtab_command *st;
+     struct nlist *syms;
+     char *strs;
++#if 0
+     enum bool found_undef;
++#endif
+ #ifdef HACK_TO_MATCH_TEST_CASE
+     uint32_t j, n_sect, bss_n_sect, common_n_sect,
+ 	     bss_addr, common_addr, size;
+@@ -1808,6 +1877,7 @@
+ 	strs = object_addr + st->stroff;
+ 	if(swapped)
+ 	    swap_nlist(syms, st->nsyms, host_byte_sex);
++#if 0
+ 	found_undef = FALSE;
+ 	for(i = 0; i < st->nsyms; i++){
+ 	    if((syms[i].n_type & N_STAB) != 0)
+@@ -1828,6 +1898,7 @@
+ 	if(found_undef == TRUE)
+ 	    fatal("undefined symbols are unsupported for conversion to a "
+ 		  "pecoff file");
++#endif
+ 
+ #ifdef HACK_TO_MATCH_TEST_CASE
+ 	/*
+@@ -2125,6 +2196,10 @@
  			gather_base_reloc_info(s[j].addr, relocs, s[j].nreloc,
  				CPU_TYPE_ARM, 2, GENERIC_RELOC_VANILLA,
  				IMAGE_REL_BASED_HIGHLOW);
@@ -394,7 +422,7 @@ diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
  		    if((s[j].flags & SECTION_TYPE) ==
  			S_NON_LAZY_SYMBOL_POINTERS){
  			for(addr = s[j].addr;
-@@ -2143,7 +2214,7 @@
+@@ -2143,7 +2218,7 @@
  		     * segment.
  		     */
  		    /*
@@ -403,7 +431,7 @@ diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
  		     * writable segment but just the first segment.
  		     */
  		    if((first_addr == 0) &&
-@@ -2170,6 +2241,10 @@
+@@ -2170,6 +2245,10 @@
  			gather_base_reloc_info(s64[j].addr, relocs,
  			    s64[j].nreloc, CPU_TYPE_ARM64, 3,
  			    ARM64_RELOC_UNSIGNED, IMAGE_REL_BASED_DIR64);
@@ -414,7 +442,7 @@ diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
  		    if((s64[j].flags & SECTION_TYPE) ==
  			S_NON_LAZY_SYMBOL_POINTERS){
  			for(addr = s64[j].addr;
-@@ -2195,6 +2270,10 @@
+@@ -2195,6 +2274,10 @@
  		gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
  		    CPU_TYPE_ARM, 2, GENERIC_RELOC_VANILLA,
  		    IMAGE_REL_BASED_HIGHLOW);
@@ -425,7 +453,7 @@ diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
  	    else if(arch->object->mh_cputype == CPU_TYPE_X86_64)
  		gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
  		    CPU_TYPE_X86_64, 3, X86_64_RELOC_UNSIGNED,
-@@ -2203,6 +2282,10 @@
+@@ -2203,6 +2286,10 @@
  		gather_base_reloc_info(first_addr, relocs, dyst->nlocrel,
  		    CPU_TYPE_ARM64, 3, ARM64_RELOC_UNSIGNED,
  		    IMAGE_REL_BASED_DIR64);
@@ -436,9 +464,98 @@ diff -Nur cctools-862/efitools/mtoc.c cctools-862-AnV/efitools/mtoc.c
  	}
  	/*
  	if(dyst != NULL && dyst->nextrel != 0)
+diff -Nur cctools-862/efitools/symstosafe cctools-862-AnV/efitools/symstosafe
+--- cctools-862/efitools/symstosafe	1970-01-01 01:00:00.000000000 +0100
++++ cctools-862-AnV/efitools/symstosafe	2015-02-16 21:39:57.000000000 +0100
+@@ -0,0 +1,85 @@
++?AppleAcpiVariableGuid@@3UEFI_GUID@@A
++?AppleDeviceControlProtocolGuid@@3UEFI_GUID@@A
++?AppleDevicePropertyProtocolGuid@@3UEFI_GUID@@A
++?AppleDiskIoProtocolGuid@@3UEFI_GUID@@A
++?AppleFirmwarePasswordProtocolGuid@@3UEFI_GUID@@A
++?AppleFirmwareVariableGuid@@3UEFI_GUID@@A
++?AppleGraphConfigProtocolGuid@@3UEFI_GUID@@A
++?AppleGraphInfoProtocolGuid@@3UEFI_GUID@@A
++?AppleImageCodecProtocolGuid@@3UEFI_GUID@@A
++?AppleKeyStateProtocolGuid@@3UEFI_GUID@@A
++?AppleNVRAMVariableGuid@@3UEFI_GUID@@A
++?AppleNetBootProtocolGuid@@3UEFI_GUID@@A
++?ApplePasswordUIEfiFileNameGuid@@3UEFI_GUID@@A
++?AppleRamDmgDevicePathGuid@@3UEFI_GUID@@A
++?AppleSMCProtocolGuid@@3UEFI_GUID@@A
++?AppleSystemInfoProducerNameGuid@@3UEFI_GUID@@A
++?ArchThunk64BufferEnd@@3PAEA
++?ArchThunk64BufferStart@@3PAEA
++?Bd1394ReceivePacket@@YAIIPAU_STRING@@0PAI@Z
++?Bd1394SendPacket@@YAXIPAU_STRING@@0@Z
++?BdArchBlockDebuggerOperation@@3EA
++?BdBreakpointInstruction@@3EA
++?BdBreakpointTable@@3PAU_BREAKPOINT_ENTRY@@A
++?BdConnectionActive@@3EA
++?BdControlCPending@@3EA
++?BdControlCPressed@@3EA
++?BdDebugMessage@@3PAEA
++?BdDebugTrap@@3P6AEPAU_EXCEPTION_RECORD@@PAU_KEXCEPTION_FRAME@@PAU_KTRAP_FRAME@@@ZA
++?BdDebuggerNotPresent@@3EA
++?BdDebuggerType@@3EA
++?BdMessageBuffer@@3PAEA
++?BdModuleDataTableEntry@@3U_LDR_DATA_TABLE_ENTRY@@A
++?BdModuleList@@3U_LIST_ENTRY@@A
++?BdNextPacketIdToSend@@3IA
++?BdNumberRetries@@3IA
++?BdPacketIdExpected@@3IA
++?BdPcr@@3PAU_KPCR@@A
++?BdPcrPhysicalAddress@@3_KA
++?BdPrcb@@3PAU_KPRCB@@A
++?BdReceivePacket@@3P6AIIPAU_STRING@@0PAI@ZA
++?BdRetryCount@@3IA
++?BdSendPacket@@3P6AXIPAU_STRING@@0@ZA
++?BdSubsystemInitialized@@3EA
++?BdTrap01@@YAXXZ
++?BdTrap03@@YAXXZ
++?BdTrap0d@@YAXXZ
++?BdTrap0e@@YAXXZ
++?BdTrap2d@@YAXXZ
++?BdTrap@@YAEPAU_EXCEPTION_RECORD@@PAU_KEXCEPTION_FRAME@@PAU_KTRAP_FRAME@@@Z
++?BdUsbReceivePacket@@YAIIPAU_STRING@@0PAI@Z
++?BdUsbSendPacket@@YAXIPAU_STRING@@0@Z
++?BdUsbpGlobalData@@3PAU_DEBUG_USB_GLOBAL_DATA@@A
++?BlDecompressLZVN@@YAIPBXIPAXIPAI@Z
++?BlDetectHotKey@@YAIXZ
++?EfiAcpi20TableGuid@@3UEFI_GUID@@A
++?EfiAcpiTableGuid@@3UEFI_GUID@@A
++?EfiBlockIoProtocolGuid@@3UEFI_GUID@@A
++?EfiBootServices@@3PAUEFI_BOOT_SERVICES@@A
++?EfiConsoleControlProtocolGuid@@3UEFI_GUID@@A
++?EfiDataHubProtocolGuid@@3UEFI_GUID@@A
++?EfiDevicePathProtocolGuid@@3UEFI_GUID@@A
++?EfiDiskIoProtocolGuid@@3UEFI_GUID@@A
++?EfiFileInfoGuid@@3UEFI_GUID@@A
++?EfiFirmwareVolumeDispatchProtocolGuid@@3UEFI_GUID@@A
++?EfiFirmwareVolumeProtocolGuid@@3UEFI_GUID@@A
++?EfiGraphicsOutputProtocolGuid@@3UEFI_GUID@@A
++?EfiImageHandle@@3PAXA
++?EfiLoadFileProtocolGuid@@3UEFI_GUID@@A
++?EfiLoadedImageProtocolGuid@@3UEFI_GUID@@A
++?EfiPciIoProtocolGuid@@3UEFI_GUID@@A
++?EfiRuntimeServices@@3PAUEFI_RUNTIME_SERVICES@@A
++?EfiSimpleFileSystemProtocolGuid@@3UEFI_GUID@@A
++?EfiSimplePointerProtocolGuid@@3UEFI_GUID@@A
++?EfiSmbiosTableGuid@@3UEFI_GUID@@A
++?EfiSystemTable@@3PAU_EFI_SYSTEM_TABLE@@A
++?EfiUgaDrawProtocolGuid@@3UEFI_GUID@@A
++?FvLookupUnlockCoreVolumeKey@@YAIPAUEFI_DEVICE_PATH_PROTOCOL@@E@Z
++_t_fl
++_t_fn
++_t_il
++_t_im
++_t_in
++_t_rc
++_vsnprintf
++
 diff -Nur cctools-862/gprof/Makefile cctools-862-AnV/gprof/Makefile
 --- cctools-862/gprof/Makefile	2014-11-02 06:48:01.000000000 +0100
-+++ cctools-862-AnV/gprof/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/gprof/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,3 +1,4 @@
 +CC=clang
  ifneq "" "$(SDKROOT)"
@@ -457,7 +574,7 @@ diff -Nur cctools-862/gprof/Makefile cctools-862-AnV/gprof/Makefile
  OBJROOT = .
 diff -Nur cctools-862/include/coff/aouthdr.h cctools-862-AnV/include/coff/aouthdr.h
 --- cctools-862/include/coff/aouthdr.h	2014-11-02 06:48:02.000000000 +0100
-+++ cctools-862-AnV/include/coff/aouthdr.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/coff/aouthdr.h	2015-01-24 14:00:08.000000000 +0100
 @@ -101,9 +101,25 @@
  	uint32_t DataDirectory[16][2]; /* 16 entries, 2 elements/entry, */
  };
@@ -508,7 +625,7 @@ diff -Nur cctools-862/include/coff/aouthdr.h cctools-862-AnV/include/coff/aouthd
  #endif /* _COFF_AOUTHDR_H */
 diff -Nur cctools-862/include/coff/filehdr.h cctools-862-AnV/include/coff/filehdr.h
 --- cctools-862/include/coff/filehdr.h	2014-11-02 06:48:02.000000000 +0100
-+++ cctools-862-AnV/include/coff/filehdr.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/coff/filehdr.h	2015-01-24 14:00:08.000000000 +0100
 @@ -46,10 +46,17 @@
  };
  
@@ -529,7 +646,7 @@ diff -Nur cctools-862/include/coff/filehdr.h cctools-862-AnV/include/coff/filehd
  #define IMAGE_FILE_EXECUTABLE_IMAGE          0x0002
 diff -Nur cctools-862/include/llvm-c/Disassembler.h cctools-862-AnV/include/llvm-c/Disassembler.h
 --- cctools-862/include/llvm-c/Disassembler.h	2014-11-02 06:48:02.000000000 +0100
-+++ cctools-862-AnV/include/llvm-c/Disassembler.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/Disassembler.h	2015-01-24 14:00:08.000000000 +0100
 @@ -15,6 +15,7 @@
  #ifndef LLVM_C_DISASSEMBLER_H
  #define LLVM_C_DISASSEMBLER_H
@@ -573,7 +690,7 @@ diff -Nur cctools-862/include/llvm-c/Disassembler.h cctools-862-AnV/include/llvm
  /**
 diff -Nur cctools-862/include/llvm-c/Disassembler_old.h cctools-862-AnV/include/llvm-c/Disassembler_old.h
 --- cctools-862/include/llvm-c/Disassembler_old.h	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/include/llvm-c/Disassembler_old.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/Disassembler_old.h	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,233 @@
 +/*===-- llvm-c/Disassembler.h - Disassembler Public C Interface ---*- C -*-===*\
 +|*                                                                            *|
@@ -810,7 +927,7 @@ diff -Nur cctools-862/include/llvm-c/Disassembler_old.h cctools-862-AnV/include/
 +#endif /* !defined(LLVM_C_DISASSEMBLER_H) */
 diff -Nur cctools-862/include/llvm-c/LLVMDataTypes.h cctools-862-AnV/include/llvm-c/LLVMDataTypes.h
 --- cctools-862/include/llvm-c/LLVMDataTypes.h	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/include/llvm-c/LLVMDataTypes.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/LLVMDataTypes.h	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,186 @@
 +/* include/llvm/Support/DataTypes.h.  Generated from DataTypes.h.in by configure.  */
 +/*===-- include/Support/DataTypes.h - Define fixed size types -----*- C -*-===*\
@@ -1000,7 +1117,7 @@ diff -Nur cctools-862/include/llvm-c/LLVMDataTypes.h cctools-862-AnV/include/llv
 +#endif  /* SUPPORT_DATATYPES_H */
 diff -Nur cctools-862/include/llvm-c/lto.h cctools-862-AnV/include/llvm-c/lto.h
 --- cctools-862/include/llvm-c/lto.h	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/include/llvm-c/lto.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/llvm-c/lto.h	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,361 @@
 +/*===-- llvm-c/lto.h - LTO Public C Interface ---------------------*- C -*-===*\
 +|*                                                                            *|
@@ -1365,7 +1482,7 @@ diff -Nur cctools-862/include/llvm-c/lto.h cctools-862-AnV/include/llvm-c/lto.h
 +#endif
 diff -Nur cctools-862/include/mach/arm/_structs.h cctools-862-AnV/include/mach/arm/_structs.h
 --- cctools-862/include/mach/arm/_structs.h	2014-11-02 06:48:02.000000000 +0100
-+++ cctools-862-AnV/include/mach/arm/_structs.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/mach/arm/_structs.h	2015-01-24 14:00:08.000000000 +0100
 @@ -177,7 +177,7 @@
  } __attribute__((aligned(16)));
  
@@ -1377,7 +1494,7 @@ diff -Nur cctools-862/include/mach/arm/_structs.h cctools-862-AnV/include/mach/a
  #endif /* __DARWIN_UNIX03 */
 diff -Nur cctools-862/include/mach/arm/thread_state.h cctools-862-AnV/include/mach/arm/thread_state.h
 --- cctools-862/include/mach/arm/thread_state.h	2014-11-02 06:48:02.000000000 +0100
-+++ cctools-862-AnV/include/mach/arm/thread_state.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/mach/arm/thread_state.h	2015-01-24 14:00:08.000000000 +0100
 @@ -8,6 +8,9 @@
  #ifndef _MACH_ARM_THREAD_STATE_H_
  #define _MACH_ARM_THREAD_STATE_H_
@@ -1390,7 +1507,7 @@ diff -Nur cctools-862/include/mach/arm/thread_state.h cctools-862-AnV/include/ma
  #if defined (__arm__)
 diff -Nur cctools-862/include/mach-o/nlist.h cctools-862-AnV/include/mach-o/nlist.h
 --- cctools-862/include/mach-o/nlist.h	2014-11-02 06:48:03.000000000 +0100
-+++ cctools-862-AnV/include/mach-o/nlist.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/mach-o/nlist.h	2015-01-24 14:00:08.000000000 +0100
 @@ -75,7 +75,7 @@
   */
  struct nlist {
@@ -1402,7 +1519,7 @@ diff -Nur cctools-862/include/mach-o/nlist.h cctools-862-AnV/include/mach-o/nlis
  		uint32_t n_strx;	/* index into the string table */
 diff -Nur cctools-862/include/mach-o/prune_trie.h cctools-862-AnV/include/mach-o/prune_trie.h
 --- cctools-862/include/mach-o/prune_trie.h	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/include/mach-o/prune_trie.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/mach-o/prune_trie.h	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,54 @@
 +/* -*- mode: C++; c-basic-offset: 4; tab-width: 4 -*- 
 + *
@@ -1460,7 +1577,7 @@ diff -Nur cctools-862/include/mach-o/prune_trie.h cctools-862-AnV/include/mach-o
 +#endif /* __cplusplus */
 diff -Nur cctools-862/include/mach-o/rld.h cctools-862-AnV/include/mach-o/rld.h
 --- cctools-862/include/mach-o/rld.h	2014-11-02 06:48:03.000000000 +0100
-+++ cctools-862-AnV/include/mach-o/rld.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/mach-o/rld.h	2015-01-24 14:00:08.000000000 +0100
 @@ -27,9 +27,13 @@
  #ifndef _MACHO_RLD_H_
  #define _MACHO_RLD_H_
@@ -1478,7 +1595,7 @@ diff -Nur cctools-862/include/mach-o/rld.h cctools-862-AnV/include/mach-o/rld.h
      struct mach_header **header_addr,
 diff -Nur cctools-862/include/mach-o/swap.h cctools-862-AnV/include/mach-o/swap.h
 --- cctools-862/include/mach-o/swap.h	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/include/mach-o/swap.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/mach-o/swap.h	2015-01-24 14:00:08.000000000 +0100
 @@ -35,6 +35,11 @@
  extern "C" {
  #endif /* __cplusplus */
@@ -1501,7 +1618,7 @@ diff -Nur cctools-862/include/mach-o/swap.h cctools-862-AnV/include/mach-o/swap.
  }
 diff -Nur cctools-862/include/standalone/libsa.h cctools-862-AnV/include/standalone/libsa.h
 --- cctools-862/include/standalone/libsa.h	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/include/standalone/libsa.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/standalone/libsa.h	2015-01-24 14:00:08.000000000 +0100
 @@ -42,7 +42,7 @@
  extern int bzero(char *b, int length);
  #endif
@@ -1547,7 +1664,7 @@ diff -Nur cctools-862/include/standalone/libsa.h cctools-862-AnV/include/standal
      vm_address_t address,
 diff -Nur cctools-862/include/stuff/bytesex.h cctools-862-AnV/include/stuff/bytesex.h
 --- cctools-862/include/stuff/bytesex.h	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/include/stuff/bytesex.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/stuff/bytesex.h	2015-01-24 14:00:08.000000000 +0100
 @@ -33,6 +33,11 @@
  #define __private_extern__ __declspec(private_extern)
  #endif
@@ -1631,7 +1748,7 @@ diff -Nur cctools-862/include/stuff/bytesex.h cctools-862-AnV/include/stuff/byte
      struct data_in_code_entry *dices,
 diff -Nur cctools-862/include/stuff/errors.h cctools-862-AnV/include/stuff/errors.h
 --- cctools-862/include/stuff/errors.h	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/include/stuff/errors.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/stuff/errors.h	2015-01-24 14:00:08.000000000 +0100
 @@ -25,6 +25,7 @@
   * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   * POSSIBILITY OF SUCH DAMAGE.
@@ -1642,7 +1759,7 @@ diff -Nur cctools-862/include/stuff/errors.h cctools-862-AnV/include/stuff/error
  /* user defined (imported) */
 diff -Nur cctools-862/include/stuff/macosx_deployment_target.h cctools-862-AnV/include/stuff/macosx_deployment_target.h
 --- cctools-862/include/stuff/macosx_deployment_target.h	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/include/stuff/macosx_deployment_target.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/stuff/macosx_deployment_target.h	2015-01-24 14:00:08.000000000 +0100
 @@ -20,6 +20,10 @@
   * 
   * @APPLE_LICENSE_HEADER_END@
@@ -1662,7 +1779,7 @@ diff -Nur cctools-862/include/stuff/macosx_deployment_target.h cctools-862-AnV/i
 +#endif
 diff -Nur cctools-862/include/stuff/ofile.h cctools-862-AnV/include/stuff/ofile.h
 --- cctools-862/include/stuff/ofile.h	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/include/stuff/ofile.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/include/stuff/ofile.h	2015-01-24 14:00:08.000000000 +0100
 @@ -142,7 +142,12 @@
      enum bool dylib_flat,
      enum bool use_member_syntax,
@@ -1693,7 +1810,7 @@ diff -Nur cctools-862/include/stuff/ofile.h cctools-862-AnV/include/stuff/ofile.
  #else
 diff -Nur cctools-862/ld/4byte_literals.c cctools-862-AnV/ld/4byte_literals.c
 --- cctools-862/ld/4byte_literals.c	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/ld/4byte_literals.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/4byte_literals.c	2015-01-24 14:00:08.000000000 +0100
 @@ -31,6 +31,7 @@
   * 4 bytes in all input files.
   */
@@ -1704,7 +1821,7 @@ diff -Nur cctools-862/ld/4byte_literals.c cctools-862-AnV/ld/4byte_literals.c
  #include <mach/mach.h>
 diff -Nur cctools-862/ld/8byte_literals.c cctools-862-AnV/ld/8byte_literals.c
 --- cctools-862/ld/8byte_literals.c	2014-11-02 06:48:04.000000000 +0100
-+++ cctools-862-AnV/ld/8byte_literals.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/8byte_literals.c	2015-01-24 14:00:08.000000000 +0100
 @@ -31,6 +31,7 @@
   * 8 bytes in all input files.
   */
@@ -1715,7 +1832,7 @@ diff -Nur cctools-862/ld/8byte_literals.c cctools-862-AnV/ld/8byte_literals.c
  #include <mach/mach.h>
 diff -Nur cctools-862/ld/Makefile cctools-862-AnV/ld/Makefile
 --- cctools-862/ld/Makefile	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/Makefile	2014-12-02 17:14:19.000000000 +0100
++++ cctools-862-AnV/ld/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,6 +1,7 @@
 +CC=clang
  export USE_APPLE_PB_SUPPORT = all
@@ -1758,7 +1875,7 @@ diff -Nur cctools-862/ld/Makefile cctools-862-AnV/ld/Makefile
  
 diff -Nur cctools-862/ld/arm_reloc.c cctools-862-AnV/ld/arm_reloc.c
 --- cctools-862/ld/arm_reloc.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/arm_reloc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/arm_reloc.c	2015-01-24 14:00:08.000000000 +0100
 @@ -368,7 +368,7 @@
  		 */
  		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
@@ -1770,7 +1887,7 @@ diff -Nur cctools-862/ld/arm_reloc.c cctools-862-AnV/ld/arm_reloc.c
  		 * If we are being called only to get the references for this
 diff -Nur cctools-862/ld/coalesced_sections.c cctools-862-AnV/ld/coalesced_sections.c
 --- cctools-862/ld/coalesced_sections.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/coalesced_sections.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/coalesced_sections.c	2015-01-24 14:00:08.000000000 +0100
 @@ -616,7 +616,7 @@
  		 */
  		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
@@ -1782,7 +1899,7 @@ diff -Nur cctools-862/ld/coalesced_sections.c cctools-862-AnV/ld/coalesced_secti
  		 * defined in the output file.
 diff -Nur cctools-862/ld/cstring_literals.c cctools-862-AnV/ld/cstring_literals.c
 --- cctools-862/ld/cstring_literals.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/cstring_literals.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/cstring_literals.c	2015-01-24 14:00:08.000000000 +0100
 @@ -31,6 +31,7 @@
   * like: "foo\0bar" can not be in this type of section.
   */
@@ -1793,7 +1910,7 @@ diff -Nur cctools-862/ld/cstring_literals.c cctools-862-AnV/ld/cstring_literals.
  #include <limits.h>
 diff -Nur cctools-862/ld/dylibs.c cctools-862-AnV/ld/dylibs.c
 --- cctools-862/ld/dylibs.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/dylibs.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/dylibs.c	2015-01-24 14:00:08.000000000 +0100
 @@ -20,6 +20,7 @@
   * 
   * @APPLE_LICENSE_HEADER_END@
@@ -1804,7 +1921,7 @@ diff -Nur cctools-862/ld/dylibs.c cctools-862-AnV/ld/dylibs.c
  #include <mach/mach.h>
 diff -Nur cctools-862/ld/fvmlibs.c cctools-862-AnV/ld/fvmlibs.c
 --- cctools-862/ld/fvmlibs.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/fvmlibs.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/fvmlibs.c	2015-01-24 14:00:08.000000000 +0100
 @@ -28,6 +28,7 @@
   * This file contains the routines to manage the fixed VM shared libraries
   * that the output file uses.
@@ -1815,7 +1932,7 @@ diff -Nur cctools-862/ld/fvmlibs.c cctools-862-AnV/ld/fvmlibs.c
  #include <strings.h>
 diff -Nur cctools-862/ld/generic_reloc.c cctools-862-AnV/ld/generic_reloc.c
 --- cctools-862/ld/generic_reloc.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/generic_reloc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/generic_reloc.c	2015-01-24 14:00:08.000000000 +0100
 @@ -27,6 +27,7 @@
   * This file contains the routines to do generic relocation.  Which can be used
   * for such machines that have simple 1, 2, and 4 byte relocation lengths.
@@ -1835,7 +1952,7 @@ diff -Nur cctools-862/ld/generic_reloc.c cctools-862-AnV/ld/generic_reloc.c
  		 * If we are being called only to get the references for this
 diff -Nur cctools-862/ld/generic_reloc.h cctools-862-AnV/ld/generic_reloc.h
 --- cctools-862/ld/generic_reloc.h	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/generic_reloc.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/generic_reloc.h	2015-01-24 14:00:08.000000000 +0100
 @@ -24,6 +24,13 @@
  #define __private_extern__ __declspec(private_extern)
  #endif
@@ -1852,7 +1969,7 @@ diff -Nur cctools-862/ld/generic_reloc.h cctools-862-AnV/ld/generic_reloc.h
   *
 diff -Nur cctools-862/ld/hppa_reloc.c cctools-862-AnV/ld/hppa_reloc.c
 --- cctools-862/ld/hppa_reloc.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/hppa_reloc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/hppa_reloc.c	2015-01-24 14:00:08.000000000 +0100
 @@ -380,7 +380,7 @@
  		 */
  		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
@@ -1864,7 +1981,7 @@ diff -Nur cctools-862/ld/hppa_reloc.c cctools-862-AnV/ld/hppa_reloc.c
  		 * symbol where we need to force an external relocation entry
 diff -Nur cctools-862/ld/i860_reloc.c cctools-862-AnV/ld/i860_reloc.c
 --- cctools-862/ld/i860_reloc.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/i860_reloc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/i860_reloc.c	2015-01-24 14:00:08.000000000 +0100
 @@ -366,7 +366,7 @@
  		 */
  		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
@@ -1876,7 +1993,7 @@ diff -Nur cctools-862/ld/i860_reloc.c cctools-862-AnV/ld/i860_reloc.c
  		 * symbol where we need to force an external relocation entry
 diff -Nur cctools-862/ld/indirect_sections.c cctools-862-AnV/ld/indirect_sections.c
 --- cctools-862/ld/indirect_sections.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/indirect_sections.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/indirect_sections.c	2015-01-24 14:00:08.000000000 +0100
 @@ -28,6 +28,7 @@
   * lazy and non-lazy symbol pointer sections as well as symbol stub sections). 
   */
@@ -1914,7 +2031,7 @@ diff -Nur cctools-862/ld/indirect_sections.c cctools-862-AnV/ld/indirect_section
  		 * merged sections that could have had external relocation
 diff -Nur cctools-862/ld/layout.c cctools-862-AnV/ld/layout.c
 --- cctools-862/ld/layout.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/layout.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/layout.c	2015-01-24 14:00:08.000000000 +0100
 @@ -39,6 +39,8 @@
   * set up.
   */
@@ -1926,7 +2043,7 @@ diff -Nur cctools-862/ld/layout.c cctools-862-AnV/ld/layout.c
  #include <mach/mach.h>
 diff -Nur cctools-862/ld/ld.c cctools-862-AnV/ld/ld.c
 --- cctools-862/ld/ld.c	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/ld.c	2014-12-02 17:31:22.000000000 +0100
++++ cctools-862-AnV/ld/ld.c	2015-01-24 14:00:08.000000000 +0100
 @@ -858,6 +858,8 @@
  				  "decimal number less than 32", argv[i]);
  		    }
@@ -1990,7 +2107,7 @@ diff -Nur cctools-862/ld/ld.c cctools-862-AnV/ld/ld.c
  	 * If there is no file name then it is not on the list and return FALSE.
 diff -Nur cctools-862/ld/ld.h cctools-862-AnV/ld/ld.h
 --- cctools-862/ld/ld.h	2014-11-02 06:48:05.000000000 +0100
-+++ cctools-862-AnV/ld/ld.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/ld.h	2015-01-24 14:00:08.000000000 +0100
 @@ -24,6 +24,14 @@
  #define __private_extern__ __declspec(private_extern)
  #endif
@@ -2019,42 +2136,9 @@ diff -Nur cctools-862/ld/ld.h cctools-862-AnV/ld/ld.h
  
  /* name of output file */
  __private_extern__ char *outputfile;
-Binary files cctools-862/ld/ld_dir/4byte_literals.o and cctools-862-AnV/ld/ld_dir/4byte_literals.o differ
-Binary files cctools-862/ld/ld_dir/8byte_literals.o and cctools-862-AnV/ld/ld_dir/8byte_literals.o differ
-Binary files cctools-862/ld/ld_dir/arm_reloc.o and cctools-862-AnV/ld/ld_dir/arm_reloc.o differ
-Binary files cctools-862/ld/ld_dir/coalesced_sections.o and cctools-862-AnV/ld/ld_dir/coalesced_sections.o differ
-Binary files cctools-862/ld/ld_dir/cstring_literals.o and cctools-862-AnV/ld/ld_dir/cstring_literals.o differ
-Binary files cctools-862/ld/ld_dir/debugcompunit.o and cctools-862-AnV/ld/ld_dir/debugcompunit.o differ
-Binary files cctools-862/ld/ld_dir/debugline.o and cctools-862-AnV/ld/ld_dir/debugline.o differ
-Binary files cctools-862/ld/ld_dir/dylibs.o and cctools-862-AnV/ld/ld_dir/dylibs.o differ
-Binary files cctools-862/ld/ld_dir/fvmlibs.o and cctools-862-AnV/ld/ld_dir/fvmlibs.o differ
-Binary files cctools-862/ld/ld_dir/generic_reloc.o and cctools-862-AnV/ld/ld_dir/generic_reloc.o differ
-Binary files cctools-862/ld/ld_dir/hppa_reloc.o and cctools-862-AnV/ld/ld_dir/hppa_reloc.o differ
-Binary files cctools-862/ld/ld_dir/i860_reloc.o and cctools-862-AnV/ld/ld_dir/i860_reloc.o differ
-Binary files cctools-862/ld/ld_dir/indirect_sections.o and cctools-862-AnV/ld/ld_dir/indirect_sections.o differ
-Binary files cctools-862/ld/ld_dir/layout.o and cctools-862-AnV/ld/ld_dir/layout.o differ
-Binary files cctools-862/ld/ld_dir/ld.NEW and cctools-862-AnV/ld/ld_dir/ld.NEW differ
-Binary files cctools-862/ld/ld_dir/ld.o and cctools-862-AnV/ld/ld_dir/ld.o differ
-Binary files cctools-862/ld/ld_dir/ld.private.o and cctools-862-AnV/ld/ld_dir/ld.private.o differ
-Binary files cctools-862/ld/ld_dir/literal_pointers.o and cctools-862-AnV/ld/ld_dir/literal_pointers.o differ
-Binary files cctools-862/ld/ld_dir/m88k_reloc.o and cctools-862-AnV/ld/ld_dir/m88k_reloc.o differ
-Binary files cctools-862/ld/ld_dir/map_fd.o and cctools-862-AnV/ld/ld_dir/map_fd.o differ
-Binary files cctools-862/ld/ld_dir/mod_sections.o and cctools-862-AnV/ld/ld_dir/mod_sections.o differ
-Binary files cctools-862/ld/ld_dir/objects.o and cctools-862-AnV/ld/ld_dir/objects.o differ
-Binary files cctools-862/ld/ld_dir/pass1.o and cctools-862-AnV/ld/ld_dir/pass1.o differ
-Binary files cctools-862/ld/ld_dir/pass2.o and cctools-862-AnV/ld/ld_dir/pass2.o differ
-Binary files cctools-862/ld/ld_dir/ppc_reloc.o and cctools-862-AnV/ld/ld_dir/ppc_reloc.o differ
-Binary files cctools-862/ld/ld_dir/rld.o and cctools-862-AnV/ld/ld_dir/rld.o differ
-Binary files cctools-862/ld/ld_dir/sections.o and cctools-862-AnV/ld/ld_dir/sections.o differ
-Binary files cctools-862/ld/ld_dir/sets.o and cctools-862-AnV/ld/ld_dir/sets.o differ
-Binary files cctools-862/ld/ld_dir/sparc_reloc.o and cctools-862-AnV/ld/ld_dir/sparc_reloc.o differ
-Binary files cctools-862/ld/ld_dir/specs.o and cctools-862-AnV/ld/ld_dir/specs.o differ
-Binary files cctools-862/ld/ld_dir/symbols.o and cctools-862-AnV/ld/ld_dir/symbols.o differ
-Binary files cctools-862/ld/ld_dir/test and cctools-862-AnV/ld/ld_dir/test differ
-Binary files cctools-862/ld/ld_dir/uuid.o and cctools-862-AnV/ld/ld_dir/uuid.o differ
 diff -Nur cctools-862/ld/literal_pointers.c cctools-862-AnV/ld/literal_pointers.c
 --- cctools-862/ld/literal_pointers.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/literal_pointers.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/literal_pointers.c	2015-01-24 14:00:08.000000000 +0100
 @@ -37,6 +37,7 @@
   * all input files.
   */
@@ -2074,7 +2158,7 @@ diff -Nur cctools-862/ld/literal_pointers.c cctools-862-AnV/ld/literal_pointers.
  	     * because it not a pointer to a literal.
 diff -Nur cctools-862/ld/m88k_reloc.c cctools-862-AnV/ld/m88k_reloc.c
 --- cctools-862/ld/m88k_reloc.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/m88k_reloc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/m88k_reloc.c	2015-01-24 14:00:08.000000000 +0100
 @@ -369,7 +369,7 @@
  		 */
  		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
@@ -2086,7 +2170,7 @@ diff -Nur cctools-862/ld/m88k_reloc.c cctools-862-AnV/ld/m88k_reloc.c
  		 * symbol where we need to force an external relocation entry
 diff -Nur cctools-862/ld/map_fd.c cctools-862-AnV/ld/map_fd.c
 --- cctools-862/ld/map_fd.c	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/ld/map_fd.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/map_fd.c	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,31 @@
 +#include <mach/mach.h>
 +#include <mach/mach_error.h>
@@ -2121,7 +2205,7 @@ diff -Nur cctools-862/ld/map_fd.c cctools-862-AnV/ld/map_fd.c
 +
 diff -Nur cctools-862/ld/mod_sections.c cctools-862-AnV/ld/mod_sections.c
 --- cctools-862/ld/mod_sections.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/mod_sections.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/mod_sections.c	2015-01-24 14:00:08.000000000 +0100
 @@ -28,6 +28,7 @@
   * termination function pointer sections. 
   */
@@ -2132,7 +2216,7 @@ diff -Nur cctools-862/ld/mod_sections.c cctools-862-AnV/ld/mod_sections.c
  #include <mach/mach.h>
 diff -Nur cctools-862/ld/objects.c cctools-862-AnV/ld/objects.c
 --- cctools-862/ld/objects.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/objects.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/objects.c	2015-01-24 14:00:08.000000000 +0100
 @@ -32,6 +32,7 @@
  #include <stdio.h>
  #include <limits.h>
@@ -2206,7 +2290,7 @@ diff -Nur cctools-862/ld/objects.c cctools-862-AnV/ld/objects.c
  	else{
 diff -Nur cctools-862/ld/pass1.c cctools-862-AnV/ld/pass1.c
 --- cctools-862/ld/pass1.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/pass1.c	2014-12-02 17:49:23.000000000 +0100
++++ cctools-862-AnV/ld/pass1.c	2015-01-24 14:00:08.000000000 +0100
 @@ -23,12 +23,16 @@
  #ifdef SHLIB
  #include "shlib.h"
@@ -2380,7 +2464,7 @@ diff -Nur cctools-862/ld/pass1.c cctools-862-AnV/ld/pass1.c
  		    "command %lu extends past the end of the file", offset_str,
 diff -Nur cctools-862/ld/pass1.h cctools-862-AnV/ld/pass1.h
 --- cctools-862/ld/pass1.h	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/pass1.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/pass1.h	2015-01-24 14:00:08.000000000 +0100
 @@ -48,7 +48,7 @@
  __private_extern__ unsigned long nld_library_paths;
  
@@ -2407,7 +2491,7 @@ diff -Nur cctools-862/ld/pass1.h cctools-862-AnV/ld/pass1.h
  __private_extern__ struct merged_segment *base_obj_segments;
 diff -Nur cctools-862/ld/ppc_reloc.c cctools-862-AnV/ld/ppc_reloc.c
 --- cctools-862/ld/ppc_reloc.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/ppc_reloc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/ppc_reloc.c	2015-01-24 14:00:08.000000000 +0100
 @@ -403,7 +403,7 @@
  		 */
  		if((merged_symbol->nlist.n_type & N_TYPE) == N_INDR)
@@ -2419,7 +2503,7 @@ diff -Nur cctools-862/ld/ppc_reloc.c cctools-862-AnV/ld/ppc_reloc.c
  		 * If we are being called only to get the references for this
 diff -Nur cctools-862/ld/rld.c cctools-862-AnV/ld/rld.c
 --- cctools-862/ld/rld.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/rld.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/rld.c	2015-01-24 14:00:08.000000000 +0100
 @@ -59,8 +59,8 @@
  #include <mach-o/kld.h>
  #else /* !defined(KLD) */
@@ -2433,7 +2517,7 @@ diff -Nur cctools-862/ld/rld.c cctools-862-AnV/ld/rld.c
  #include <mach-o/ldsyms.h>
 diff -Nur cctools-862/ld/sections.c cctools-862-AnV/ld/sections.c
 --- cctools-862/ld/sections.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/sections.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/sections.c	2015-01-24 14:00:08.000000000 +0100
 @@ -30,6 +30,7 @@
   * them).  The merged section list becomes the output files's section list.
   */
@@ -2500,7 +2584,7 @@ diff -Nur cctools-862/ld/sections.c cctools-862-AnV/ld/sections.c
  	    }
 diff -Nur cctools-862/ld/sparc_reloc.c cctools-862-AnV/ld/sparc_reloc.c
 --- cctools-862/ld/sparc_reloc.c	2014-11-02 06:48:06.000000000 +0100
-+++ cctools-862-AnV/ld/sparc_reloc.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/sparc_reloc.c	2015-01-24 14:00:08.000000000 +0100
 @@ -381,7 +381,7 @@
  		 */
  		if(merged_symbol->nlist.n_type == (N_EXT | N_INDR))
@@ -2512,7 +2596,7 @@ diff -Nur cctools-862/ld/sparc_reloc.c cctools-862-AnV/ld/sparc_reloc.c
  		 * symbol where we need to force an external relocation entry
 diff -Nur cctools-862/ld/specs.c cctools-862-AnV/ld/specs.c
 --- cctools-862/ld/specs.c	2014-11-02 06:48:07.000000000 +0100
-+++ cctools-862-AnV/ld/specs.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/specs.c	2015-01-24 14:00:08.000000000 +0100
 @@ -27,6 +27,7 @@
   * This file contains the routines to manage the structures that hold the
   * command line specifications about segment and sections.
@@ -2523,7 +2607,7 @@ diff -Nur cctools-862/ld/specs.c cctools-862-AnV/ld/specs.c
  #include <stdio.h>
 diff -Nur cctools-862/ld/symbols.c cctools-862-AnV/ld/symbols.c
 --- cctools-862/ld/symbols.c	2014-11-02 06:48:07.000000000 +0100
-+++ cctools-862-AnV/ld/symbols.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/ld/symbols.c	2015-01-24 14:00:08.000000000 +0100
 @@ -459,7 +459,7 @@
      unsigned long section_type, library_ordinal;
  
@@ -2617,7 +2701,7 @@ diff -Nur cctools-862/ld/symbols.c cctools-862-AnV/ld/symbols.c
  		    print("unknown 0x%x\n", (unsigned int)(nlist->n_type));
 diff -Nur cctools-862/libmacho/Makefile cctools-862-AnV/libmacho/Makefile
 --- cctools-862/libmacho/Makefile	2014-11-02 06:48:07.000000000 +0100
-+++ cctools-862-AnV/libmacho/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,3 +1,4 @@
 +CC=clang
  LEGACY = -D_MACH_I386_THREAD_STATUS_FPSTATE_LEGACY_FIELD_NAMES_ \
@@ -2658,7 +2742,7 @@ diff -Nur cctools-862/libmacho/Makefile cctools-862-AnV/libmacho/Makefile
  
 diff -Nur cctools-862/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist cctools-862-AnV/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist
 --- cctools-862/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,20 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -2682,7 +2766,7 @@ diff -Nur cctools-862/libmacho/dtmp_obj/libmacho.dylib.dSYM/Contents/Info.plist 
 +</plist>
 diff -Nur cctools-862/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist cctools-862-AnV/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist
 --- cctools-862/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.plist	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,20 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -2706,7 +2790,7 @@ diff -Nur cctools-862/libmacho/dtmp_obj/libmacho_debug.dylib.dSYM/Contents/Info.
 +</plist>
 diff -Nur cctools-862/libmacho/dynamic_obj/libmacho.ofileList cctools-862-AnV/libmacho/dynamic_obj/libmacho.ofileList
 --- cctools-862/libmacho/dynamic_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/dynamic_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/dynamic_obj/libmacho.ofileList	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,9 @@
 +arch.o
 +getsecbyname.o
@@ -2719,7 +2803,7 @@ diff -Nur cctools-862/libmacho/dynamic_obj/libmacho.ofileList cctools-862-AnV/li
 +ppc_swap.o
 diff -Nur cctools-862/libmacho/dynamic_profile_obj/libmacho.ofileList cctools-862-AnV/libmacho/dynamic_profile_obj/libmacho.ofileList
 --- cctools-862/libmacho/dynamic_profile_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/dynamic_profile_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/dynamic_profile_obj/libmacho.ofileList	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,9 @@
 +arch.o
 +getsecbyname.o
@@ -2732,7 +2816,7 @@ diff -Nur cctools-862/libmacho/dynamic_profile_obj/libmacho.ofileList cctools-86
 +ppc_swap.o
 diff -Nur cctools-862/libmacho/optimized_obj/libmacho.ofileList cctools-862-AnV/libmacho/optimized_obj/libmacho.ofileList
 --- cctools-862/libmacho/optimized_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/optimized_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/optimized_obj/libmacho.ofileList	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,9 @@
 +arch.o
 +getsecbyname.o
@@ -2745,7 +2829,7 @@ diff -Nur cctools-862/libmacho/optimized_obj/libmacho.ofileList cctools-862-AnV/
 +ppc_swap.o
 diff -Nur cctools-862/libmacho/profile_obj/libmacho.ofileList cctools-862-AnV/libmacho/profile_obj/libmacho.ofileList
 --- cctools-862/libmacho/profile_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/profile_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/profile_obj/libmacho.ofileList	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,9 @@
 +arch.o
 +getsecbyname.o
@@ -2758,7 +2842,7 @@ diff -Nur cctools-862/libmacho/profile_obj/libmacho.ofileList cctools-862-AnV/li
 +ppc_swap.o
 diff -Nur cctools-862/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist cctools-862-AnV/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist
 --- cctools-862/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Info.plist	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,20 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -2782,7 +2866,7 @@ diff -Nur cctools-862/libmacho/ptmp_obj/libmacho_profile.dylib.dSYM/Contents/Inf
 +</plist>
 diff -Nur cctools-862/libmacho/static_obj/libmacho.ofileList cctools-862-AnV/libmacho/static_obj/libmacho.ofileList
 --- cctools-862/libmacho/static_obj/libmacho.ofileList	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/libmacho/static_obj/libmacho.ofileList	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libmacho/static_obj/libmacho.ofileList	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,9 @@
 +arch.o
 +getsecbyname.o
@@ -2795,7 +2879,7 @@ diff -Nur cctools-862/libmacho/static_obj/libmacho.ofileList cctools-862-AnV/lib
 +ppc_swap.o
 diff -Nur cctools-862/libstuff/Makefile cctools-862-AnV/libstuff/Makefile
 --- cctools-862/libstuff/Makefile	2014-11-02 06:48:08.000000000 +0100
-+++ cctools-862-AnV/libstuff/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,3 +1,5 @@
 +CC=clang -arch i386 -arch x86_64
 +
@@ -2871,7 +2955,7 @@ diff -Nur cctools-862/libstuff/Makefile cctools-862-AnV/libstuff/Makefile
 Binary files cctools-862/libstuff/SymLoc.o and cctools-862-AnV/libstuff/SymLoc.o differ
 diff -Nur cctools-862/libstuff/allocate.c cctools-862-AnV/libstuff/allocate.c
 --- cctools-862/libstuff/allocate.c	2014-11-02 06:48:07.000000000 +0100
-+++ cctools-862-AnV/libstuff/allocate.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/allocate.c	2015-01-24 14:00:08.000000000 +0100
 @@ -76,7 +76,7 @@
  
  	len = strlen(s) + 1;
@@ -2901,7 +2985,7 @@ Binary files cctools-862/libstuff/arch_usage.o and cctools-862-AnV/libstuff/arch
 Binary files cctools-862/libstuff/best_arch.o and cctools-862-AnV/libstuff/best_arch.o differ
 diff -Nur cctools-862/libstuff/breakout.c cctools-862-AnV/libstuff/breakout.c
 --- cctools-862/libstuff/breakout.c	2014-11-02 06:48:07.000000000 +0100
-+++ cctools-862-AnV/libstuff/breakout.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/breakout.c	2015-01-24 14:00:08.000000000 +0100
 @@ -116,7 +116,11 @@
  	 * Rely on the ofile_*() routines to do all the checking and only
  	 * return valid ofiles files broken out.
@@ -2917,7 +3001,7 @@ diff -Nur cctools-862/libstuff/breakout.c cctools-862-AnV/libstuff/breakout.c
 Binary files cctools-862/libstuff/breakout.o and cctools-862-AnV/libstuff/breakout.o differ
 diff -Nur cctools-862/libstuff/bytesex.c cctools-862-AnV/libstuff/bytesex.c
 --- cctools-862/libstuff/bytesex.c	2014-11-02 06:48:07.000000000 +0100
-+++ cctools-862-AnV/libstuff/bytesex.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/bytesex.c	2015-01-24 14:00:08.000000000 +0100
 @@ -207,6 +207,14 @@
  #include "stuff/bool.h"
  #include "stuff/bytesex.h"
@@ -2934,12 +3018,56 @@ diff -Nur cctools-862/libstuff/bytesex.c cctools-862-AnV/libstuff/bytesex.c
  long long
  SWAP_LONG_LONG(
 Binary files cctools-862/libstuff/bytesex.o and cctools-862-AnV/libstuff/bytesex.o differ
+diff -Nur cctools-862/libstuff/checkout.c cctools-862-AnV/libstuff/checkout.c
+--- cctools-862/libstuff/checkout.c	2014-11-02 06:48:07.000000000 +0100
++++ cctools-862-AnV/libstuff/checkout.c	2015-02-16 22:39:19.000000000 +0100
+@@ -585,9 +585,12 @@
+ 	    if(object->code_sig_cmd != NULL){
+ 		sigend = object->code_sig_cmd->dataoff +
+ 			 object->code_sig_cmd->datasize;
++        /* AnV - mtoc i386 fix */
++#if 0
+ 		if(sigend != end)
+ 		    fatal_arch(arch, member, "code signature not at the end "
+ 			"of the file (can't be processed) in file: ");
++#endif
+ 		/*
+ 		 * The code signature starts at a 16 byte offset.  So if the
+ 		 * string table end rouned to 16 bytes is the offset where the 
+@@ -610,9 +613,11 @@
+ 		 * object_size due to rounding.
+ 		 */
+ 		rounded_strend = rnd(strend, 8);
++#if 0
+ 		if(strend != end && rounded_strend != end)
+ 		    fatal_arch(arch, member, "string table not at the end "
+ 			"of the file (can't be processed) in file: ");
++#endif
+ 		/*
+ 		 * To make the code work that assumes the end of string table is
+ 		 * at the end of the object file change the object_size to be
+@@ -648,6 +653,7 @@
+ 		    rounded_indirectend = indirectend;
+ 		}
+ 
++#if 0
+ 		if(indirectend != end && rounded_indirectend != end){
+ 		    fatal_arch(arch, member, "indirect symbol table does not "
+ 			"directly preceed the string table (can't be "
+@@ -694,6 +700,7 @@
+ 		    fatal_arch(arch, member, "the " SEG_LINKEDIT " segment "
+ 			"does not cover the symbol and string table (can't "
+ 			"be processed) in file: ");
++#endif
+ 	    }
+ 	}
+ }
 Binary files cctools-862/libstuff/checkout.o and cctools-862-AnV/libstuff/checkout.o differ
 Binary files cctools-862/libstuff/coff_bytesex.o and cctools-862-AnV/libstuff/coff_bytesex.o differ
 Binary files cctools-862/libstuff/crc32.o and cctools-862-AnV/libstuff/crc32.o differ
 diff -Nur cctools-862/libstuff/dylib_roots.c cctools-862-AnV/libstuff/dylib_roots.c
 --- cctools-862/libstuff/dylib_roots.c	2014-11-02 06:48:07.000000000 +0100
-+++ cctools-862-AnV/libstuff/dylib_roots.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/dylib_roots.c	2015-01-24 14:00:08.000000000 +0100
 @@ -99,8 +99,13 @@
  		    goto try_to_find_in_dstroot;
  		}
@@ -2982,7 +3110,7 @@ Binary files cctools-862/libstuff/hppa.o and cctools-862-AnV/libstuff/hppa.o dif
 Binary files cctools-862/libstuff/libstuff_kld.a and cctools-862-AnV/libstuff/libstuff_kld.a differ
 diff -Nur cctools-862/libstuff/llvm.c cctools-862-AnV/libstuff/llvm.c
 --- cctools-862/libstuff/llvm.c	2014-11-02 06:48:08.000000000 +0100
-+++ cctools-862-AnV/libstuff/llvm.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/llvm.c	2015-01-24 14:00:08.000000000 +0100
 @@ -1,5 +1,6 @@
  #include <stdio.h>
  #include <stdlib.h>
@@ -3005,7 +3133,7 @@ diff -Nur cctools-862/libstuff/llvm.c cctools-862-AnV/libstuff/llvm.c
 Binary files cctools-862/libstuff/llvm.o and cctools-862-AnV/libstuff/llvm.o differ
 diff -Nur cctools-862/libstuff/lto.c cctools-862-AnV/libstuff/lto.c
 --- cctools-862/libstuff/lto.c	2014-11-02 06:48:08.000000000 +0100
-+++ cctools-862-AnV/libstuff/lto.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/lto.c	2015-01-24 14:00:08.000000000 +0100
 @@ -2,6 +2,7 @@
  
  #include <stdio.h>
@@ -3018,7 +3146,7 @@ Binary files cctools-862/libstuff/lto.o and cctools-862-AnV/libstuff/lto.o diffe
 Binary files cctools-862/libstuff/macosx_deployment_target.o and cctools-862-AnV/libstuff/macosx_deployment_target.o differ
 diff -Nur cctools-862/libstuff/ofile.c cctools-862-AnV/libstuff/ofile.c
 --- cctools-862/libstuff/ofile.c	2014-11-02 06:48:08.000000000 +0100
-+++ cctools-862-AnV/libstuff/ofile.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/ofile.c	2015-02-16 22:23:25.000000000 +0100
 @@ -200,7 +200,12 @@
  enum bool dylib_flat,
  enum bool use_member_syntax,
@@ -3111,6 +3239,23 @@ diff -Nur cctools-862/libstuff/ofile.c cctools-862-AnV/libstuff/ofile.c
  	    if((intptr_t)addr == -1){
  		system_error("can't map file: %s", file_name);
  		close(fd);
+@@ -6132,6 +6169,8 @@
+ 	while(e->next != NULL){
+ 	    p = e;
+ 	    e = e->next;
++        /* AnV - mtoc i386 fix */
++#if 0
+ 	    if((offset >= e->offset &&
+ 		offset < e->offset + e->size) ||
+ 	       (offset + size > e->offset &&
+@@ -6143,6 +6182,7 @@
+ 		    name, offset, size, e->name, e->offset, e->size);
+ 		return(CHECK_BAD);
+ 	    }
++#endif
+ 	    if(e->next != NULL && offset + size <= e->next->offset){
+ 		n = allocate(sizeof(struct element));
+ 		n->offset = offset;
 Binary files cctools-862/libstuff/ofile.o and cctools-862-AnV/libstuff/ofile.o differ
 Binary files cctools-862/libstuff/ofile_error.o and cctools-862-AnV/libstuff/ofile_error.o differ
 Binary files cctools-862/libstuff/ofile_get_word.o and cctools-862-AnV/libstuff/ofile_get_word.o differ
@@ -3124,7 +3269,7 @@ Binary files cctools-862/libstuff/symbol_list.o and cctools-862-AnV/libstuff/sym
 Binary files cctools-862/libstuff/unix_standard_mode.o and cctools-862-AnV/libstuff/unix_standard_mode.o differ
 diff -Nur cctools-862/libstuff/version_number.c cctools-862-AnV/libstuff/version_number.c
 --- cctools-862/libstuff/version_number.c	2014-11-02 06:48:08.000000000 +0100
-+++ cctools-862-AnV/libstuff/version_number.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/version_number.c	2015-01-24 14:00:08.000000000 +0100
 @@ -47,7 +47,7 @@
  
  	*value = 0;
@@ -3137,7 +3282,7 @@ diff -Nur cctools-862/libstuff/version_number.c cctools-862-AnV/libstuff/version
 Binary files cctools-862/libstuff/version_number.o and cctools-862-AnV/libstuff/version_number.o differ
 diff -Nur cctools-862/libstuff/vm_flush_cache.c cctools-862-AnV/libstuff/vm_flush_cache.c
 --- cctools-862/libstuff/vm_flush_cache.c	2014-11-02 06:48:08.000000000 +0100
-+++ cctools-862-AnV/libstuff/vm_flush_cache.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/libstuff/vm_flush_cache.c	2015-01-24 14:00:08.000000000 +0100
 @@ -40,11 +40,11 @@
  vm_size_t size)
  {
@@ -3171,9 +3316,10 @@ diff -Nur cctools-862/libstuff/vm_flush_cache.c cctools-862-AnV/libstuff/vm_flus
  }
 Binary files cctools-862/libstuff/vm_flush_cache.o and cctools-862-AnV/libstuff/vm_flush_cache.o differ
 Binary files cctools-862/libstuff/writeout.o and cctools-862-AnV/libstuff/writeout.o differ
+Binary files cctools-862/man/.DS_Store and cctools-862-AnV/man/.DS_Store differ
 diff -Nur cctools-862/man/gprof.1 cctools-862-AnV/man/gprof.1
 --- cctools-862/man/gprof.1	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/man/gprof.1	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/man/gprof.1	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,284 @@
 +.\"	$OpenBSD: gprof.1,v 1.4 1996/10/15 23:55:56 deraadt Exp $
 +.\"	$NetBSD: gprof.1,v 1.6 1995/11/21 22:24:55 jtc Exp $
@@ -3461,7 +3607,7 @@ diff -Nur cctools-862/man/gprof.1 cctools-862-AnV/man/gprof.1
 +file.
 diff -Nur cctools-862/misc/Makefile cctools-862-AnV/misc/Makefile
 --- cctools-862/misc/Makefile	2014-11-02 06:48:10.000000000 +0100
-+++ cctools-862-AnV/misc/Makefile	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/misc/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,5 +1,7 @@
  export USE_APPLE_PB_SUPPORT = all
  
@@ -3494,9 +3640,10 @@ diff -Nur cctools-862/misc/Makefile cctools-862-AnV/misc/Makefile
  
  CFILES1 = libtool.c
  CFILES2 = lipo.c size.c strings.c nm.c checksyms.c inout.c \
+Binary files cctools-862/misc/ctf_insert and cctools-862-AnV/misc/ctf_insert differ
 diff -Nur cctools-862/misc/libtool.c cctools-862-AnV/misc/libtool.c
 --- cctools-862/misc/libtool.c	2014-11-02 06:48:10.000000000 +0100
-+++ cctools-862-AnV/misc/libtool.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/misc/libtool.c	2015-01-24 14:00:08.000000000 +0100
 @@ -1374,8 +1374,11 @@
  			    }
  			}
@@ -3511,9 +3658,10 @@ diff -Nur cctools-862/misc/libtool.c cctools-862-AnV/misc/libtool.c
  			if(cmd_flags.ranlib == TRUE){
  			    error("for architecture: %s file: %s is not an "
  				  "archive (no processing done on this file)",
+Binary files cctools-862/misc/nmedit and cctools-862-AnV/misc/nmedit differ
 diff -Nur cctools-862/otool/Makefile cctools-862-AnV/otool/Makefile
 --- cctools-862/otool/Makefile	2014-11-02 06:48:11.000000000 +0100
-+++ cctools-862-AnV/otool/Makefile	2014-12-02 17:58:08.000000000 +0100
++++ cctools-862-AnV/otool/Makefile	2015-01-24 14:00:08.000000000 +0100
 @@ -1,5 +1,12 @@
  export USE_APPLE_PB_SUPPORT = all
  
@@ -3642,7 +3790,7 @@ diff -Nur cctools-862/otool/Makefile cctools-862-AnV/otool/Makefile
  install: all
 diff -Nur cctools-862/otool/combineobjs.sh cctools-862-AnV/otool/combineobjs.sh
 --- cctools-862/otool/combineobjs.sh	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/otool/combineobjs.sh	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/otool/combineobjs.sh	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,38 @@
 +#!/bin/sh
 +
@@ -3684,7 +3832,7 @@ diff -Nur cctools-862/otool/combineobjs.sh cctools-862-AnV/otool/combineobjs.sh
 +
 diff -Nur cctools-862/otool/extra.txt cctools-862-AnV/otool/extra.txt
 --- cctools-862/otool/extra.txt	1970-01-01 01:00:00.000000000 +0100
-+++ cctools-862-AnV/otool/extra.txt	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/otool/extra.txt	2015-01-24 14:00:08.000000000 +0100
 @@ -0,0 +1,42 @@
 +../libstuff/SymLoc.c
 +../libstuff/allocate.c
@@ -3730,7 +3878,7 @@ diff -Nur cctools-862/otool/extra.txt cctools-862-AnV/otool/extra.txt
 +../libstuff/writeout.c
 diff -Nur cctools-862/otool/main.c cctools-862-AnV/otool/main.c
 --- cctools-862/otool/main.c	2014-11-02 06:48:11.000000000 +0100
-+++ cctools-862-AnV/otool/main.c	2014-12-02 17:03:00.000000000 +0100
++++ cctools-862-AnV/otool/main.c	2015-01-24 14:00:08.000000000 +0100
 @@ -57,6 +57,11 @@
  #include "arm64_disasm.h"
  #include "llvm-c/Disassembler.h"
@@ -3989,7 +4137,7 @@ diff -Nur cctools-862/otool/main.c cctools-862-AnV/otool/main.c
 +#endif
 diff -Nur cctools-862/otool/ofile_print.c cctools-862-AnV/otool/ofile_print.c
 --- cctools-862/otool/ofile_print.c	2014-11-02 06:48:11.000000000 +0100
-+++ cctools-862-AnV/otool/ofile_print.c	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/otool/ofile_print.c	2015-01-24 14:00:08.000000000 +0100
 @@ -1882,6 +1882,10 @@
      struct entry_point_command ep;
      struct source_version_command sv;
@@ -4542,7 +4690,7 @@ diff -Nur cctools-862/otool/ofile_print.c cctools-862-AnV/otool/ofile_print.c
  	else
 diff -Nur cctools-862/otool/ofile_print.h cctools-862-AnV/otool/ofile_print.h
 --- cctools-862/otool/ofile_print.h	2014-11-02 06:48:11.000000000 +0100
-+++ cctools-862-AnV/otool/ofile_print.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/otool/ofile_print.h	2015-01-24 14:00:08.000000000 +0100
 @@ -304,7 +304,11 @@
      struct source_version_command *sv);
  
@@ -4557,7 +4705,7 @@ diff -Nur cctools-862/otool/ofile_print.h cctools-862-AnV/otool/ofile_print.h
      struct rpath_command *rpath,
 diff -Nur cctools-862/otool/otool.h cctools-862-AnV/otool/otool.h
 --- cctools-862/otool/otool.h	2014-11-02 06:48:11.000000000 +0100
-+++ cctools-862-AnV/otool/otool.h	2014-12-02 16:59:40.000000000 +0100
++++ cctools-862-AnV/otool/otool.h	2015-01-24 14:00:08.000000000 +0100
 @@ -61,6 +61,10 @@
  extern enum bool qflag; /* use 'C' Public llvm-mc disassembler */
  extern enum bool gflag; /* group the disassembly */
