@@ -51,6 +51,14 @@ struct fat_header {
 	uint32_t	nfat_arch;	/* number of structs that follow */
 };
 
+#ifndef cpu_type_t
+typedef uint32_t cpu_type_t;
+#endif /* cpu_type_t */
+
+#ifndef cpu_subtype_t
+typedef uint32_t cpu_subtype_t;
+#endif /* cpu_subtype_t */
+
 struct fat_arch {
 	cpu_type_t	cputype;	/* cpu specifier (int) */
 	cpu_subtype_t	cpusubtype;	/* machine specifier (int) */

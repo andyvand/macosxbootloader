@@ -211,6 +211,8 @@
     <ClCompile Include="..\..\efilipo.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\machfat.h" />
+    <ClInclude Include="..\..\MachMachine.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

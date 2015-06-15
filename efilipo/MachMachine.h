@@ -75,8 +75,6 @@ typedef uint32_t cpu_threadtype_t;
 #define CPU_STATE_IDLE		2
 #define CPU_STATE_NICE		3
 
-
-
 /*
  * Capability bits used in the definition of cpu_type.
  */
@@ -151,7 +149,6 @@ typedef uint32_t cpu_threadtype_t;
  *	VAX subtypes (these do *not* necessary conform to the actual cpu
  *	ID assigned by DEC available via the SID register).
  */
-
 #define	CPU_SUBTYPE_VAX_ALL	((cpu_subtype_t) 0) 
 #define CPU_SUBTYPE_VAX780	((cpu_subtype_t) 1)
 #define CPU_SUBTYPE_VAX785	((cpu_subtype_t) 2)
@@ -182,7 +179,6 @@ typedef uint32_t cpu_threadtype_t;
  *	CPU_SUBTYPE_MC68030_ONLY has been added to allow new object
  *	files to be tagged as containing 68030-specific instructions.
  */
-
 #define	CPU_SUBTYPE_MC680x0_ALL		((cpu_subtype_t) 1)
 #define CPU_SUBTYPE_MC68030		((cpu_subtype_t) 1) /* compat */
 #define CPU_SUBTYPE_MC68040		((cpu_subtype_t) 2) 
@@ -191,7 +187,6 @@ typedef uint32_t cpu_threadtype_t;
 /*
  *	I386 subtypes
  */
-
 #define CPU_SUBTYPE_INTEL(f, m)	((cpu_subtype_t) (f) + ((m) << 4))
 
 #define	CPU_SUBTYPE_I386_ALL			CPU_SUBTYPE_INTEL(3, 0)
@@ -225,19 +220,16 @@ typedef uint32_t cpu_threadtype_t;
 /*
  *	X86 subtypes.
  */
-
 #define CPU_SUBTYPE_X86_ALL		((cpu_subtype_t)3)
 #define CPU_SUBTYPE_X86_64_ALL		((cpu_subtype_t)3)
 #define CPU_SUBTYPE_X86_ARCH1		((cpu_subtype_t)4)
 #define CPU_SUBTYPE_X86_64_H		((cpu_subtype_t)8)	/* Haswell feature subset */
-
 
 #define CPU_THREADTYPE_INTEL_HTT	((cpu_threadtype_t) 1)
 
 /*
  *	Mips subtypes.
  */
-
 #define	CPU_SUBTYPE_MIPS_ALL	((cpu_subtype_t) 0)
 #define CPU_SUBTYPE_MIPS_R2300	((cpu_subtype_t) 1)
 #define CPU_SUBTYPE_MIPS_R2600	((cpu_subtype_t) 2)
@@ -257,7 +249,6 @@ typedef uint32_t cpu_threadtype_t;
  *	HPPA subtypes for Hewlett-Packard HP-PA family of
  *	risc processors. Port by NeXT to 700 series. 
  */
-
 #define	CPU_SUBTYPE_HPPA_ALL		((cpu_subtype_t) 0)
 #define CPU_SUBTYPE_HPPA_7100		((cpu_subtype_t) 0) /* compat */
 #define CPU_SUBTYPE_HPPA_7100LC		((cpu_subtype_t) 1)
@@ -365,6 +356,5 @@ typedef uint32_t cpu_threadtype_t;
 
 #define CPUFAMILY_INTEL_CORE	CPUFAMILY_INTEL_YONAH
 #define CPUFAMILY_INTEL_CORE2	CPUFAMILY_INTEL_MEROM
-
 
 #endif	/* _MACH_MACHINE_H_ */

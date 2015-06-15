@@ -1,8 +1,14 @@
-#include <mach-o/fat.h>
-#include <mach/machine.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#if defined(__APPLE__)
+#include <mach-o/fat.h>
+#include <mach/machine.h>
+#else /* !__APPLE__ */
+#include "machfat.h"
+#include "MachMachine.h"
+#endif /* __APPLE__ */
 
 #if defined(__ppc__) || defined(__ppc64__)
 #define ARCHSWAP(x) OSSwapInt32(x)
@@ -282,7 +288,11 @@ int main(int argc, char **argv)
 	curfile = 0;
 	while ((curfile < (argc - 2)) && (curfile <= 13))
 	{
+#if defined(_MSC_VER) && __STDC_WANT_SECURE_LIB__
+		fopen_s(&fin, argv[curfile + 2], "rb");
+#else /* Not MSVC / old version of MSVC */
 		fin = fopen(argv[curfile+2], "rb");
+#endif
 
 		if (fin == NULL)
 		{
@@ -459,7 +469,11 @@ int main(int argc, char **argv)
 		++curfile;
 	}
 
+#if defined(_MSC_VER) && __STDC_WANT_SECURE_LIB__
+	fopen_s(&fout, argv[1], "wb");
+#else /* Not MSVC / old version of MSVC */
 	fout = fopen(argv[1], "wb");
+#endif
 
 	if (fout == NULL)
 	{
