@@ -372,6 +372,8 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 	return status;
 }
 
+extern "C"
+{
 //
 // main
 //
@@ -777,3 +779,5 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 
 	return status;
 }
+}
+

@@ -196,7 +196,15 @@ extern "C" {
 */
 
 #ifdef GNU
+#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(_WIN64)
+#ifdef WIN64
+#define EXTRACAST(a) (unsigned long long)(a)
+#else
 #define EXTRACAST(a) (unsigned long)(a)
+#endif
+#else
+#define EXTRACAST(a) (unsigned long)(a)
+#endif
 #else
 #define EXTRACAST(a) a
 #endif

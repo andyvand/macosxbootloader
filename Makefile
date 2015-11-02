@@ -11,12 +11,6 @@ else
 DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG
 endif
 
-ifeq ("$(HACKINTOSH)", "1")
-HACKFLAGS=-DHACKINTOSH=1
-else
-HACKFLAGS=
-endif
-
 INSTALL = install
 
 ### Change to "" for no code signing or to your Apple developer certificate ###
@@ -26,42 +20,44 @@ SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
 PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
 
 ### Tools ###
-ifeq ("$(CLOVERTOOLS)", "1")
+ifeq ("$(WINTOOLS)", "1")
 ifeq ("$(TOOLPATH)", "")
-TOOLPATH=$(HOME)/Downloads/CloverGrowerPro/toolchain/cross/bin/
+TOOLPATH=/usr/bin/
 endif
-CC=$(TOOLPATH)x86_64-clover-linux-gnu-gcc
-CXX=$(TOOLPATH)x86_64-clover-linux-gnu-g++
-LD=$(TOOLPATH)x86_64-clover-linux-gnu-g++
-AR=$(TOOLPATH)x86_64-clover-linux-gnu-ar
-RANLIB=$(TOOLPATH)x86_64-clover-linux-gnu-ranlib
-STRIP=$(TOOLPATH)x86_64-clover-linux-gnu-strip
 
 ### Architecture - Intel 32 bit / Intel 64 bit ###
 ifeq ("$(ARCH)", "i386")
+CC=$(TOOLPATH)i686-w64-mingw32-gcc
+CXX=$(TOOLPATH)i686-w64-mingw32-g++
+LD=$(TOOLPATH)i686-w64-mingw32-g++
+AR=$(TOOLPATH)i686-w64-mingw32-ar
+RANLIB=$(TOOLPATH)i686-w64-mingw32-ranlib
+STRIP=$(TOOLPATH)i686-w64-mingw32-strip
+
 ARCHDIR=x86
-ARCHFLAGS=-m32 -malign-double -fno-stack-protector -freorder-blocks -freorder-blocks-and-partition -mno-stack-arg-probe
-NASMFLAGS=-f elf32 -DAPPLE
-MTOC=$(TOOLPATH)x86_64-clover-linux-gnu-objcopy -I elf32-i386 -O pei-i386
+ARCHFLAGS=-m32 -malign-double -fno-stack-protector -freorder-blocks -mno-stack-arg-probe -DARCH32
+NASMFLAGS=-f win32 
+MTOC=mv -f
 else
+CC=$(TOOLPATH)x86_64-w64-mingw32-gcc
+CXX=$(TOOLPATH)x86_64-w64-mingw32-g++
+LD=$(TOOLPATH)x86_64-w64-mingw32-g++
+AR=$(TOOLPATH)x86_64-w64-mingw32-ar
+RANLIB=$(TOOLPATH)x86_64-w64-mingw32-ranlib
+STRIP=$(TOOLPATH)x86_64-w64-mingw32-strip
+
 ARCHDIR=x64
-ARCHFLAGS=-m64 -fno-stack-protector -DNO_BUILTIN_VA_FUNCS -mno-red-zone -mno-stack-arg-probe
-NASMFLAGS=-f elf64 -DAPPLE -DARCH64
-MTOC=$(TOOLPATH)x86_64-clover-linux-gnu-objcopy -I elf64-x86-64 -O pei-x86-64
+ARCHFLAGS=-m64 -fno-stack-protector -DNO_BUILTIN_VA_FUNCS -mno-red-zone -mno-stack-arg-probe -DWIN64
+NASMFLAGS=-f win64 -DAPPLE 
+MTOC=mv -f
 endif
 
-CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -nostdinc -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -fPIC -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -DGNU -D__declspec\(x\)= -D__APPLE__"
+CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -nostdinc -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -DGNU -U__declspec -D__declspec\(x\)= -D__APPLE__"
 CXXFLAGS = $(CFLAGS)
 
 ifeq ("$(ARCH)", "i386")
-ALDFLAGS = -melf_x86_64
-else
-ALDFLAGS = -melf_x86_64
-endif
+LDFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -Wl,--subsystem,10 -nostdlib -n -Wl,--script,$(TOPDIR)/gcc4.9-ld-script -u _EfiMain -e _EfiMain --entry _EfiMain --pie"
 
-LDFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -nostdlib -n -Wl,--script,$(TOPDIR)/gcc4.9-ld-script -u _Z7EfiMainPvP17_EFI_SYSTEM_TABLE -e _Z7EfiMainPvP17_EFI_SYSTEM_TABLE --entry _Z7EfiMainPvP17_EFI_SYSTEM_TABLE --pie"
-
-ifeq ("$(ARCH)", "i386")
 #AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
 AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
 #AESASMDEFS=-DASM_X86_V2C=1 -D_ASM_X86_V2C=1 -DNO_ENCRYPTION_TABLE=1 -DNO_DECRYPTION_TABLE=1
@@ -80,6 +76,8 @@ EXTRAAESOBJS=aes_x86_v2.o
 ASMCOMPFLAGS=
 NASMCOMPFLAGS=
 else
+LDFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -Wl,--subsystem,10 -nostdlib -n -Wl,--script,$(TOPDIR)/gcc4.9-ld-script -u EfiMain -e EfiMain --entry EfiMain --pie"
+
 ### define ASM_AMD64_C for this object ###
 EXTRAAESOBJS=aes_amd64.o
 
@@ -109,14 +107,14 @@ MTOC="$(TOPDIR)/Prebuilt/mtoc" -subsystem UEFI_APPLICATION -align 0x20
 ifeq ("$(ARCH)", "i386")
 ARCHDIR = x86
 ARCHFLAGS = -arch i386
-ARCHLDFLAGS = -u ?EfiMain@@YAIPAXPAU_EFI_SYSTEM_TABLE@@@Z -e ?EfiMain@@YAIPAXPAU_EFI_SYSTEM_TABLE@@@Z -read_only_relocs suppress
+ARCHLDFLAGS = -u _EfiMain -e _EfiMain -read_only_relocs suppress
 NASMFLAGS = -f macho -DARCH64 -DAPPLEUSE -DARCH32
 ARCHCFLAGS = -target i386-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -DAPPLEEXTRA -Duint_8t=unsigned\ char -Duint_16t=unsigned\ short -Duint_32t=unsigned\ int -Duint_64t=unsigned\ long\ long -DBRG_UI8=1 -DBRG_UI16=1 -DBRG_UI32=1 -DBRG_UI64=1 -D__i386__=1 -DARCH32=1 -D__APPLE__=1
 EXTRAOBJS="StartKernel.o"
 else
 ARCHDIR = x64
 ARCHFLAGS = -arch x86_64
-ARCHLDFLAGS =  -u ?EfiMain@@YA_KPEAXPEAU_EFI_SYSTEM_TABLE@@@Z -e ?EfiMain@@YA_KPEAXPEAU_EFI_SYSTEM_TABLE@@@Z
+ARCHLDFLAGS =  -u _EfiMain -e _EfiMain
 NASMFLAGS = -f macho64 -DARCH64 -DAPPLEUSE -DARCH64COMP
 STRIP = strip
 ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -msoft-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -D__x86_64__=1
@@ -166,7 +164,7 @@ MTOC=objconv -ed2022 -fwin64 -xs -nu
 endif
 endif
 
-NASM="$(TOPDIR)/Prebuilt/nasm"
+NASM="nasm"
 
 ### Flags ###
 
