@@ -10,12 +10,6 @@ else
 OBJCONV=
 fi
 
-if [ "${HACKINTOSH}" = "1" ]; then
-HACKMAKE=HACKINTOSH=1
-else
-HACKMAKE= 
-fi
-
 if [ "${CLOVERTOOLS}" = "1" ]; then
 echo "Building GNU x64 boot.efi"
 make CLOVERTOOLS=1 ${OBJCONV} ${HACKMAKE}

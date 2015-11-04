@@ -209,7 +209,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDevicePath(EFI_HANDLE deviceHandle, CHAR8* uu
 	return uuidBuffer;
 }
 
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 //
 // add ram dmg property
 //
@@ -458,8 +458,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file-path"), bootFilePath, static_cast<UINT32>(DevPathGetSize(bootFilePath)), FALSE)))
 			try_leave(NOTHING);
 
-        // AnV - RAM DMG info is not supported on hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// add ram dmg info
 		//
@@ -557,8 +556,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-args"), bootArgs->CommandLine, static_cast<UINT32>(strlen(bootArgs->CommandLine) + 1) * sizeof(CHAR8), FALSE)))
 			try_leave(NOTHING);
 
-        // AnV - Net is incompatible with hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// net
 		//
@@ -572,8 +570,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 		if(EFI_ERROR(status = PeSetupDeviceTree()))
 			try_leave(NOTHING);
 
-        // AnV - FileVault is incompatible with hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// FileVault2, key store
 		//

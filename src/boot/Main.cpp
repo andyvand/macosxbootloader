@@ -105,7 +105,7 @@ STATIC EFI_STATUS BlpSetupRomVariable()
 	return EFI_SUCCESS;
 }
 
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 //
 // check board id
 //
@@ -418,8 +418,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		CHAR8* debugOptions													= nullptr;
 		BlpReadDebugOptions(&debugOptions);
 
-        // AnV - Boot debugger is incompatible with hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// init boot debugger
 		//
@@ -488,8 +487,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 			try_leave(NOTHING);
         }
 
-        // AnV - Core storage is incompatible with hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// check hibernate
 		//
@@ -507,8 +505,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		LdrSetupASLR(TRUE, 0);
 
-        // AnV - Detect hot key is incompatible with hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// detect hot key
 		//
@@ -582,8 +579,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 			try_leave(NOTHING);
         }
 
-        // AnV - Removed compatibility check for hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// compact check
 		//
@@ -607,8 +603,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 			MmFreePool(filePath);
 		}
 
-        // AnV - Don't show panic dialog on hackintosh, it hangs the boot
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// show panic dialog
 		//
@@ -624,8 +619,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 			BlpRunRecoveryEfi(bootDevicePath, bootFilePath);
         }
 
-        // AnV - Hackintosh is incompatible with core volume
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// check FileVault2
 		//
@@ -666,8 +660,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
             }
 		}
 
-        // Core storage is incompatible with hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// continue hibernate
 		//
@@ -737,7 +730,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		// load ramdisk
 		//
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		LdrLoadRamDisk();
 #endif
 
@@ -760,8 +753,7 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
             try_leave(NOTHING);
         }
 
-        // AnV - Boot debugger is incompatible with hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// stop debugger
 		//

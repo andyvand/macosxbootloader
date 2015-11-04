@@ -217,7 +217,7 @@ STATIC CHAR8 CONST* BlpLoadConfigFile(CHAR8 CONST* bootOptions, EFI_DEVICE_PATH_
 	return retValue;
 }
 
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 //
 // read device path variable
 //
@@ -601,8 +601,7 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 			}
 		}
 
-        // Skip kernel cache path name check on Hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// load kernel cache device path
 		//
@@ -691,8 +690,7 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-s"), &valueLength, FALSE))
 			BlSetBootMode(BOOT_MODE_SINGLE_USER | BOOT_MODE_VERBOSE, 0);
 
-        // AnV - No compatibility check, panic dialog skip and no debugging for hackintosh
-#ifndef HACKINTOSH
+#ifndef MINORVERSION
 		//
 		// compact check
 		//
