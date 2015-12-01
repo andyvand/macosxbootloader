@@ -1,18 +1,18 @@
 ### efilipo makefile ###
 CC = gcc
 LD = $(CC)
-CFLAGS = -g0 -arch i386 -arch x86_64 -Ofast
-LDFLAGS = -g0 -arch i386 -arch x86_64
+CFLAGS = -g0 -arch i386 -O3
+LDFLAGS = -g0 -arch i386
 INSTALL = install
 NASM = nasm
 LIPO = lipo
 CODESIGN = codesign
 
 ### Change to "" for no code signing or to your Apple developer certificate ###
-#SIGNCERT = ""
-#PKGSIGNCERT = ""
-SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
-PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
+SIGNCERT = ""
+PKGSIGNCERT = ""
+#SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
+#PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
 
 all: efilipo
 
