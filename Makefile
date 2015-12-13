@@ -14,10 +14,10 @@ endif
 INSTALL = install
 
 ### Change to "" for no code signing or to your Apple developer certificate ###
-SIGNCERT = ""
-PKGSIGNCERT = ""
-#SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
-#PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
+#SIGNCERT = ""
+#PKGSIGNCERT = ""
+SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
+PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
 
 ### Tools ###
 ifeq ("$(WINTOOLS)", "1")
