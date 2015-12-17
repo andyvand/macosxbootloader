@@ -424,7 +424,7 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		// decrypt with aes-xts
 		//
 #ifdef _MSC_VER
-		symmetric_xts xtsContext											= {0};
+		symmetric_xts xtsContext											= {{{{0}}}};
 		UINT8 initVector[0x10]												= {0};
 #else
 		symmetric_xts xtsContext;
@@ -519,7 +519,7 @@ STATIC BOOLEAN FvpAESUnwrap(VOID CONST* kekBuffer, UINTN kekLength, UINT64 initV
 	memcpy(R, Add2Ptr(ciphertext, sizeof(A), VOID CONST*), sizeof(UINT64) * n);
 
 #ifdef _MSC_VER
-	aes_decrypt_ctx aesContext												= {0};
+	aes_decrypt_ctx aesContext												= {{0}};
 #else
 	aes_decrypt_ctx aesContext;
 #endif
@@ -632,7 +632,7 @@ STATIC EFI_STATUS FvpDecryptVolumeKEKWithMasterKeyUser()
 STATIC VOID FvpHMACSHA256(VOID CONST* messageBuffer, UINTN messageLength, VOID CONST* keyBuffer, UINTN keyLength, UINT8* resultBuffer)
 {
 #ifdef _MSC_VER
-	SHA256_CONTEXT sha256Context											= {0};
+	SHA256_CONTEXT sha256Context											= {{0}};
 #else
 	SHA256_CONTEXT sha256Context;
 #endif
@@ -902,7 +902,7 @@ STATIC VOID FvpReadInput(CHAR8** inputBuffer, UINTN* inputLength, UINTN maxLengt
 			inputBuffer16[inputLength16]									= inputKey.UnicodeChar;
 			inputLength16													+= 1;
 
-			CHAR16 outputString[2]											= {echoInput ? inputKey.UnicodeChar : (CHAR16)L'*', 0};
+			CHAR16 outputString[2]											= {echoInput ? inputKey.UnicodeChar : (CHAR16)'*', 0};
 			EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, outputString);
 		}
 	}

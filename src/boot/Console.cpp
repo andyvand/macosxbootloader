@@ -311,15 +311,23 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 		//
 		STATIC builtin_image_info imageInfo[4] =
 		{
-#if LEGACY_GREY_SUPPORT
+#if (TARGET_OS >= YOSMITE)
+	#if LEGACY_GREY_SUPPORT
 			/* normal */		{ 84, 103, sizeof(AppleLogoPacked),			AppleLogoPacked,			AppleLogoClut},
 			/* normal@2x */		{168, 206, sizeof(AppleLogo2XPacked),		AppleLogo2XPacked,			AppleLogo2XClut},
-#else
+	#else
 			/* normal */		{ 84, 103, sizeof(AppleLogoBlackPacked),	AppleLogoBlackPacked,		AppleLogoBlackClut},
 			/* normal@2x */		{168, 206, sizeof(AppleLogoBlack2XPacked),	AppleLogoBlack2XPacked,		AppleLogoBlack2XClut},
-#endif
+	#endif
 			/* failed */		{100, 100, sizeof(CspFailedLogo),			CspFailedLogo,				CspFailedLogoLookupTable},
 			/* failed@2x */		{200, 200, sizeof(CspFailedLogo2x),			CspFailedLogo2x,			CspFailedLogoLookupTable2x},
+#else // #if TARGET_OS_LEGACY
+			/* normal */		{ 84, 103, sizeof(CspNormalLogo),			CspNormalLogo,				CspNormalLogoLookupTable},
+			/* normal@2x */		{168, 206, sizeof(CspNormalLogo2x),			CspNormalLogo2x,			CspNormalLogoLookupTable2x},
+
+			/* failed */		{100, 100, sizeof(CspFailedLogo),			CspFailedLogo,				CspFailedLogoLookupTable},
+			/* failed@2x */		{200, 200, sizeof(CspFailedLogo2x),			CspFailedLogo2x,			CspFailedLogoLookupTable2x},
+#endif // #if (TARGET_OS >= YOSMITE)
 		};
 
 		//
@@ -333,6 +341,7 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 		if(!imageData)
 			try_leave(status = EFI_OUT_OF_RESOURCES);
 
+#if (TARGET_OS >= YOSMITE)
 		if (index < 2)
 		{
 			if(EFI_ERROR(status = BlDecompressLZVN(imageInfo[index].Buffer, imageInfo[index].BufferSize, imageData, imageSize, &imageSize)))
@@ -340,10 +349,12 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 		}
 		else
 		{
+#endif // #if (TARGET_OS >= YOSMITE)
 			if(EFI_ERROR(status = BlDecompressLZSS(imageInfo[index].Buffer, imageInfo[index].BufferSize, imageData, imageSize, &imageSize)))
 				try_leave(NOTHING);
+#if (TARGET_OS >= YOSMITE)
 		}
-
+#endif // #if (TARGET_OS >= YOSMITE)
 		//
 		// convert it
 		//
@@ -974,15 +985,21 @@ EFI_STATUS CsDrawPanicImage()
 		//
 		if(!CspFrameBufferAddress || CspConsoleMode != EfiConsoleControlScreenGraphics)
 			try_leave(NOTHING);
-		
+
 		//
 		// decompress data
 		//
 		UINTN imageWidth													= CspHiDPIMode ? 920 : 460;
 		UINTN imageHeight													= CspHiDPIMode ? 570 : 285;
 		UINTN imageSize														= imageWidth * imageHeight;
+
+#if (TARGET_OS >= YOSEMITE)
 		if(EFI_ERROR(status = BlDecompressLZVN(CspHiDPIMode ? ApplePanicDialog2X : ApplePanicDialog, CspHiDPIMode ? sizeof(ApplePanicDialog2X) : sizeof(ApplePanicDialog), imageData, imageSize, &imageSize)))
 			try_leave(NOTHING);
+#else
+		if(EFI_ERROR(status = BlDecompressLZSS(CspHiDPIMode ? CspPanicDialog2x : CspPanicDialog, CspHiDPIMode ? sizeof(CspPanicDialog2x) : sizeof(CspPanicDialog), imageData, imageSize, &imageSize)))
+			try_leave(NOTHING);
+#endif // #if (TARGET_OD => YOSEMITE)
 
 		//
 		// convert it

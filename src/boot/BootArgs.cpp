@@ -304,6 +304,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		//
 		UINTN bufferLength													= sizeof(BOOT_ARGS);
 		physicalAddress														= MmAllocateKernelMemory(&bufferLength, &virtualAddress);
+
 		if(!physicalAddress)
 			try_leave(status = EFI_OUT_OF_RESOURCES);
 
@@ -322,6 +323,12 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		bootArgs->Flags														= 65;	// kBootArgsFlagRebootOnPanic + kBootArgsFlagBlackTheme
 #endif
 		bootArgs->PhysicalMemorySize										= BlGetMemorySize();
+
+		for (UINT8 m = 0; m < 5; m++)
+		{
+			CsPrintf(CHAR8_CONST_STRING("PIKE: bootArgs->PhysicalMemorySize= 0x%llx\n"), bootArgs->PhysicalMemorySize);
+		}
+
 		bootArgs->ASLRDisplacement											= static_cast<UINT32>(LdrGetASLRDisplacement());
 
 		//
@@ -339,10 +346,16 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		}
 
 		//
-		// get pci config space info
+		// get PCI config space info
 		//
 		AcpiGetPciConfigSpaceInfo(&bootArgs->PCIConfigSpaceBaseAddress, &bootArgs->PCIConfigSpaceStartBusNumber, &bootArgs->PCIConfigSpaceEndBusNumber);
 
+#if (TARGET_OS == EL_CAPITAN)
+		//
+		// Boot P-State limit for Power Management (set to 0 = no limit)
+		//
+		bootArgs->Boot_SMC_plimit											= 0;
+#endif
 		//
 		// get root node
 		//
@@ -438,13 +451,17 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		}
 
 		//
-		// add kernel file name chosen node
+		// Set chosen/boot-file property.
 		//
-		CHAR8 CONST* bootFileName											= LdrGetKernelPathName();
-		if(!bootFileName)
-			bootFileName													= LdrGetKernelCachePathName();
+		CHAR8 CONST* bootFileName											= LdrGetKernelCachePathName();
+		
+		if(BlTestBootMode(BOOT_MODE_SAFE))
+			bootFileName													= LdrGetKernelPathName();
+
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file"), bootFileName, static_cast<UINT32>(strlen(bootFileName) + 1) * sizeof(CHAR8), FALSE)))
+		{
 			try_leave(NOTHING);
+		}
 
 		//
 		// add boot device path
@@ -458,6 +475,22 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file-path"), bootFilePath, static_cast<UINT32>(DevPathGetSize(bootFilePath)), FALSE)))
 			try_leave(NOTHING);
 
+		//
+		// Boot != Root key for firmware's /chosen
+		//
+		if(BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
+		{
+			if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("bootroot-active"), nullptr, 0, FALSE)))
+			{
+				try_leave(NOTHING);
+			}
+		}
+
+		//
+		// Add booter version information.
+		//
+		BlAddBooterInfo(chosenNode);
+
 #ifndef MINORVERSION
 		//
 		// add ram dmg info
@@ -465,6 +498,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		BlpAddRamDmgProperty(chosenNode, bootDevicePath);
 #endif
 
+#if (TARGET_OS >= YOSEMITE)
 		//
 		// add random-seed property with a static data (for testing only)
 		//
@@ -480,9 +514,9 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 
 		do																						// 0x17e55:
 		{
-            //
+            		//
 			// The RDRAND instruction is part of the Intel Secure Key Technology, which is currently only available 
-			// on the Intel I5/I7 Ivy Bridge and Haswell processors. Not on processors used in the old MacPro models.
+			// on the Intel i5/i7 Ivy Bridge and Haswell processors. Not on processors used in the old MacPro models.
 			// This is why I had to disassemble Apple's boot.efi and port their assembler code to standard C.
 			//
 			PMTimerValue = ARCH_READ_PORT_UINT16(ArchConvertAddressToPointer(0x408, UINT16*));	// in		(%dx),	%ax
@@ -514,6 +548,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 													// jne		0x17e55		(next)
 
 		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("random-seed"), seedBuffer, sizeof(seedBuffer), TRUE);
+#endif // #if (TARGET_OS >= YOSEMITE)
 
 		//
 		// output
@@ -525,6 +560,138 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		if(EFI_ERROR(status))
 			MmFreeKernelMemory(virtualAddress, physicalAddress);
 	}
+
+	return status;
+}
+
+#if (TARGET_OS == EL_CAPITAN)
+//
+// Configure System Integrity Protection.
+//
+EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs)
+{
+#if DEBUG_NVRAM_CALL_CSPRINTF
+	UINT8 i = 0;
+#endif
+	EFI_STATUS status = EFI_SUCCESS;
+	UINT32 attributes = (EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS);
+	UINT32 csrActiveConfig = CSR_ALLOW_APPLE_INTERNAL;
+	UINTN dataSize = sizeof(UINT32);
+
+	if(BlTestBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY | BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_IS_INSTALLER))
+	{
+#if DEBUG_NVRAM_CALL_CSPRINTF
+		if (BlTestBootMode(BOOT_MODE_IS_INSTALLER))
+		{
+			for (i = 0; i < 5; i++)
+			{
+				CsPrintf(CHAR8_CONST_STRING("PIKE: BlInitCSRState(Installer detected)!\n"));
+			}
+		}
+		else
+		{
+			for (i = 0; i < 5; i++)
+			{
+				CsPrintf(CHAR8_CONST_STRING("PIKE: BlInitCSRState(RecoveryOS detected)!\n"));
+			}
+		}
+#endif
+ 		attributes															|= EFI_VARIABLE_NON_VOLATILE;
+		csrActiveConfig = CSR_ALLOW_DEVICE_CONFIGURATION;
+		bootArgs->Flags |= (kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRConfigMode + kBootArgsFlagCSRBoot);
+	}
+	else
+	{
+		bootArgs->Flags |= (kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRBoot);
+	}
+
+	//
+	// System Integrity Protection Capabilties.
+	//
+	bootArgs->CsrCapabilities = CSR_VALID_FLAGS;
+ 	
+	//
+	// Check 'csr-active-config' variable in NVRAM.
+	//
+	if(EFI_ERROR(status = EfiRuntimeServices->GetVariable((CHAR16*)L"csr-active-config", &AppleNVRAMVariableGuid, nullptr, &dataSize, &csrActiveConfig)))
+	{
+#if DEBUG_NVRAM_CALL_CSPRINTF
+		for (i = 0; i < 5; i++)
+		{
+			CsPrintf(CHAR8_CONST_STRING("PIKE: NVRAM csr-active-config NOT found (ERROR: %d)!\n"), status);
+		}
+#endif
+		//
+		// Not there. Add the 'csr-active-config' variable.
+		//
+		if(EFI_ERROR(status = EfiRuntimeServices->SetVariable((CHAR16*)L"csr-active-config", &AppleNVRAMVariableGuid, attributes, sizeof(UINT32), &csrActiveConfig)))
+		{
+#if DEBUG_NVRAM_CALL_CSPRINTF
+			for (i = 0; i < 5; i++)
+			{
+				CsPrintf(CHAR8_CONST_STRING("PIKE: NVRAM csr-active-config add failed (ERROR: %d)!\n"), status);
+			}
+#endif
+		}
+		else
+		{
+#if DEBUG_NVRAM_CALL_CSPRINTF
+			for (i = 0; i < 5; i++)
+			{
+				CsPrintf(CHAR8_CONST_STRING("PIKE: NVRAM csr-active-config[0x%x] set (OK)!\n"), csrActiveConfig);
+			}
+#endif
+		}
+		//
+		// Set System Integrity Protection ON by default
+		//
+		bootArgs->CsrActiveConfig											= (csrActiveConfig & 0x6f);
+#if DEBUG_NVRAM_CALL_CSPRINTF
+		for (i = 0; i < 5; i++)
+		{
+			CsPrintf(CHAR8_CONST_STRING("PIKE: bootArgs->CsrActiveConfig[0x%x] set!\n"), csrActiveConfig);
+		}
+#endif
+	}
+	else
+	{
+		//
+		// Set System Integrity Protection to the value found in NVRAM.
+		//
+		bootArgs->CsrActiveConfig											= (csrActiveConfig & 0x6f);
+#if DEBUG_NVRAM_CALL_CSPRINTF
+		for (i = 0; i < 5; i++)
+		{
+			CsPrintf(CHAR8_CONST_STRING("PIKE: NVRAM csr-active-config[0x%x/0x%x] found (OK)!\n"), csrActiveConfig, dataSize);
+		}
+#endif
+	}
+
+	return status;
+}
+#endif
+
+//
+// Mimic boot.efi and set boot.efi info properties.
+//
+EFI_STATUS BlAddBooterInfo(DEVICE_TREE_NODE* chosenNode)
+{
+	EFI_STATUS status = EFI_SUCCESS;
+
+	//
+	// Static data for now. Should extract this from Apple's boot.efi
+	//
+	if (BlTestBootMode(BOOT_MODE_IS_INSTALLER))
+	{
+		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("booter-name"), "bootbase.efi", 12, FALSE);
+	}
+	else
+	{
+		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("booter-name"), "boot.efi", 8, FALSE);
+	}
+
+	DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("booter-version"), "version:307", 11, FALSE);
+	DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("booter-build-time"), "Fri Sep  4 15:34:00 PDT 2015", 28, FALSE);
 
 	return status;
 }

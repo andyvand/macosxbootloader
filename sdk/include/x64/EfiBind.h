@@ -36,7 +36,7 @@ Abstract:
 // Make sure we are useing the correct packing rules per EFI specification
 //
 #ifdef _MSC_VER
-#pragma pack()
+#pragma pack(8)
 #undef  GNUPACK
 #define GNUPACK
 #else

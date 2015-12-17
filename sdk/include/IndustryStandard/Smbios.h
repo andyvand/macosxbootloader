@@ -58,21 +58,25 @@ Abstract:
 typedef UINT8 SMBIOS_TABLE_STRING;
 
 typedef struct {
-  UINT8                 AnchorString[4];
-  UINT8                 EntryPointStructureChecksum;
-  UINT8                 EntryPointLength;
-  UINT8                 MajorVersion;
-  UINT8                 MinorVersion;
-  UINT16                MaxStructureSize;
-  UINT8                 EntryPointRevision;
-  UINT8                 FormattedArea[5];
-  UINT8                 IntermediateAnchorString[5];
-  UINT8                 IntermediateChecksum;
-  UINT16                TableLength;
-  UINT32                TableAddress;
-  UINT16                NumberOfSmbiosStructures;
-  UINT8                 SmbiosBcdRevision;
-} GNUPACK SMBIOS_TABLE_STRUCTURE;
+  UINT8				AnchorString[5];
+  UINT8				Checksum;
+  UINT16			TableLength;
+  UINT32			TableAddress;
+  UINT16			NumberOfSmbiosStructures;
+  UINT8				SmbiosBcdRevision;
+} GNUPACK DMIEntryPoint;
+
+typedef struct {
+  UINT8				AnchorString[4];
+  UINT8				Checksum;
+  UINT8				EntryPointLength;
+  UINT8				MajorVersion;
+  UINT8				MinorVersion;
+  UINT16			MaxStructureSize;
+  UINT8				EntryPointRevision;
+  UINT8				FormattedArea[5];
+  DMIEntryPoint			DMI;
+} GNUPACK SMBIOS_ENTRY_POINT_STRUCTURE;
 
 typedef struct {
   UINT8                 Type;

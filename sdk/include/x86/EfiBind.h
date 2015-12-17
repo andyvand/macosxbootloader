@@ -77,13 +77,10 @@ Abstract:
 #endif
 
 
-
-
-
 //
-// Make sure we are useing the correct packing rules per EFI specification
+// Make sure we are using the correct packing rules per EFI specification
 //
-#pragma pack()
+#pragma pack(8)
 
 #if _MSC_EXTENSIONS
 
@@ -161,7 +158,7 @@ Abstract:
   #else
 
     //
-    // Assume standard IA-32 alignment. 
+    // Assume standard IA-32 alignment.
     // BugBug: Need to check portability of long long
     //
     typedef unsigned long long  uint64_t;

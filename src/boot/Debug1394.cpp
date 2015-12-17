@@ -159,16 +159,16 @@ typedef struct _DBG1394_DEBUG_CONFIG_INFO
 
 typedef struct _SAVED_INFO
 {
-				//
-				// saved info length
-				//
-				UINT8														CriSavedInfoLength;
-    
-				//
-				// saved crc length
-				//
-				UINT8														CriSavedCrcLength;
-} GNUPACK SAVED_INFO;
+	//
+	// saved info length
+	//
+	UINT8														CriSavedInfoLength;
+	
+	//
+	// saved crc length
+	//
+	UINT8														CriSavedCrcLength;
+}SAVED_INFO;
 
 //
 // config rom header

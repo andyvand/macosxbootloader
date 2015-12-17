@@ -3,12 +3,15 @@
 ### Top level directory ###
 TOPDIR=$(PWD)
 
+### Target OS ###
+TARGET_OS=EL_CAPITAN
+
 ### Debug ###
 DEBUG =# 1
 ifeq ("$(DEBUG)", "")
-DEBUGFLAGS=-g0 -DNDEBUG
+DEBUGFLAGS=-g0 -DNDEBUG -DTARGET_OS=$(TARGET_OS)
 else
-DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG
+DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG -DTARGET_OS=$(TARGET_OS)
 endif
 
 INSTALL = install

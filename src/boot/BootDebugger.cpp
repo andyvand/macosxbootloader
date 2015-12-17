@@ -29,11 +29,11 @@ UINT32 BdRetryCount															= 5;
 KDP_BREAKPOINT_TYPE	BdBreakpointInstruction									= KDP_BREAKPOINT_VALUE;
 
 #if defined(_MSC_VER)
-BREAKPOINT_ENTRY BdBreakpointTable[BREAKPOINT_TABLE_SIZE]					= {0};
+BREAKPOINT_ENTRY BdBreakpointTable[BREAKPOINT_TABLE_SIZE]					= {{0}};
 UINT64 BdRemoteFiles[0x10]													= {0};
 CHAR8 BdFileTransferBuffer[0x2000]											= {0};
 LIST_ENTRY BdModuleList														= {0};
-LDR_DATA_TABLE_ENTRY BdModuleDataTableEntry									= {0};
+LDR_DATA_TABLE_ENTRY BdModuleDataTableEntry									= {{0}};
 #else
 BREAKPOINT_ENTRY BdBreakpointTable[BREAKPOINT_TABLE_SIZE];
 UINT64 BdRemoteFiles[0x10];
@@ -52,29 +52,30 @@ STATIC BOOLEAN BdpWriteCheck(VOID* writeBuffer)
 }
 
 //
-// low write context
+// Low write context.
 //
 STATIC BOOLEAN BdpLowWriteContent(UINT32 index)
 {
-	if(BdBreakpointTable[index].Flags & KD_BREAKPOINT_NEEDS_WRITE)
+	if (BdBreakpointTable[index].Flags & KD_BREAKPOINT_NEEDS_WRITE)
 	{
 		//
-		// the breakpoint was never written out.clear the flag and we are done.
+		// The breakpoint was never written out. Clear the flag and we are done.
 		//
 		BdBreakpointTable[index].Flags										&= ~KD_BREAKPOINT_NEEDS_WRITE;
+
 		return TRUE;
 	}
 
 	//
-	// the instruction is a breakpoint anyway.
+	// The instruction is a breakpoint anyway.
 	//
-	if(BdBreakpointTable[index].Content == BdBreakpointInstruction)
+	if (BdBreakpointTable[index].Content == BdBreakpointInstruction)
 		return TRUE;
 
 	//
-	// restore old content
+	// Restore old content.
 	//
-	if(BdMoveMemory(ArchConvertAddressToPointer(BdBreakpointTable[index].Address, VOID*), &BdBreakpointTable[index].Content, sizeof(KDP_BREAKPOINT_TYPE)) != sizeof(KDP_BREAKPOINT_TYPE))
+	if (BdMoveMemory(ArchConvertAddressToPointer(BdBreakpointTable[index].Address, VOID*), &BdBreakpointTable[index].Content, sizeof(KDP_BREAKPOINT_TYPE)) != sizeof(KDP_BREAKPOINT_TYPE))
 	{
 		BdBreakpointTable[index].Flags										|= KD_BREAKPOINT_NEEDS_REPLACE;
 		return FALSE;
@@ -83,42 +84,45 @@ STATIC BOOLEAN BdpLowWriteContent(UINT32 index)
 }
 
 //
-// add breakpoint
+// Add breakpoint.
 //
 STATIC UINT32 BdpAddBreakpoint(UINT64 address)
 {
 	//
-	// unable to write
+	// Unable to write.
 	//
 	KDP_BREAKPOINT_TYPE oldContent;
 	BOOLEAN addressValid													= BdMoveMemory(&oldContent, ArchConvertAddressToPointer(address, VOID*), sizeof(oldContent)) == sizeof(oldContent);
-	if(addressValid && !BdpWriteCheck(ArchConvertAddressToPointer(address, VOID*)))
+
+	if (addressValid && !BdpWriteCheck(ArchConvertAddressToPointer(address, VOID*)))
 		return 0;
 
 	//
-	// search free slot
+	// Search free slot.
 	//
 	UINT32 index															= 0;
-	for(; index < ARRAYSIZE(BdBreakpointTable); index ++)
+
+	for (; index < ARRAYSIZE(BdBreakpointTable); index ++)
 	{
-		if(!BdBreakpointTable[index].Flags)
+		if (!BdBreakpointTable[index].Flags)
 			break;
 	}
 
 	//
-	// free slot not found
+	// Free slot not found.
 	//
-	if(index == ARRAYSIZE(BdBreakpointTable))
+	if (index == ARRAYSIZE(BdBreakpointTable))
 		return 0;
 
 	//
-	// save address
+	// Save address.
 	//
 	BdBreakpointTable[index].Address										= address;
-	if(addressValid)
+
+	if (addressValid)
 	{
 		//
-		// write breakpoint instruction
+		// Write breakpoint instruction.
 		//
 		BdBreakpointTable[index].Content									= oldContent;
 		BdBreakpointTable[index].Flags										= KD_BREAKPOINT_IN_USE;
@@ -127,56 +131,60 @@ STATIC UINT32 BdpAddBreakpoint(UINT64 address)
 	else
 	{
 		//
-		// write pending
+		// Write pending.
 		//
 		BdBreakpointTable[index].Flags										= KD_BREAKPOINT_IN_USE | KD_BREAKPOINT_NEEDS_WRITE;
 	}
+
 	return index + 1;
 }
 
 //
-// delete breakpoint from index
+// Delete breakpoint from index.
 //
 STATIC BOOLEAN BdpDeleteBreakpoint(UINT32 breakpointHandle)
 {
 	//
-	// the specified handle is not valid
+	// The specified handle is not valid.
 	//
 	UINT32 index															= breakpointHandle - 1;
-	if(breakpointHandle == 0 || breakpointHandle > ARRAYSIZE(BdBreakpointTable))
+
+	if (breakpointHandle == 0 || breakpointHandle > ARRAYSIZE(BdBreakpointTable))
 		return FALSE;
 
 	//
-	// the specified breakpoint table entry is not valid
+	// The specified breakpoint table entry is not valid.
 	//
-	if(!BdBreakpointTable[index].Flags)
+	if (!BdBreakpointTable[index].Flags)
 		return FALSE;
 
 	//
-	// if the breakpoint is already suspended, just delete it from the table.
+	// If the breakpoint is already suspended, just delete it from the table.
 	//
 	BOOLEAN removeIt														= FALSE;
-	if(!(BdBreakpointTable[index].Flags & KD_BREAKPOINT_SUSPENDED) || (BdBreakpointTable[index].Flags & KD_BREAKPOINT_NEEDS_REPLACE))
+
+	if (!(BdBreakpointTable[index].Flags & KD_BREAKPOINT_SUSPENDED) || (BdBreakpointTable[index].Flags & KD_BREAKPOINT_NEEDS_REPLACE))
 		removeIt															= BdpLowWriteContent(index);
 	else
 		removeIt															= TRUE;
 
 	//
-	// delete breakpoint table entry
+	// Delete breakpoint table entry.
 	//
-	if(removeIt)
+	if (removeIt)
 		BdBreakpointTable[index].Flags										= 0;
 
 	return TRUE;
 }
 
 //
-// suspend breakpoint
+// Suspend breakpoint.
 //
 STATIC VOID BdpSuspendBreakpoint(UINT32 breakpointHandle)
 {
 	UINT32 index															= breakpointHandle - 1;
-	if((BdBreakpointTable[index].Flags & KD_BREAKPOINT_IN_USE) && !(BdBreakpointTable[index].Flags & KD_BREAKPOINT_SUSPENDED))
+
+	if ((BdBreakpointTable[index].Flags & KD_BREAKPOINT_IN_USE) && !(BdBreakpointTable[index].Flags & KD_BREAKPOINT_SUSPENDED))
 	{
 		BdBreakpointTable[index].Flags										|= KD_BREAKPOINT_SUSPENDED;
 		BdpLowWriteContent(index);
@@ -184,7 +192,7 @@ STATIC VOID BdpSuspendBreakpoint(UINT32 breakpointHandle)
 }
 
 //
-// suspend all breakpoints
+// Suspend all breakpoints.
 //
 STATIC VOID BdpSuspendAllBreakpoints()
 {
@@ -193,7 +201,7 @@ STATIC VOID BdpSuspendAllBreakpoints()
 }
 
 //
-// set state change
+// Set state change.
 //
 STATIC VOID BdpSetStateChange(DBGKD_WAIT_STATE_CHANGE64* waitStateChange, EXCEPTION_RECORD* exceptionRecord, CONTEXT* contextRecord)
 {
@@ -228,8 +236,10 @@ STATIC VOID BdpReadVirtualMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STRI
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 	UINT32 readLength														= manipulateState->ReadMemory.TransferCount;
 	VOID* readAddress														= ArchConvertAddressToPointer(manipulateState->ReadMemory.TargetBaseAddress, VOID*);
-	if(readLength > PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64))
+
+	if (readLength > PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64))
 		readLength															= PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64);
+
 	additionalData->Length													= static_cast<UINT16>(BdMoveMemory(additionalData->Buffer, readAddress, readLength));
 	manipulateState->ReturnStatus											= additionalData->Length == readLength ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
 	manipulateState->ReadMemory.ActualBytesRead								= additionalData->Length;
@@ -237,7 +247,7 @@ STATIC VOID BdpReadVirtualMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STRI
 }
 
 //
-// write virtual memory
+// Write virtual memory.
 //
 STATIC VOID BdpWriteVirtualMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -252,7 +262,7 @@ STATIC VOID BdpWriteVirtualMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STR
 }
 
 //
-// get context
+// Get context.
 //
 STATIC VOID BdpGetcontextRecord(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -266,7 +276,7 @@ STATIC VOID BdpGetcontextRecord(DBGKD_MANIPULATE_STATE64* manipulateState, STRIN
 }
 
 //
-// set context
+// Set context.
 //
 STATIC VOID BdpSetcontextRecord(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -279,7 +289,7 @@ STATIC VOID BdpSetcontextRecord(DBGKD_MANIPULATE_STATE64* manipulateState, STRIN
 }
 
 //
-// write breakpoint
+// Write breakpoint.
 //
 STATIC VOID BdpWriteBreakpoint(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -292,7 +302,7 @@ STATIC VOID BdpWriteBreakpoint(DBGKD_MANIPULATE_STATE64* manipulateState, STRING
 }
 
 //
-// restore breakpoint
+// Restore breakpoint.
 //
 STATIC VOID BdpRestoreBreakpoint(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -304,7 +314,7 @@ STATIC VOID BdpRestoreBreakpoint(DBGKD_MANIPULATE_STATE64* manipulateState, STRI
 }
 
 //
-// read port
+// Read port.
 //
 STATIC VOID BdpReadIoSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -314,35 +324,37 @@ STATIC VOID BdpReadIoSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* ad
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 	manipulateState->ReturnStatus											= STATUS_SUCCESS;
 	readIo->DataValue														= 0;
-	switch(readIo->DataSize)
+
+	switch (readIo->DataSize)
 	{
-	case 1:
-		readIo->DataValue													= ARCH_READ_PORT_UINT8(ArchConvertAddressToPointer(readIo->IoAddress, UINT8*));
-		break;
+		case 1:
+			readIo->DataValue												= ARCH_READ_PORT_UINT8(ArchConvertAddressToPointer(readIo->IoAddress, UINT8*));
+			break;
 
-	case 2:
-		if(readIo->IoAddress & 1)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			readIo->DataValue												= ARCH_READ_PORT_UINT16(ArchConvertAddressToPointer(readIo->IoAddress, UINT16*));
-		break;
+		case 2:
+			if (readIo->IoAddress & 1)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				readIo->DataValue											= ARCH_READ_PORT_UINT16(ArchConvertAddressToPointer(readIo->IoAddress, UINT16*));
+			break;
 
-	case 4:
-		if(readIo->IoAddress & 3)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			readIo->DataValue												= ARCH_READ_PORT_UINT32(ArchConvertAddressToPointer(readIo->IoAddress, UINT32*));
-		break;
+		case 4:
+			if (readIo->IoAddress & 3)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				readIo->DataValue											= ARCH_READ_PORT_UINT32(ArchConvertAddressToPointer(readIo->IoAddress, UINT32*));
+			break;
 
-	default:
-		manipulateState->ReturnStatus										= STATUS_INVALID_PARAMETER;
-		break;
+		default:
+			manipulateState->ReturnStatus									= STATUS_INVALID_PARAMETER;
+			break;
 	}
+
 	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, nullptr);
 }
 
 //
-// write port
+// Write port.
 //
 STATIC VOID BdpWriteIoSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -351,35 +363,37 @@ STATIC VOID BdpWriteIoSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* a
 	messageHeader.Length													= sizeof(DBGKD_MANIPULATE_STATE64);
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 	manipulateState->ReturnStatus											= STATUS_SUCCESS;
-	switch(writeIo->DataSize)
+
+	switch (writeIo->DataSize)
 	{
-	case 1:
-		ARCH_WRITE_PORT_UINT8(ArchConvertAddressToPointer(writeIo->IoAddress, UINT8*), static_cast<UINT8>(writeIo->DataValue & 0xff));
-		break;
+		case 1:
+			ARCH_WRITE_PORT_UINT8(ArchConvertAddressToPointer(writeIo->IoAddress, UINT8*), static_cast<UINT8>(writeIo->DataValue & 0xff));
+			break;
 
-	case 2:
-		if(writeIo->IoAddress & 1)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			ARCH_WRITE_PORT_UINT16(ArchConvertAddressToPointer(writeIo->IoAddress, UINT16*), static_cast<UINT16>(writeIo->DataValue & 0xffff));
-		break;
+		case 2:
+			if (writeIo->IoAddress & 1)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				ARCH_WRITE_PORT_UINT16(ArchConvertAddressToPointer(writeIo->IoAddress, UINT16*), static_cast<UINT16>(writeIo->DataValue & 0xffff));
+			break;
 
-	case 4:
-		if(writeIo->IoAddress & 3)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(writeIo->IoAddress, UINT32*), writeIo->DataValue);
-		break;
+		case 4:
+			if (writeIo->IoAddress & 3)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(writeIo->IoAddress, UINT32*), writeIo->DataValue);
+			break;
 
-	default:
-		manipulateState->ReturnStatus										= STATUS_INVALID_PARAMETER;
-		break;
+		default:
+			manipulateState->ReturnStatus									= STATUS_INVALID_PARAMETER;
+			break;
 	}
+
 	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, nullptr);
 }
 
 //
-// read port
+// Read port.
 //
 STATIC VOID BdpReadIoSpaceEx(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -389,35 +403,37 @@ STATIC VOID BdpReadIoSpaceEx(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* 
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 	manipulateState->ReturnStatus											= STATUS_SUCCESS;
 	readIo->DataValue														= 0;
-	switch(readIo->DataSize)
+
+	switch (readIo->DataSize)
 	{
-	case 1:
-		readIo->DataValue													= ARCH_READ_PORT_UINT8(ArchConvertAddressToPointer(readIo->IoAddress, UINT8*));
-		break;
+		case 1:
+			readIo->DataValue												= ARCH_READ_PORT_UINT8(ArchConvertAddressToPointer(readIo->IoAddress, UINT8*));
+			break;
 
-	case 2:
-		if(readIo->IoAddress & 1)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			readIo->DataValue												= ARCH_READ_PORT_UINT16(ArchConvertAddressToPointer(readIo->IoAddress, UINT16*));
-		break;
+		case 2:
+			if (readIo->IoAddress & 1)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				readIo->DataValue											= ARCH_READ_PORT_UINT16(ArchConvertAddressToPointer(readIo->IoAddress, UINT16*));
+			break;
 
-	case 4:
-		if(readIo->IoAddress & 3)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			readIo->DataValue												= ARCH_READ_PORT_UINT32(ArchConvertAddressToPointer(readIo->IoAddress, UINT32*));
-		break;
+		case 4:
+			if (readIo->IoAddress & 3)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				readIo->DataValue											= ARCH_READ_PORT_UINT32(ArchConvertAddressToPointer(readIo->IoAddress, UINT32*));
+			break;
 
-	default:
-		manipulateState->ReturnStatus										= STATUS_INVALID_PARAMETER;
-		break;
+		default:
+			manipulateState->ReturnStatus									= STATUS_INVALID_PARAMETER;
+			break;
 	}
+
 	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, nullptr);
 }
 
 //
-// write port
+// Write port.
 //
 STATIC VOID BdpWriteIoSpaceEx(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -426,35 +442,37 @@ STATIC VOID BdpWriteIoSpaceEx(DBGKD_MANIPULATE_STATE64* manipulateState, STRING*
 	messageHeader.Length													= sizeof(DBGKD_MANIPULATE_STATE64);
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 	manipulateState->ReturnStatus											= STATUS_SUCCESS;
-	switch(writeIo->DataSize)
+
+	switch (writeIo->DataSize)
 	{
-	case 1:
-		ARCH_WRITE_PORT_UINT8(ArchConvertAddressToPointer(writeIo->IoAddress, UINT8*), static_cast<UINT8>(writeIo->DataValue & 0xff));
-		break;
+		case 1:
+			ARCH_WRITE_PORT_UINT8(ArchConvertAddressToPointer(writeIo->IoAddress, UINT8*), static_cast<UINT8>(writeIo->DataValue & 0xff));
+			break;
 
-	case 2:
-		if(writeIo->IoAddress & 1)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			ARCH_WRITE_PORT_UINT16(ArchConvertAddressToPointer(writeIo->IoAddress, UINT16*), static_cast<UINT16>(writeIo->DataValue & 0xffff));
-		break;
+		case 2:
+			if (writeIo->IoAddress & 1)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				ARCH_WRITE_PORT_UINT16(ArchConvertAddressToPointer(writeIo->IoAddress, UINT16*), static_cast<UINT16>(writeIo->DataValue & 0xffff));
+			break;
 
-	case 4:
-		if(writeIo->IoAddress & 3)
-			manipulateState->ReturnStatus									= STATUS_DATATYPE_MISALIGNMENT;
-		else
-			ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(writeIo->IoAddress, UINT32*), writeIo->DataValue);
-		break;
+		case 4:
+			if (writeIo->IoAddress & 3)
+				manipulateState->ReturnStatus								= STATUS_DATATYPE_MISALIGNMENT;
+			else
+				ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(writeIo->IoAddress, UINT32*), writeIo->DataValue);
+			break;
 
-	default:
-		manipulateState->ReturnStatus										= STATUS_INVALID_PARAMETER;
-		break;
+		default:
+			manipulateState->ReturnStatus									= STATUS_INVALID_PARAMETER;
+			break;
 	}
+
 	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, nullptr);
 }
 
 //
-// read physical memory
+// Read physical memory.
 //
 STATIC VOID BdpReadPhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -464,13 +482,17 @@ STATIC VOID BdpReadPhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STR
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 	UINT64 startAddress														= readMemory->TargetBaseAddress;
 	UINT32 readLength														= readMemory->TransferCount;
-	if(readLength > PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64))
+
+	if (readLength > PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64))
 		readLength															= PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64);
+
 	UINT64 endAddress														= startAddress + readLength;
-	if(PAGE_ALIGN(startAddress) == PAGE_ALIGN(endAddress))
+
+	if (PAGE_ALIGN(startAddress) == PAGE_ALIGN(endAddress))
 	{
 		VOID* address														= BdTranslatePhysicalAddress(startAddress);
-		if(address)
+
+		if (address)
 			additionalData->Length											= static_cast<UINT16>(BdMoveMemory(additionalData->Buffer, address, readLength));
 		else
 			additionalData->Length											= 0;
@@ -482,7 +504,8 @@ STATIC VOID BdpReadPhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STR
 			UINT32 leftCount												= readLength;
 			CHAR8* buffer													= additionalData->Buffer;
 			VOID* address													= BdTranslatePhysicalAddress(startAddress);
-			if(!address)
+
+			if (!address)
 			{
 				additionalData->Length										= 0;
 				break;
@@ -494,10 +517,11 @@ STATIC VOID BdpReadPhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STR
 			startAddress													+= lengthThisRun;
 			buffer															+= lengthThisRun;
 
-			while(leftCount)
+			while (leftCount)
 			{
 				address														= BdTranslatePhysicalAddress(startAddress);
-				if(!address)
+
+				if (!address)
 					break;
 
 				lengthThisRun												= EFI_PAGE_SIZE > leftCount ? EFI_PAGE_SIZE : leftCount;
@@ -506,7 +530,7 @@ STATIC VOID BdpReadPhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STR
 				startAddress												+= lengthThisRun;
 				buffer														+= lengthThisRun;
 			}
-		}while(0);
+		} while (0);
 	}
 
 	readMemory->ActualBytesRead												= additionalData->Length;
@@ -515,7 +539,7 @@ STATIC VOID BdpReadPhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STR
 }
 
 //
-// write physical memory
+// Write physical memory.
 //
 STATIC VOID BdpWritePhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -526,7 +550,8 @@ STATIC VOID BdpWritePhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, ST
 	UINT64 startAddress														= writeMemory->TargetBaseAddress;
 	UINT64 endAddress														= startAddress + writeMemory->TransferCount;
 	UINT32 writtenCount														= 0;
-	if(PAGE_ALIGN(startAddress) == PAGE_ALIGN(endAddress))
+
+	if (PAGE_ALIGN(startAddress) == PAGE_ALIGN(endAddress))
 	{
 		writtenCount														= BdMoveMemory(BdTranslatePhysicalAddress(startAddress), additionalData->Buffer, writeMemory->TransferCount);
 	}
@@ -542,7 +567,7 @@ STATIC VOID BdpWritePhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, ST
 		startAddress														+= lengthThisRun;
 		buffer																+= lengthThisRun;
 
-		while(leftCount)
+		while (leftCount)
 		{
 			lengthThisRun													= EFI_PAGE_SIZE > leftCount ? EFI_PAGE_SIZE : leftCount;
 			thisRun															= BdMoveMemory(BdTranslatePhysicalAddress(startAddress), buffer, lengthThisRun);
@@ -559,7 +584,7 @@ STATIC VOID BdpWritePhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, ST
 }
 
 //
-// get version
+// Get version.
 //
 STATIC VOID BdpGetVersion(DBGKD_MANIPULATE_STATE64* manipulateState)
 {
@@ -591,7 +616,7 @@ STATIC VOID BdpGetVersion(DBGKD_MANIPULATE_STATE64* manipulateState)
 }
 
 //
-// write breakpoint ext
+// Write breakpoint ext.
 //
 STATIC NTSTATUS BdpWriteBreakPointEx(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -601,9 +626,9 @@ STATIC NTSTATUS BdpWriteBreakPointEx(DBGKD_MANIPULATE_STATE64* manipulateState, 
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 
 	//
-	// verify that the packet size is correct
+	// Verify that the packet size is correct.
 	//
-	if(additionalData->Length != breakpointEx->BreakPointCount * sizeof(DBGKD_WRITE_BREAKPOINT64) || breakpointEx->BreakPointCount > ARRAYSIZE(BdBreakpointTable))
+	if (additionalData->Length != breakpointEx->BreakPointCount * sizeof(DBGKD_WRITE_BREAKPOINT64) || breakpointEx->BreakPointCount > ARRAYSIZE(BdBreakpointTable))
 	{
 		manipulateState->ReturnStatus										= STATUS_UNSUCCESSFUL;
 		BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, additionalData);
@@ -614,11 +639,12 @@ STATIC NTSTATUS BdpWriteBreakPointEx(DBGKD_MANIPULATE_STATE64* manipulateState, 
 	BdMoveMemory(bpBuf, additionalData->Buffer, breakpointEx->BreakPointCount * sizeof(DBGKD_WRITE_BREAKPOINT64));
 	manipulateState->ReturnStatus											= STATUS_SUCCESS;
 	DBGKD_WRITE_BREAKPOINT64* b												= bpBuf;
-	for(UINT32 i = 0; i < breakpointEx->BreakPointCount; i ++, b ++)
+
+	for (UINT32 i = 0; i < breakpointEx->BreakPointCount; i ++, b ++)
 	{
-		if(b->BreakPointHandle)
+		if (b->BreakPointHandle)
 		{
-			if(!BdpDeleteBreakpoint(b->BreakPointHandle))
+			if (!BdpDeleteBreakpoint(b->BreakPointHandle))
 				manipulateState->ReturnStatus								= STATUS_UNSUCCESSFUL;
 
 			b->BreakPointHandle												= 0;
@@ -626,23 +652,25 @@ STATIC NTSTATUS BdpWriteBreakPointEx(DBGKD_MANIPULATE_STATE64* manipulateState, 
 	}
 
 	b																		= bpBuf;
-	for(UINT32 i = 0; i < breakpointEx->BreakPointCount; i ++, b ++)
+
+	for (UINT32 i = 0; i < breakpointEx->BreakPointCount; i ++, b ++)
 	{
-		if(b->BreakPointAddress)
+		if (b->BreakPointAddress)
 		{
 			b->BreakPointHandle												= BdpAddBreakpoint(b->BreakPointAddress);
-			if(!b->BreakPointHandle)
+			if (!b->BreakPointHandle)
 				manipulateState->ReturnStatus								= STATUS_UNSUCCESSFUL;
 		}
 	}
 
 	BdMoveMemory(additionalData->Buffer, bpBuf, breakpointEx->BreakPointCount * sizeof(DBGKD_WRITE_BREAKPOINT64));
 	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, additionalData);
+
 	return breakpointEx->ContinueStatus;
 }
 
 //
-// restore breakpoint ex
+// Restore breakpoint ex.
 //
 STATIC VOID BdpRestoreBreakPointEx(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -652,12 +680,13 @@ STATIC VOID BdpRestoreBreakPointEx(DBGKD_MANIPULATE_STATE64* manipulateState, ST
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 
 	//
-	// verify that the packet size is correct
+	// Verify that the packet size is correct.
 	//
-	if(additionalData->Length != breakpointEx->BreakPointCount * sizeof(DBGKD_RESTORE_BREAKPOINT) || breakpointEx->BreakPointCount > ARRAYSIZE(BdBreakpointTable))
+	if (additionalData->Length != breakpointEx->BreakPointCount * sizeof(DBGKD_RESTORE_BREAKPOINT) || breakpointEx->BreakPointCount > ARRAYSIZE(BdBreakpointTable))
 	{
 		manipulateState->ReturnStatus										= STATUS_UNSUCCESSFUL;
 		BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, additionalData);
+
 		return;
 	}
 
@@ -727,10 +756,14 @@ STATIC VOID BdpReadWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, U
 			break;
 		}
 
-		length																-= pciReadWriteLength[type];
-		offset																+= pciReadWriteLength[type];
-		dataBuffer															= Add2Ptr(dataBuffer, pciReadWriteLength[type], VOID*);
+		if (type < 3)
+ 		{
+			length -= pciReadWriteLength[type];
+			offset += pciReadWriteLength[type];
+			dataBuffer = Add2Ptr(dataBuffer, pciReadWriteLength[type], VOID*);
+		}
 	}
+
 	ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(0xcf8, UINT32*), 0);
 }
 
@@ -775,17 +808,17 @@ STATIC UINT32 BdpReadPciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT
 		readLength															= sizeof(localHeader);
 		BdpReadPciConfigSpace(bus, device, func, 0, &localHeader, sizeof(localHeader));
 
-		if(localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
+		if (localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
 		{
 			localHeader.Device.Hdr.VendorId									= 0xffff;
 			readLength														= EFI_FIELD_OFFSET(PCI_DEVICE_INDEPENDENT_REGION, VendorId) + sizeof(localHeader.Device.Hdr.VendorId);
 		}
 
-		if(readLength < offset)
+		if (readLength < offset)
 			return 0;
 
 		readLength															-= offset;
-		if(readLength > length)
+		if (readLength > length)
 			readLength														= length;
 
 		memcpy(dataBuffer, Add2Ptr(&localHeader, offset, VOID*), readLength);
@@ -795,7 +828,7 @@ STATIC UINT32 BdpReadPciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT
 		length																-= readLength;
 	}
 
-	if(length && offset >= sizeof(localHeader))
+	if (length && offset >= sizeof(localHeader))
 	{
 		BdpReadPciConfigSpace(bus, device, func, offset, dataBuffer, length);
 		readLength															+= length;
@@ -805,7 +838,7 @@ STATIC UINT32 BdpReadPciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT
 }
 
 //
-// get bus data
+// Get bus data.
 //
 STATIC VOID BdpGetBusData(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -815,21 +848,23 @@ STATIC VOID BdpGetBusData(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* add
 	messageHeader.Buffer													= static_cast<CHAR8*>(static_cast<VOID*>(manipulateState));
 	UINT32 readLength														= getBusData->Length;
 	getBusData->Length														= 0;
-	if(readLength > PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64))
+
+	if (readLength > PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64))
 		readLength															= PACKET_MAX_SIZE - sizeof(DBGKD_MANIPULATE_STATE64);
 
 	//
-	// only support pci bus
+	// Only support PCI bus.
 	//
-	if(getBusData->BusDataType != 4)
+	if (getBusData->BusDataType != 4)
 	{
 		manipulateState->ReturnStatus										= STATUS_UNSUCCESSFUL;
 		BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, additionalData);
+
 		return;
 	}
 
 	//
-	// read it
+	// Read it.
 	//
 	UINT32 device															= getBusData->SlotNumber & 0x1f;
 	UINT32 func																= (getBusData->SlotNumber >> 5) & 0x07;
@@ -892,7 +927,7 @@ STATIC UINT32 BdpWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UIN
 		length																-= writeLength;
 	}
 
-	if(length && offset >= sizeof(localHeader))
+	if (length && offset >= sizeof(localHeader))
 	{
 		BdpWritePciConfigSpace(bus, device, func, offset, dataBuffer, length);
 		writeLength															+= length;
@@ -902,7 +937,7 @@ STATIC UINT32 BdpWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UIN
 }
 
 //
-// set bus data
+// Set bus data.
 //
 STATIC VOID BdpSetBusData(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -914,9 +949,9 @@ STATIC VOID BdpSetBusData(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* add
 	setBusData->Length														= 0;
 
 	//
-	// only support pci bus
+	// Only support PCI bus.
 	//
-	if(setBusData->BusDataType != 4)
+	if (setBusData->BusDataType != 4)
 	{
 		manipulateState->ReturnStatus										= STATUS_UNSUCCESSFUL;
 		BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, additionalData);
@@ -924,7 +959,7 @@ STATIC VOID BdpSetBusData(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* add
 	}
 
 	//
-	// write it
+	// Write it.
 	//
 	UINT32 device															= setBusData->SlotNumber & 0x1f;
 	UINT32 func																= (setBusData->SlotNumber >> 5) & 0x07;
@@ -935,7 +970,7 @@ STATIC VOID BdpSetBusData(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* add
 
 
 //
-// send and wait
+// Send and wait.
 //
 STATIC UINT32 BdpSendWaitContinue(UINT32 packetType, STRING* outputHead, STRING* outputData, CONTEXT* contextRecord)
 {
@@ -948,12 +983,13 @@ STATIC UINT32 BdpSendWaitContinue(UINT32 packetType, STRING* outputHead, STRING*
 	inputData.Buffer														= BdMessageBuffer;
 	BOOLEAN sendOutputPacket												= TRUE;
 
-	while(TRUE)
+	while (TRUE)
 	{
-		if(sendOutputPacket)
+		if (sendOutputPacket)
 		{
 			BdSendPacket(packetType, outputHead, outputData);
-			if(BdDebuggerNotPresent)
+
+			if (BdDebuggerNotPresent)
 				return KD_CONTINUE_SUCCESS;
 		}
 
@@ -964,169 +1000,173 @@ STATIC UINT32 BdpSendWaitContinue(UINT32 packetType, STRING* outputHead, STRING*
 		do
 		{
 			//
-			// wait a reply packet
+			// Wait a reply packet.
 			//
 			replyCode														= BdReceivePacket(PACKET_TYPE_KD_STATE_MANIPULATE, &inputHead, &inputData, &length);
-			if(replyCode == KDP_PACKET_RESEND)
+			if (replyCode == KDP_PACKET_RESEND)
 				sendOutputPacket											= TRUE;
 
-		}while(replyCode == KDP_PACKET_TIMEOUT);
+		} while (replyCode == KDP_PACKET_TIMEOUT);
 
 		//
-		// resend packet
+		// Resend packet.
 		//
-		if(sendOutputPacket)
+		if (sendOutputPacket)
 			continue;
 
 		//
-		// case on api number
+		// Case on API number.
 		//
 		switch(manipulateState.ApiNumber)
 		{
-		case DbgKdReadVirtualMemoryApi:
-			BdpReadVirtualMemory(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdReadVirtualMemoryApi:
+				BdpReadVirtualMemory(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdWriteVirtualMemoryApi:
-			BdpWriteVirtualMemory(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdWriteVirtualMemoryApi:
+				BdpWriteVirtualMemory(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdGetContextApi:
-			BdpGetcontextRecord(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdGetContextApi:
+				BdpGetcontextRecord(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdSetContextApi:
-			BdpSetcontextRecord(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdSetContextApi:
+				BdpSetcontextRecord(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdWriteBreakPointApi:
-			BdpWriteBreakpoint(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdWriteBreakPointApi:
+				BdpWriteBreakpoint(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdRestoreBreakPointApi:
-			BdpRestoreBreakpoint(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdRestoreBreakPointApi:
+				BdpRestoreBreakpoint(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdContinueApi:
-			return NT_SUCCESS(manipulateState.Continue.ContinueStatus) ? KD_CONTINUE_SUCCESS : KD_CONTINUE_ERROR;
-			break;
+			case DbgKdContinueApi:
+				return NT_SUCCESS(manipulateState.Continue.ContinueStatus) ? KD_CONTINUE_SUCCESS : KD_CONTINUE_ERROR;
+				break;
 
-		case DbgKdReadControlSpaceApi:
-			BdReadControlSpace(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdReadControlSpaceApi:
+				BdReadControlSpace(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdWriteControlSpaceApi:
-			BdWriteControlSpace(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdWriteControlSpaceApi:
+				BdWriteControlSpace(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdReadIoSpaceApi:
-			BdpReadIoSpace(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdReadIoSpaceApi:
+				BdpReadIoSpace(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdWriteIoSpaceApi:
-			BdpWriteIoSpace(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdWriteIoSpaceApi:
+				BdpWriteIoSpace(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdRebootApi:
-			EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
-			break;
+			case DbgKdRebootApi:
+				EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+				break;
 
-		case DbgKdContinueApi2:
-			if(!NT_SUCCESS(manipulateState.Continue2.ContinueStatus))
-				return KD_CONTINUE_ERROR;
+			case DbgKdContinueApi2:
 
-			BdGetStateChange(&manipulateState, contextRecord);
-			return KD_CONTINUE_SUCCESS;
-			break;
+				if (!NT_SUCCESS(manipulateState.Continue2.ContinueStatus))
+					return KD_CONTINUE_ERROR;
 
-		case DbgKdReadPhysicalMemoryApi:
-			BdpReadPhysicalMemory(&manipulateState, &inputData, contextRecord);
-			break;
+				BdGetStateChange(&manipulateState, contextRecord);
 
-		case DbgKdWritePhysicalMemoryApi:
-			BdpWritePhysicalMemory(&manipulateState, &inputData, contextRecord);
-			break;
+				return KD_CONTINUE_SUCCESS;
+				break;
 
-		case DbgKdReadIoSpaceExtendedApi:
-			BdpReadIoSpaceEx(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdReadPhysicalMemoryApi:
+				BdpReadPhysicalMemory(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdWriteIoSpaceExtendedApi:
-			BdpWriteIoSpaceEx(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdWritePhysicalMemoryApi:
+				BdpWritePhysicalMemory(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdGetVersionApi:
-			BdpGetVersion(&manipulateState);
-			break;
+			case DbgKdReadIoSpaceExtendedApi:
+				BdpReadIoSpaceEx(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdWriteBreakPointExApi:
-			if(BdpWriteBreakPointEx(&manipulateState, &inputData, contextRecord) != STATUS_SUCCESS)
-				return KD_CONTINUE_ERROR;
-			break;
+			case DbgKdWriteIoSpaceExtendedApi:
+				BdpWriteIoSpaceEx(&manipulateState, &inputData, contextRecord);
+				break;
 
-		case DbgKdRestoreBreakPointExApi:
-			BdpRestoreBreakPointEx(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdGetVersionApi:
+				BdpGetVersion(&manipulateState);
+				break;
 
-		case DbgKdGetBusDataApi:
-			BdpGetBusData(&manipulateState, &inputData, contextRecord);
-			break;
+			case DbgKdWriteBreakPointExApi:
 
-		case DbgKdSetBusDataApi:
-			BdpSetBusData(&manipulateState, &inputData, contextRecord);
-			break;
+				if (BdpWriteBreakPointEx(&manipulateState, &inputData, contextRecord) != STATUS_SUCCESS)
+					return KD_CONTINUE_ERROR;
+				break;
 
-		default:
-			inputData.Length												= 0;
-			manipulateState.ReturnStatus									= STATUS_UNSUCCESSFUL;
-			BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &inputHead, &inputData);
-			break;
+			case DbgKdRestoreBreakPointExApi:
+				BdpRestoreBreakPointEx(&manipulateState, &inputData, contextRecord);
+				break;
+
+			case DbgKdGetBusDataApi:
+				BdpGetBusData(&manipulateState, &inputData, contextRecord);
+				break;
+
+			case DbgKdSetBusDataApi:
+				BdpSetBusData(&manipulateState, &inputData, contextRecord);
+				break;
+
+			default:
+				inputData.Length												= 0;
+				manipulateState.ReturnStatus									= STATUS_UNSUCCESSFUL;
+				BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &inputHead, &inputData);
+				break;
 		}
 	}
 }
 
 //
-// close debug device
+// Close debug device.
 //
 STATIC VOID BdpCloseDebuggerDevice()
 {
-	switch(BdDebuggerType)
+	switch (BdDebuggerType)
 	{
-	case KDP_TYPE_COM:
-		break;
+		case KDP_TYPE_COM:
+			break;
 
-	case KDP_TYPE_1394:
-		Bd1394CloseDebuggerDevice();
-		break;
+		case KDP_TYPE_1394:
+			Bd1394CloseDebuggerDevice();
+			break;
 
-	case KDP_TYPE_USB:
-		BdUsbCloseDebuggerDevice();
-		break;
+		case KDP_TYPE_USB:
+			BdUsbCloseDebuggerDevice();
+			break;
 	}
 }
 
 //
-// setup debugger loader data entry
+// Setup debugger loader data entry.
 //
 STATIC EFI_STATUS BdpPopulateDataTableEntry(LDR_DATA_TABLE_ENTRY* loaderDataEntry)
 {
 	//
-	// get image base
+	// Get image base.
 	//
 	UINT64 imageBase64														= 0;
 	memset(loaderDataEntry, 0, sizeof(LDR_DATA_TABLE_ENTRY));
 	BlGetApplicationBaseAndSize(&imageBase64, nullptr);
 
 	//
-	// get nt header
+	// Get nt header.
 	//
 	VOID* imageBase															= ArchConvertAddressToPointer(imageBase64, VOID*);
 	EFI_IMAGE_NT_HEADERS* ntHeaders											= PeImageNtHeader(imageBase);
-	if(!ntHeaders)
+
+	if (!ntHeaders)
 		return EFI_INVALID_PARAMETER;
 
 	//
-	// setup
+	// Setup.
 	//
 	loaderDataEntry->Flags													= 0;
 	loaderDataEntry->LoadCount												= 1;
@@ -1145,47 +1185,47 @@ STATIC EFI_STATUS BdpPopulateDataTableEntry(LDR_DATA_TABLE_ENTRY* loaderDataEntr
 }
 
 //
-// start debugger
+// Start debugger.
 //
 STATIC EFI_STATUS BdpStart(CHAR8 CONST* loaderOptions)
 {
 	//
-	// debugger has not been initialized
+	// Debugger has not been initialised.
 	//
-	if(!BdSubsystemInitialized)
+	if (!BdSubsystemInitialized)
 		return EFI_SUCCESS;
 
 	//
-	// already connected to host machine
+	// Already connected to host machine.
 	//
-	if(BdConnectionActive)
+	if (BdConnectionActive)
 		return EFI_SUCCESS;
 
 	//
-	// set as connected
+	// Set as connected
 	//
 	BdConnectionActive														= TRUE;
 
 	//
-	// try to connect to host machine
+	// Try to connect to host machine.
 	//
-	for(UINT32 i = 0; i < 10; i ++)
+	for (UINT32 i = 0; i < 10; i ++)
 	{
 		BdDebuggerNotPresent												= FALSE;
 		DbgPrint(CHAR8_CONST_STRING("<?dml?><col fg=\"changed\">BD: Boot Debugger Initialized</col>\n"));
-		if(!BdDebuggerNotPresent)
+		if (!BdDebuggerNotPresent)
 			break;
 	}
 
 	//
-	// let debugger load symbols
+	// Let debugger load symbols.
 	//
 	DbgLoadImageSymbols(&BdModuleDataTableEntry.BaseDllName, BdModuleDataTableEntry.DllBase, static_cast<UINTN>(-1));
 
 	//
-	// boot break
+	// Boot break.
 	//
-	if(loaderOptions && strstr(loaderOptions, CHAR8_CONST_STRING("/break")))
+	if (loaderOptions && strstr(loaderOptions, CHAR8_CONST_STRING("/break")))
 		DbgBreakPoint();
 	else
 		BdPollConnection();
@@ -1194,25 +1234,25 @@ STATIC EFI_STATUS BdpStart(CHAR8 CONST* loaderOptions)
 }
 
 //
-// stop debugger
+// Stop debugger.
 //
 STATIC VOID BdpStop()
 {
 	//
-	// not connected
+	// Not connected.
 	//
-	if(!BdConnectionActive)
+	if (!BdConnectionActive)
 		return;
 
 	//
-	// special unload symbols packet to tell debugger we are stopping
+	// Special unload symbols packet to tell debugger we are stopping.
 	//
 	DbgUnLoadImageSymbols(static_cast<STRING*>(nullptr), ArchConvertAddressToPointer(-1, VOID*), 0);
 	BdConnectionActive														= FALSE;
 }
 
 //
-// free loader data entry
+// Free loader data entry.
 //
 STATIC VOID BdpFreeDataTableEntry(LDR_DATA_TABLE_ENTRY* ldrDataTableEntry)
 {
@@ -1223,18 +1263,19 @@ STATIC VOID BdpFreeDataTableEntry(LDR_DATA_TABLE_ENTRY* ldrDataTableEntry)
 }
 
 //
-// copy memory
+// Copy memory.
 //
 VOID BdCopyMemory(VOID* dstBuffer, VOID* srcBuffer, UINT32 bytesCount)
 {
 	UINT8* dstBuffer2														= static_cast<UINT8*>(dstBuffer);
 	UINT8* srcBuffer2														= static_cast<UINT8*>(srcBuffer);
-	for(UINT32 i = 0; i < bytesCount; i ++)
+
+	for (UINT32 i = 0; i < bytesCount; i ++)
 		dstBuffer2[i]														= srcBuffer2[i];
 }
 
 //
-// move memory
+// Move memory.
 //
 UINT32 BdMoveMemory(VOID* dstBuffer, VOID* srcBuffer, UINT32 bytesCount)
 {
@@ -1242,12 +1283,13 @@ UINT32 BdMoveMemory(VOID* dstBuffer, VOID* srcBuffer, UINT32 bytesCount)
 	bytesCount																= moveLength;
 	UINT8* dstBuffer2														= static_cast<UINT8*>(dstBuffer);
 	UINT8* srcBuffer2														= static_cast<UINT8*>(srcBuffer);
-	while(Add2Ptr(srcBuffer2, 0, UINT32) & 3)
+
+	while (Add2Ptr(srcBuffer2, 0, UINT32) & 3)
 	{
-		if(!moveLength)
+		if (!moveLength)
 			break;
 
-		if(!BdpWriteCheck(dstBuffer2) || !BdpWriteCheck(srcBuffer2))
+		if (!BdpWriteCheck(dstBuffer2) || !BdpWriteCheck(srcBuffer2))
 			break;
 
 		*dstBuffer2															= *srcBuffer2;
@@ -1256,9 +1298,9 @@ UINT32 BdMoveMemory(VOID* dstBuffer, VOID* srcBuffer, UINT32 bytesCount)
 		moveLength															-= sizeof(UINT8);
 	}
 
-	while(moveLength > 3)
+	while (moveLength > 3)
 	{
-		if(!BdpWriteCheck(dstBuffer2) || !BdpWriteCheck(srcBuffer2))
+		if (!BdpWriteCheck(dstBuffer2) || !BdpWriteCheck(srcBuffer2))
 			break;
 
 		*reinterpret_cast<UINT32*>(dstBuffer2)								= *reinterpret_cast<UINT32*>(srcBuffer2);
@@ -1267,9 +1309,9 @@ UINT32 BdMoveMemory(VOID* dstBuffer, VOID* srcBuffer, UINT32 bytesCount)
 		moveLength															-= sizeof(UINT32);
 	}
 
-	while(moveLength)
+	while (moveLength)
 	{
-		if(!BdpWriteCheck(dstBuffer2) || !BdpWriteCheck(srcBuffer2))
+		if (!BdpWriteCheck(dstBuffer2) || !BdpWriteCheck(srcBuffer2))
 			break;
 
 		*dstBuffer2															= *srcBuffer2;
@@ -1279,44 +1321,49 @@ UINT32 BdMoveMemory(VOID* dstBuffer, VOID* srcBuffer, UINT32 bytesCount)
 	}
 
 	//
-	// sweep instruction change
+	// Sweep instruction change.
 	//
 	bytesCount																-= moveLength;
 	ArchSweepIcacheRange(dstBuffer, bytesCount);
+
 	return bytesCount;
 }
 
 //
-// compute checksum
+// Compute checksum.
 //
 UINT32 BdComputeChecksum(VOID* dataBuffer, UINT32 bufferLength)
 {
 	UINT32 checksum															= 0;
 	UINT8* buffer															= static_cast<UINT8*>(dataBuffer);
-	while(bufferLength > 0)
+
+	while (bufferLength > 0)
 	{
 		checksum															= checksum + static_cast<UINT32>(*buffer++);
 		bufferLength														-= 1;
 	}
+
 	return checksum;
 }
 
 //
-// remove breakpoint in range
+// Remove breakpoint in range.
 //
 BOOLEAN BdDeleteBreakpointRange(UINT64 lowerAddress, UINT64 upperAddress)
 {
 	BOOLEAN returnStatus													= FALSE;
-	for(UINT32 index = 0; index < ARRAYSIZE(BdBreakpointTable); index ++)
+
+	for (UINT32 index = 0; index < ARRAYSIZE(BdBreakpointTable); index ++)
 	{
-		if((BdBreakpointTable[index].Flags & KD_BREAKPOINT_IN_USE) && BdBreakpointTable[index].Address >= lowerAddress && BdBreakpointTable[index].Address <= upperAddress)
+		if ((BdBreakpointTable[index].Flags & KD_BREAKPOINT_IN_USE) && BdBreakpointTable[index].Address >= lowerAddress && BdBreakpointTable[index].Address <= upperAddress)
 			returnStatus													= returnStatus || BdpDeleteBreakpoint(index + 1);
 	}
+
 	return returnStatus;
 }
 
 //
-// report exception state change
+// Report exception state change.
 //
 VOID BdReportExceptionStateChange(EXCEPTION_RECORD* exceptionRecord, CONTEXT* contextRecord)
 {
@@ -1334,11 +1381,11 @@ VOID BdReportExceptionStateChange(EXCEPTION_RECORD* exceptionRecord, CONTEXT* co
 		messageHeader.Buffer												= static_cast<CHAR8*>(static_cast<VOID*>(&waitStateChange));
 		STRING messageData													= {0};
 		status																= BdpSendWaitContinue(PACKET_TYPE_KD_STATE_CHANGE64, &messageHeader, &messageData, contextRecord);
-	}while(status == KD_CONTINUE_PROCESSOR_RESELECTED);
+	} while (status == KD_CONTINUE_PROCESSOR_RESELECTED);
 }
 
 //
-// report load symbols state change
+// Report load symbols state change.
 //
 VOID BdReportLoadSymbolsStateChange(STRING* moduleName, KD_SYMBOLS_INFO* SymbolsInfo, BOOLEAN unloadModule, CONTEXT* contextRecord)
 {
@@ -1354,7 +1401,8 @@ VOID BdReportLoadSymbolsStateChange(STRING* moduleName, KD_SYMBOLS_INFO* Symbols
 		messageHeader.Length												= sizeof(DBGKD_WAIT_STATE_CHANGE64);
 		messageHeader.Buffer												= static_cast<CHAR8*>(static_cast<VOID*>(&waitStateChange));
 		STRING messageData													= {0};
-		if(moduleName)
+
+		if (moduleName)
 		{
 			UINT32 length													= BdMoveMemory(BdMessageBuffer, moduleName->Buffer, moduleName->Length);
 			BdMessageBuffer[length]											= 0;
@@ -1369,23 +1417,24 @@ VOID BdReportLoadSymbolsStateChange(STRING* moduleName, KD_SYMBOLS_INFO* Symbols
 		waitStateChange.u.LoadSymbols.ProcessId								= SymbolsInfo->ProcessId;
 		waitStateChange.u.LoadSymbols.SizeOfImage							= SymbolsInfo->SizeOfImage;
 		status																= BdpSendWaitContinue(PACKET_TYPE_KD_STATE_CHANGE64, &messageHeader, &messageData, contextRecord);
-	}while(status == KD_CONTINUE_PROCESSOR_RESELECTED);
+	} while (status == KD_CONTINUE_PROCESSOR_RESELECTED);
 }
 
 //
-// print string
+// Print string.
 //
 BOOLEAN BdPrintString(STRING* printString)
 {
 	//
-	// move the output string to the message buffer.
+	// Move the output string to the message buffer.
 	//
 	UINT32 length															= BdMoveMemory(BdMessageBuffer, printString->Buffer, printString->Length);
-	if(sizeof(DBGKD_DEBUG_IO) + length > PACKET_MAX_SIZE)
+
+	if (sizeof(DBGKD_DEBUG_IO) + length > PACKET_MAX_SIZE)
 		length																= PACKET_MAX_SIZE - sizeof(DBGKD_DEBUG_IO);
 
 	//
-	// construct the print string message and message descriptor.
+	// Construct the print string message and message descriptor.
 	//
 	STRING messageHeader;
 	STRING messageData;
@@ -1399,23 +1448,25 @@ BOOLEAN BdPrintString(STRING* printString)
 	messageData.Length														= static_cast<UINT16>(length);
 	messageData.Buffer														= BdMessageBuffer;
 	BdSendPacket(PACKET_TYPE_KD_DEBUG_IO, &messageHeader, &messageData);
+
 	return BdPollBreakIn();
 }
 
 //
-// prompt string
+// Prompt string.
 //
 BOOLEAN BdPromptString(STRING* inputString, STRING* outputString)
 {
 	//
-	// move the output string to the message buffer.
+	// Move the output string to the message buffer.
 	//
 	UINT32 length															= BdMoveMemory(BdMessageBuffer, inputString->Buffer, inputString->Length);
-	if(sizeof(DBGKD_DEBUG_IO) + length > PACKET_MAX_SIZE)
+
+	if (sizeof(DBGKD_DEBUG_IO) + length > PACKET_MAX_SIZE)
 		length																= PACKET_MAX_SIZE - sizeof(DBGKD_DEBUG_IO);
 
 	//
-	// construct the prompt string message and message descriptor.
+	// Construct the prompt string message and message descriptor.
 	//
 	DBGKD_DEBUG_IO debugIo;
 	STRING messageHeader;
@@ -1441,22 +1492,25 @@ BOOLEAN BdPromptString(STRING* inputString, STRING* outputString)
 		// BdTrap will recall us again if we return TRUE
 		//
 		replyCode															= BdReceivePacket(PACKET_TYPE_KD_DEBUG_IO, &messageHeader, &messageData, &length);
-		if(replyCode == KDP_PACKET_RESEND)
+
+		if (replyCode == KDP_PACKET_RESEND)
 			return TRUE;
 
-	}while(replyCode != KDP_PACKET_RECEIVED);
+	} while (replyCode != KDP_PACKET_RECEIVED);
 
 	//
-	// copy to output buffer
+	// Copy to output buffer.
 	//
-	if(length > outputString->MaximumLength)
+	if (length > outputString->MaximumLength)
 		length																= outputString->MaximumLength;
+
 	outputString->Length													= static_cast<UINT16>(BdMoveMemory(outputString->Buffer, BdMessageBuffer, length));
+
 	return FALSE;
 }
 
 //
-// initialize boot debugger
+// Initialise boot debugger.
 //
 EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 {
@@ -1465,22 +1519,22 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 	__try
 	{
 		//
-		// already initialized
+		// Already initialised.
 		//
-		if(BdSubsystemInitialized || !loaderOptions || !loaderOptions[0])
+		if (BdSubsystemInitialized || !loaderOptions || !loaderOptions[0])
 			try_leave(NOTHING);
 
 		//
-		// case on debug type
+		// Case on debug type.
 		//
-		if(strstr(loaderOptions, CHAR8_CONST_STRING("/debug=1394")))
+		if (strstr(loaderOptions, CHAR8_CONST_STRING("/debug=1394")))
 		{
 			BdDebuggerType													= KDP_TYPE_1394;
 			BdSendPacket													= &Bd1394SendPacket;
 			BdReceivePacket													= &Bd1394ReceivePacket;
 			status															= Bd1394ConfigureDebuggerDevice(loaderOptions);
 		}
-		else if(strstr(loaderOptions, CHAR8_CONST_STRING("/debug=usb")))
+		else if (strstr(loaderOptions, CHAR8_CONST_STRING("/debug=usb")))
 		{
 			BdDebuggerType													= KDP_TYPE_USB;
 			BdSendPacket													= &BdUsbSendPacket;
@@ -1493,26 +1547,26 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		}
 
 		//
-		// setup debug device failed
+		// Setup debug device failed.
 		//
-		if(EFI_ERROR(status))
+		if (EFI_ERROR(status))
 			try_leave(NOTHING);
 
 		//
-		// initialize breakpoint table
+		// Initialise breakpoint table.
 		//
 		memset(BdBreakpointTable, 0, sizeof(BdBreakpointTable));
 
 		//
-		// setup loader table entry
+		// Setup loader table entry.
 		//
 		BdBreakpointInstruction												= KDP_BREAKPOINT_VALUE;
 		BdDebugTrap															= &BdTrap;
-		if(EFI_ERROR(status = BdpPopulateDataTableEntry(&BdModuleDataTableEntry)))
+		if (EFI_ERROR(status = BdpPopulateDataTableEntry(&BdModuleDataTableEntry)))
 			try_leave(NOTHING);
 
 		//
-		// link debugger module to modules list
+		// Link debugger module to modules list.
 		//
 		BdModuleList.Flink													= &BdModuleDataTableEntry.InLoadOrderLinks;
 		BdModuleList.Blink													= &BdModuleDataTableEntry.InLoadOrderLinks;
@@ -1520,20 +1574,20 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		BdModuleDataTableEntry.InLoadOrderLinks.Blink						= &BdModuleList;
 
 		//
-		// initialize arch
+		// Initialise arch.
 		//
-		if(EFI_ERROR(status = BdArchInitialize()))
+		if (EFI_ERROR(status = BdArchInitialize()))
 			try_leave(NOTHING);
 
 		//
-		// start debugger
+		// Start debugger.
 		//
 		BdSubsystemInitialized												= TRUE;
 		status																= BdpStart(loaderOptions);
 	}
 	__finally
 	{
-		if(EFI_ERROR(status))
+		if (EFI_ERROR(status))
 		{
 			BdpCloseDebuggerDevice();
 			BdpFreeDataTableEntry(&BdModuleDataTableEntry);
@@ -1544,20 +1598,20 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 }
 
 //
-// destroy debugger
+// Destroy debugger.
 //
 EFI_STATUS BdFinalize()
 {
 	//
-	// stop connection
+	// Stop connection.
 	//
-	if(BdConnectionActive)
+	if (BdConnectionActive)
 		BdpStop();
 
 	//
-	// debugger system has been initialized
+	// Debugger system has been initialised.
 	//
-	if(BdSubsystemInitialized)
+	if (BdSubsystemInitialized)
 	{
 		BdpSuspendAllBreakpoints();
 		BdpCloseDebuggerDevice();
@@ -1566,38 +1620,40 @@ EFI_STATUS BdFinalize()
 	}
 
 	//
-	// free ldr
+	// Free ldr.
 	//
 	BdpFreeDataTableEntry(&BdModuleDataTableEntry);
+
 	return EFI_SUCCESS;
 }
 
 //
-// debugger is enabled
+// Debugger is enabled.
 //
 BOOLEAN BdDebuggerEnabled()
 {
 	//
-	// debugger is not initialized or debugger operation is blocked
+	// Debugger is not initialised or debugger operation is blocked.
 	//
-	if(!BdSubsystemInitialized || BdArchBlockDebuggerOperation)
+	if (!BdSubsystemInitialized || BdArchBlockDebuggerOperation)
 		return FALSE;
 
 	return TRUE;
 }
 
 //
-// poll break in
+// Poll break in.
 //
 BOOLEAN BdPollBreakIn()
 {
 	//
-	// if the debugger is enabled, see if a breakin by the kernel debugger is pending.
+	// If the debugger is enabled, see if a breakin by the kernel debugger is pending.
 	//
 	BOOLEAN breakIn															= FALSE;
-	if(BdDebuggerEnabled())
+
+	if (BdDebuggerEnabled())
 	{
-		if(BdControlCPending)
+		if (BdControlCPending)
 		{
 			breakIn															= TRUE;
 			BdControlCPending												= FALSE;
@@ -1607,18 +1663,18 @@ BOOLEAN BdPollBreakIn()
 			breakIn															= BdReceivePacket(PACKET_TYPE_KD_POLL_BREAKIN, nullptr, nullptr, nullptr) == KDP_PACKET_RECEIVED;
 		}
 
-		if(breakIn)
+		if (breakIn)
 			BdControlCPressed												= TRUE;
 	}
 	return breakIn;
 }
 
 //
-// poll connection
+// Poll connection.
 //
 VOID BdPollConnection()
 {
-	if(!BdPollBreakIn())
+	if (!BdPollBreakIn())
 		return;
 
 	DbgPrint(CHAR8_CONST_STRING("User requested boot debugger break!\r\n"));
@@ -1626,7 +1682,7 @@ VOID BdPollConnection()
 }
 
 //
-// load symbols
+// Load symbols.
 //
 VOID DbgLoadImageSymbols(UNICODE_STRING* fileName, VOID* imageBase, UINTN processId)
 {
@@ -1635,12 +1691,12 @@ VOID DbgLoadImageSymbols(UNICODE_STRING* fileName, VOID* imageBase, UINTN proces
 	ansiName.MaximumLength													= sizeof(BdDebugMessage);
 	ansiName.Buffer															= BdDebugMessage;
 
-	if(!EFI_ERROR(BlUnicodeToAnsi(fileName->Buffer, fileName->Length / sizeof(CHAR16), ansiName.Buffer, ansiName.MaximumLength)))
+	if (!EFI_ERROR(BlUnicodeToAnsi(fileName->Buffer, fileName->Length / sizeof(CHAR16), ansiName.Buffer, ansiName.MaximumLength)))
 		DbgLoadImageSymbols(&ansiName, imageBase, processId);
 }
 
 //
-// unload symbols
+// Unload symbols.
 //
 VOID DbgUnLoadImageSymbols(UNICODE_STRING* fileName, VOID* imageBase, UINTN processId)
 {
@@ -1649,12 +1705,12 @@ VOID DbgUnLoadImageSymbols(UNICODE_STRING* fileName, VOID* imageBase, UINTN proc
 	ansiName.MaximumLength													= sizeof(BdDebugMessage);
 	ansiName.Buffer															= BdDebugMessage;
 
-	if(!EFI_ERROR(BlUnicodeToAnsi(fileName->Buffer, fileName->Length / sizeof(CHAR16), ansiName.Buffer, ansiName.MaximumLength)))
+	if (!EFI_ERROR(BlUnicodeToAnsi(fileName->Buffer, fileName->Length / sizeof(CHAR16), ansiName.Buffer, ansiName.MaximumLength)))
 		DbgUnLoadImageSymbols(&ansiName, imageBase, processId);
 }
 
 //
-// load symbols
+// Load symbols.
 //
 VOID DbgLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
 {
@@ -1669,7 +1725,7 @@ VOID DbgLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
 }
 
 //
-// unload symbols
+// Unload symbols.
 //
 VOID DbgUnLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
 {
@@ -1683,7 +1739,7 @@ VOID DbgUnLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
 }
 
 //
-// dbg print
+// Debug print.
 //
 UINT32 DbgPrint(CHAR8 CONST* printFormat, ...)
 {
@@ -1697,5 +1753,6 @@ UINT32 DbgPrint(CHAR8 CONST* printFormat, ...)
 	outputString.MaximumLength												= sizeof(BdDebugMessage);
 	outputString.Buffer														= BdDebugMessage;
 	DbgService(BREAKPOINT_PRINT, ArchConvertPointerToAddress(outputString.Buffer), outputString.Length, 0, 0);
+
 	return outputString.Length;
 }

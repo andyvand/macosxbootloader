@@ -977,9 +977,10 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 		// check fat header
 		//
 		BOOLEAN needSwap													= TRUE;
-		if(fatHeader.Magic == FAT_MAGIC)
+
+		if (fatHeader.Magic == FAT_MAGIC)
 			needSwap														= FALSE;
-		else if(fatHeader.Magic == FAT_CIGAM)
+		else if (fatHeader.Magic == FAT_CIGAM)
 			fatHeader.ArchHeadersCount										= SWAP32(fatHeader.ArchHeadersCount);
 		else
         {
@@ -1027,7 +1028,7 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 			//
 			// check arch
 			//
-			if(curArchHeader.CpuType == 0x1000007)
+			if (curArchHeader.CpuType == 0x1000007)
 			{
 				x64ArchHeader												= curArchHeader;
 				break;
@@ -1217,11 +1218,13 @@ SEGMENT_COMMAND* MachpGetFirstSegment(MACH_HEADER* machHeader)
 SEGMENT_COMMAND64* MachpGetFirstSegment64(MACH_HEADER64* machHeader)
 {
 	SEGMENT_COMMAND64* segment64											= Add2Ptr(machHeader, sizeof(MACH_HEADER64), SEGMENT_COMMAND64*);
-	for(UINT32 i = 0; i < machHeader->CommandsCount; i ++, segment64 = Add2Ptr(segment64, segment64->Header.CommandLength, SEGMENT_COMMAND64*))
+
+	for (UINT32 i = 0; i < machHeader->CommandsCount; i ++, segment64 = Add2Ptr(segment64, segment64->Header.CommandLength, SEGMENT_COMMAND64*))
 	{
-		if(segment64->Header.CommandType == MACH_O_COMMAND_SEGMENT64)
+		if (segment64->Header.CommandType == MACH_O_COMMAND_SEGMENT64)
 			return segment64;
 	}
+
 	return nullptr;
 }
 
@@ -1252,16 +1255,18 @@ SEGMENT_COMMAND64* MachpGetNextSegment64(MACH_HEADER64* machHeader, SEGMENT_COMM
 {
 	UINT32 i																= 0;
 	LOAD_COMMAND_HEADER* loadCommand										= Add2Ptr(machHeader, sizeof(MACH_HEADER64), LOAD_COMMAND_HEADER*);
-	for(; i < machHeader->CommandsCount && static_cast<VOID*>(loadCommand) != static_cast<VOID*>(segment64); i ++)
+
+	for (; i < machHeader->CommandsCount && static_cast<VOID*>(loadCommand) != static_cast<VOID*>(segment64); i ++)
 		loadCommand															= Add2Ptr(loadCommand, loadCommand->CommandLength, LOAD_COMMAND_HEADER*);
 
-	for(i += 1, loadCommand = Add2Ptr(loadCommand, loadCommand->CommandLength, LOAD_COMMAND_HEADER*); i < machHeader->CommandsCount; i ++)
+	for (i += 1, loadCommand = Add2Ptr(loadCommand, loadCommand->CommandLength, LOAD_COMMAND_HEADER*); i < machHeader->CommandsCount; i ++)
 	{
-		if(loadCommand->CommandType == MACH_O_COMMAND_SEGMENT64)
+		if (loadCommand->CommandType == MACH_O_COMMAND_SEGMENT64)
 			return _CR(loadCommand, SEGMENT_COMMAND64, Header);
 
 		loadCommand															= Add2Ptr(loadCommand, loadCommand->CommandLength, LOAD_COMMAND_HEADER*);
 	}
+
 	return nullptr;
 }
 
@@ -1298,15 +1303,16 @@ SECTION* MachpGetNextSection(SEGMENT_COMMAND* segment32, SECTION* section32)
 //
 SECTION64* MachpGetNextSection64(SEGMENT_COMMAND64* segment64, SECTION64* section64)
 {
-	if(!segment64 || !segment64->SectionCount)
+	if (!segment64 || !segment64->SectionCount)
 		return nullptr;
 
 	UINTN index																= (static_cast<UINT8*>(static_cast<VOID*>(section64)) - static_cast<UINT8*>(static_cast<VOID*>(segment64 + 1))) / sizeof(SECTION64);
+
 	return index + 1 >= segment64->SectionCount ? nullptr : section64 + 1;
 }
 
 //
-// load mach-o
+// Load kernel, prelinkedkernel or kernelcache
 //
 EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MACH_O_LOADED_INFO* loadedInfo)
 {
@@ -1437,7 +1443,26 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
 
 			case MACH_O_COMMAND_SYMTAB:
 				{
+#if (PATCH_LOAD_EXECUTABLE && (TARGET_OS == EL_CAPITAN))
+					BOOLEAN loadExecutablePatched							= FALSE;
+#endif
+
+#if (PATCH_READ_STARTUP_EXTENSIONS && (TARGET_OS == EL_CAPITAN))
+					BOOLEAN readStartExtensionsPatched						= FALSE;
+#endif
+
+#if ((PATCH_LOAD_EXECUTABLE || PATCH_READ_STARTUP_EXTENSIONS) && (TARGET_OS == EL_CAPITAN))
+					UINT64 offset											= 0;
+					UINT64 startAddress										= 0;
+					UINT64 endAddress										= 0;
+
+					unsigned char * p										= (unsigned char *)0;
+#endif
+
 					SYMTAB_COMMAND* symbolTableCommand						= _CR(theCommand, SYMTAB_COMMAND, Header);
+
+					CHAR8 CONST *stringTable = Add2Ptr(linkEditSegment, symbolTableCommand->StringTableOffset - linkEditSegmentOffset, CHAR8 CONST*);
+
 					if(LdrGetASLRDisplacement())
 					{
                         if (is32Bit == FALSE)
@@ -1447,18 +1472,94 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, BOOLEAN useKernelMemory, MA
                             {
                                 if(symbolEntry->Type <= 0x1f)
                                     symbolEntry->Value							+= LdrGetASLRDisplacement();
-                            }
-                        } else {
-                            SYMTAB_ENTRY* symbolEntry							= Add2Ptr(linkEditSegment, symbolTableCommand->SymbolTableOffset - linkEditSegmentOffset, SYMTAB_ENTRY*);
-                            for(UINT32 i = 0; i < symbolTableCommand->SymbolCount; i ++, symbolEntry ++)
-                            {
-                                if(symbolEntry->Type <= 0x1f)
-									symbolEntry->Value							+= (UINT32)LdrGetASLRDisplacement();
-                            }
-                        }
+
+#if (PATCH_LOAD_EXECUTABLE && (TARGET_OS == EL_CAPITAN))
+				if ((loadExecutablePatched == FALSE) && (symbolEntry->SectionIndex == 1)) // __TEXT,__text
+				{
+					if (!strcmp(CHAR8_CONST_STRING("__ZN6OSKext14loadExecutableEv"), stringTable + symbolEntry->StringIndex))
+					{
+						offset										= (symbolEntry->Value - loadedInfo->ImageBaseVirtualAddress);
+						startAddress								= (loadedInfo->ImageBasePhysicalAddress + offset);
+						endAddress									= (startAddress + loadedInfo->TextSegmentFileSize);
+						p											= (unsigned char *)startAddress;
+#if DEBUG_KERNEL_PATCHER
+						CsPrintf(CHAR8_CONST_STRING("Kernelpatcher: loadExecutable offset[0x%llx], start[0x%llx], end[0x%llx]\n"), offset, startAddress, endAddress);
+#endif
+						for (; p <= (unsigned char *)endAddress; p++)
+						{
+							if (*(UINT64 *)p == LOAD_EXECUTABLE_TARGET_UINT64)
+							{
+#if DEBUG_KERNEL_PATCHER
+								CsPrintf(CHAR8_CONST_STRING("Kernelpatcher: loadExecutable found @ 0x%llx \n"), (UINT64)p - startAddress);
+#endif
+																	*(UINT64 *)p = LOAD_EXECUTABLE_PATCH_UINT64;
+																	//
+								// Done.
+								//
+								loadExecutablePatched = TRUE;
+								break;
+							}
+						}
+#if DEBUG_KERNEL_PATCHER
+						CsPrintf(CHAR8_CONST_STRING("Kernelpatcher: loadExecutable done @ [0x%llx]\n"), (UINT64)p);
+#endif
 					}
+				} else
+#endif // #if (PATCH_LOAD_EXECUTABLE &&(TARGET_OS >= YOSEMITE))
+					if (symbolEntry->SectionIndex == 15) // __DATA,__common
+					{
+						if (!strcmp(CHAR8_CONST_STRING("_IdlePML4"), stringTable + symbolEntry->StringIndex))
+						{
+							loadedInfo->IdlePML4VirtualAddress			= symbolEntry->Value;
+						}
+					}
+
+#if (PATCH_READ_STARTUP_EXTENSIONS && (TARGET_OS == EL_CAPITAN))
+					else if ((readStartExtensionsPatched == FALSE) && (symbolEntry->SectionIndex == 25)) // __KLD,__text
+					{
+						if (!strcmp(CHAR8_CONST_STRING("__ZN12KLDBootstrap21readStartupExtensionsEv"), stringTable + symbolEntry->StringIndex))
+						{
+							offset = (symbolEntry->Value - kldSegmentVirtualAddress); // 0x950
+							startAddress = kldSegmentPhysicalAddress + offset;
+							endAddress = (startAddress + kldSegmentFileSize);
+							p = (unsigned char *)startAddress;
+#if DEBUG_KERNEL_PATCHER
+							CsPrintf(CHAR8_CONST_STRING("Kernelpatcher: readStartupExtensions offset[0x%llx], start[0x%llx], end[0x%llx]\n"), offset, startAddress, endAddress);
+#endif
+							for (; p <= (unsigned char *)endAddress; p++)
+							{
+								if (*(UINT64 *)p == READ_STARTUP_EXTENSIONS_TARGET_UINT64)
+								{
+#if DEBUG_KERNEL_PATCHER
+									CsPrintf(CHAR8_CONST_STRING("Kernelpatcher: readStartupExtensions found @ 0x%llx\n"), (UINT64)p - startAddress);
+#endif
+									*(UINT64 *)p = READ_STARTUP_EXTENSIONS_PATCH_UINT64;
+									//
+									// Done.
+									//
+									readStartExtensionsPatched = TRUE;
+									break;
+								}
+							}
+#if DEBUG_KERNEL_PATCHER
+							CsPrintf(CHAR8_CONST_STRING("Kernelpatcher: readStartupExtensions done @ [0x%llx]\n"), (UINT64)p);
+#endif
+						}
+					}
+#endif // #if (PATCH_READ_STARTUP_EXTENSIONS && (TARGET_OS == EL_CAPITAN))
 				}
-				break;
+			} else {
+				SYMTAB_ENTRY* symbolEntry							= Add2Ptr(linkEditSegment, symbolTableCommand->SymbolTableOffset - linkEditSegmentOffset, SYMTAB_ENTRY*);
+				for(UINT32 i = 0; i < symbolTableCommand->SymbolCount; i ++, symbolEntry ++)
+				{
+                                	if(symbolEntry->Type <= 0x1f)
+						symbolEntry->Value += (UINT32)LdrGetASLRDisplacement();
+
+				}
+			}
+			}
+			}
+			break;
 
 			case MACH_O_COMMAND_DYSYMTAB:
 				{
@@ -2124,7 +2225,7 @@ EFI_STATUS MachLoadMachOBuffer(UINT8 *fileBuffer, UINTN fileSize, BOOLEAN useKer
                 break;
             }
         }
-        
+
         //
         // save arch type
         //
@@ -2151,32 +2252,37 @@ UINT64 MachFindSymbolVirtualAddressByName(MACH_O_LOADED_INFO* loadedInfo, CHAR8 
 	VOID* linkEditSegment													= nullptr;
 	UINT64 linkEditSegmentOffset											= 0;
 	SYMTAB_COMMAND* symbolTableCommand										= nullptr;
-	for(UINT32 i = 0; i < machHeader->CommandsCount; i ++, commandHeader = Add2Ptr(commandHeader, commandHeader->CommandLength, LOAD_COMMAND_HEADER*))
+
+	for (UINT32 i = 0; i < machHeader->CommandsCount; i ++, commandHeader = Add2Ptr(commandHeader, commandHeader->CommandLength, LOAD_COMMAND_HEADER*))
 	{
-		if(commandHeader->CommandType == MACH_O_COMMAND_SEGMENT32 || commandHeader->CommandType == MACH_O_COMMAND_SEGMENT64)
+		if (commandHeader->CommandType == MACH_O_COMMAND_SEGMENT32 || commandHeader->CommandType == MACH_O_COMMAND_SEGMENT64)
 		{
 			SEGMENT_COMMAND64* segmentCommand64									= _CR(commandHeader, SEGMENT_COMMAND64, Header);
 			SEGMENT_COMMAND* segmentCommand										= _CR(commandHeader, SEGMENT_COMMAND, Header);
-			if(is64Bits ? strcmp(segmentCommand64->Name, CHAR8_CONST_STRING("__LINKEDIT")) : strcmp(segmentCommand->Name, CHAR8_CONST_STRING("__LINKEDIT")))
+
+			if (is64Bits ? strcmp(segmentCommand64->Name, CHAR8_CONST_STRING("__LINKEDIT")) : strcmp(segmentCommand->Name, CHAR8_CONST_STRING("__LINKEDIT")))
 				continue;
 
 			linkEditSegment													= ArchConvertAddressToPointer(LdrStaticVirtualToPhysical(is64Bits ? segmentCommand64->VirtualAddress : segmentCommand->VirtualAddress), VOID*);
 			linkEditSegmentOffset											= is64Bits ? segmentCommand64->FileOffset : segmentCommand->FileOffset;
 		}
-		else if(commandHeader->CommandType == MACH_O_COMMAND_SYMTAB)
+		else if (commandHeader->CommandType == MACH_O_COMMAND_SYMTAB)
 		{
 			symbolTableCommand												= _CR(commandHeader, SYMTAB_COMMAND, Header);
 		}
 	}
-	if(!linkEditSegment || !linkEditSegmentOffset || !symbolTableCommand)
+
+	if (!linkEditSegment || !linkEditSegmentOffset || !symbolTableCommand)
 		return 0;
 
 	CHAR8 CONST* stringTable												= Add2Ptr(linkEditSegment, symbolTableCommand->StringTableOffset - linkEditSegmentOffset, CHAR8 CONST*);
 	SYMTAB_ENTRY64* symbolEntry												= Add2Ptr(linkEditSegment, symbolTableCommand->SymbolTableOffset - linkEditSegmentOffset, SYMTAB_ENTRY64*);
-	for(UINT32 i = 0; i < symbolTableCommand->SymbolCount; i ++, symbolEntry ++)
+
+	for (UINT32 i = 0; i < symbolTableCommand->SymbolCount; i ++, symbolEntry ++)
 	{
-		if(!strcmp(symbolName, stringTable + symbolEntry->StringIndex))
+		if (!strcmp(symbolName, stringTable + symbolEntry->StringIndex))
 			return symbolEntry->Value;
 	}
+
 	return 0;
 }

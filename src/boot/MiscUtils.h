@@ -26,6 +26,11 @@ UINT64 BlGetMemorySize();
 CHAR8* BlGetBoardId();
 
 //
+// Get SMBIOS UUID
+//
+EFI_GUID BlGetSmbiosUuid();
+
+//
 // connect drivers
 //
 EFI_STATUS BlConnectAllController();
@@ -54,6 +59,11 @@ EFI_STATUS BlFindPciDevice(UINTN segment, UINTN bus, UINTN device, UINTN func, U
 // start pci device
 //
 EFI_STATUS BlStartPciDevice(EFI_PCI_IO_PROTOCOL* pciIoProtocol, BOOLEAN decodeIo, BOOLEAN decodeMemory, BOOLEAN busMaster);
+
+//
+// Get string from SMBIOS table.
+//
+UINT8* BlpGetStringFromSMBIOSTable(UINT8* startOfStringTable, UINT8 index);
 
 //
 // detect memory size
@@ -121,7 +131,7 @@ UINT32 BlEfiTimeToUnixTime(EFI_TIME CONST* efiTime);
 UINT32 BlGetCurrentUnixTime();
 
 //
-// adler32
+// Adler32
 //
 UINT32 BlAdler32(VOID CONST* inputBuffer, UINTN bufferLength);
 
@@ -130,6 +140,7 @@ UINT32 BlAdler32(VOID CONST* inputBuffer, UINTN bufferLength);
 //
 EFI_STATUS BlDecompressLZSS(VOID CONST* compressedBuffer, UINTN compressedSize, VOID* uncompressedBuffer, UINTN uncompressedBufferSize, UINTN* uncompressedSize);
 
+#if (TARGET_OS >= YOSEMITE)
 //
 // uncompress LZVN
 //
@@ -159,5 +170,6 @@ EFI_STATUS BlDecompressLZVN(VOID CONST* compressedBuffer, UINTN compressedSize, 
 	(((x) & 0x0000000000ff0000ULL) << 24) | \
 	(((x) & 0x000000000000ff00ULL) << 40) | \
 	(((x) & 0x00000000000000ffULL) << 56))
+#endif
 
 #endif

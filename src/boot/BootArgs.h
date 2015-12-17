@@ -213,10 +213,42 @@ typedef struct _BOOT_ARGS
 	//
 	UINT32																	PCIConfigSpaceEndBusNumber;
 
+#if (TARGET_OS == EL_CAPITAN)
+	//
+	//
+	//
+	UINT32																	CsrActiveConfig;
+
+	//
+	//
+	//
+	UINT32																	CsrCapabilities;
+
+	//
+	//
+	//
+	UINT32																	Boot_SMC_plimit;
+
+	//
+	//
+	//
+	UINT16																	BootProgressMeterStart;
+
+	//
+	//
+	//
+	UINT16																	BootProgressMeterEnd;
+
 	//
 	// padding
 	//
-	UINT32																	Reserved3[730];
+	UINT32																	Reserved4[726];
+#else // #if (TARGET_OS == EL_CAPITAN)
+  	//
+  	// padding
+  	//
+	UINT32																	Reserved4[730];
+#endif // #if (TARGET_OS == EL_CAPITAN)
 } PACKGNU BOOT_ARGS;
 
 #ifndef __APPLE__
@@ -237,5 +269,17 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 // finalize boot args
 //
 EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLine, EFI_HANDLE bootDeviceHandle, struct _MACH_O_LOADED_INFO* loadedInfo);
+
+#if (TARGET_OS == EL_CAPITAN)
+//
+// Read csr-active-config from NVRAM
+//
+EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs);
+#endif
+
+//
+// Mimic boot.efi and set boot.efi info properties.
+//
+EFI_STATUS BlAddBooterInfo(DEVICE_TREE_NODE* chosenNode);
 
 #endif

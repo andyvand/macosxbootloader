@@ -470,7 +470,7 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		UINT8 initVector[16]												= {0};
 
 #ifdef _MSC_VER
-		aes_decrypt_ctx aesContext											= {0};
+		aes_decrypt_ctx aesContext											= {{0}};
 #else
         aes_decrypt_ctx aesContext;
 #endif

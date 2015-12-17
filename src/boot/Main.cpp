@@ -107,7 +107,7 @@ STATIC EFI_STATUS BlpSetupRomVariable()
 
 #ifndef MINORVERSION
 //
-// check board id
+// Check board-id.
 //
 STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL* bootFilePath)
 {
@@ -120,19 +120,21 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 	__try
 	{
 		//
-		// VMM ok
+		// VMM ok.
 		//
-		if(!strnicmp(boardId, CHAR8_CONST_STRING("VMM"), 3))
+		if (!strnicmp(boardId, CHAR8_CONST_STRING("VMM"), 3))
 			try_leave(NOTHING);
 
 		//
-		// check current directory
+		// Check current directory.
 		//
 		fileDevPath															= DevPathAppendLastComponent(bootFilePath, CHAR8_CONST_STRING("PlatformSupport.plist"), TRUE);
-		if(fileDevPath)
+
+		if (fileDevPath)
 		{
 			fileName														= DevPathExtractFilePathName(fileDevPath, TRUE);
-			if(fileName)
+
+			if (fileName)
 				status														= IoReadWholeFile(bootFilePath, fileName, &fileBuffer, nullptr, TRUE);
 			else
 				status														= EFI_NOT_FOUND;
@@ -140,48 +142,53 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 		else
 		{
 			//
-			// check root directory
+			// Check root directory.
 			//
 			status															= IoReadWholeFile(bootFilePath, CHAR8_CONST_STRING("PlatformSupport.plist"), &fileBuffer, nullptr, TRUE);
 		}
 
 		//
-		// check default file
+		// Check default file.
 		//
-		if(EFI_ERROR(status) && EFI_ERROR(status = IoReadWholeFile(bootFilePath, CHAR8_CONST_STRING("System\\Library\\CoreServices\\PlatformSupport.plist"), &fileBuffer, nullptr, TRUE)))
+		if (EFI_ERROR(status) && EFI_ERROR(status = IoReadWholeFile(bootFilePath, CHAR8_CONST_STRING("System\\Library\\CoreServices\\PlatformSupport.plist"), &fileBuffer, nullptr, TRUE)))
 			try_leave(status = EFI_SUCCESS);
 
 		//
-		// parse the file
+		// Parse the file.
 		//
-		if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, &rootTag)))
+		if (EFI_ERROR(status = CmParseXmlFile(fileBuffer, &rootTag)))
 			try_leave(NOTHING);
 
 		//
-		// get tag value
+		// Get tag value.
 		//
 		XML_TAG* supportedIds												= CmGetTagValueForKey(rootTag, CHAR8_CONST_STRING("SupportedBoardIds"));
 		UINTN count															= CmGetListTagElementsCount(supportedIds);
-		for(UINTN i = 0; i < count; i ++)
+
+		for (UINTN i = 0; i < count; i ++)
 		{
 			XML_TAG* supportedId											= CmGetListTagElementByIndex(supportedIds, i);
-			if(!supportedId || supportedId->Type != XML_TAG_STRING)
+
+			if (!supportedId || supportedId->Type != XML_TAG_STRING)
 				continue;
 
-			if(!strcmp(supportedId->StringValue, boardId))
+			if (!strcmp(supportedId->StringValue, boardId))
 				try_leave(NOTHING);
 		}
 		status																= EFI_UNSUPPORTED;
 	}
 	__finally
 	{
-		if(fileDevPath)
+		if (fileDevPath)
 			MmFreePool(fileDevPath);
-		if(fileName)
+
+		if (fileName)
 			MmFreePool(fileName);
-		if(fileBuffer)
+
+		if (fileBuffer)
 			MmFreePool(fileBuffer);
-		if(rootTag)
+
+		if (rootTag)
 			CmFreeTag(rootTag);
 	}
 
@@ -190,7 +197,7 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 #endif
 
 //
-// run recovery booter
+// Run recovery booter.
 //
 STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DEVICE_PATH_PROTOCOL* bootFilePath)
 {
@@ -200,70 +207,76 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
 	__try
 	{
 		//
-		// get current partition number
+		// Get current partition number.
 		//
 		UINT32 partitionNumber												= DevPathGetPartitionNumber(bootDevicePath);
-		if(partitionNumber == -1)
+
+		if (partitionNumber == -1)
 			try_leave(status = EFI_NOT_FOUND);
 
 		//
-		// root partition is followed by recovery partition
+		// Root partition is followed by recovery partition.
 		//
-		if(!BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
+		if (!BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
 			partitionNumber													+= 1;
 
 		//
-		// get recovery partition handle
+		// Get recovery partition handle.
 		//
 		EFI_HANDLE recoveryPartitionHandle									= DevPathGetPartitionHandleByNumber(bootDevicePath, partitionNumber);
-		if(!recoveryPartitionHandle)
+
+		if (!recoveryPartitionHandle)
 			try_leave(status = EFI_NOT_FOUND);
 
 		//
-		// get recovery partition device path
+		// Get recovery partition device path.
 		//
 		EFI_DEVICE_PATH_PROTOCOL* recoveryPartitionDevicePath				= DevPathGetDevicePathProtocol(recoveryPartitionHandle);
-		if(!recoveryPartitionDevicePath)
+
+		if (!recoveryPartitionDevicePath)
 			try_leave(status = EFI_NOT_FOUND);
 
 		//
-		// get recovery file path
+		// Get recovery file path.
 		//
 		recoveryFilePath													= DevPathAppendFilePath(recoveryPartitionDevicePath, CHAR16_CONST_STRING(L"\\com.apple.recovery.boot\\boot.efi"));
-		if(!recoveryFilePath)
+
+		if (!recoveryFilePath)
 			try_leave(status = EFI_NOT_FOUND);
 
 		//
-		// load image
+		// Load image.
 		//
 		EFI_HANDLE imageHandle												= nullptr;
-		if(EFI_ERROR(status = EfiBootServices->LoadImage(FALSE, EfiImageHandle, recoveryFilePath, nullptr, 0, &imageHandle)))
+
+		if (EFI_ERROR(status = EfiBootServices->LoadImage(FALSE, EfiImageHandle, recoveryFilePath, nullptr, 0, &imageHandle)))
 		{
-			if(!BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
+			if (!BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
 				try_leave(NOTHING);
 
 			//
-			// get root UUID
+			// Get root UUID.
 			//
 			CHAR8 CONST* rootUUID											= CmGetStringValueForKey(nullptr, CHAR8_CONST_STRING("Root UUID"), nullptr);
-			if(!rootUUID)
+
+			if (!rootUUID)
 				try_leave(status = EFI_NOT_FOUND);
 
 			//
-			// load booter
+			// Load booter.
 			//
-			if(EFI_ERROR(status = IoLoadBooterWithRootUUID(bootFilePath, rootUUID, &imageHandle)))
+			if (EFI_ERROR(status = IoLoadBooterWithRootUUID(bootFilePath, rootUUID, &imageHandle)))
 				try_leave(NOTHING);
 		}
 
 		//
-		// start it
+		// Start it.
 		//
 		status																= EfiBootServices->StartImage(imageHandle, nullptr, nullptr);
 	}
 	__finally
 	{
-		if(recoveryFilePath)
+		if (recoveryFilePath)
 			MmFreePool(recoveryFilePath);
 	}
 
@@ -271,7 +284,7 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
 }
 
 //
-// run apple boot
+// Run Apple boot.
 //
 STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 {
@@ -282,82 +295,90 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 	__try
 	{
 		//
-		// convert file name
+		// Convert file name.
 		//
 		fileName															= BlAllocateUnicodeFromUtf8(bootFileName, strlen(bootFileName));
-		if(!fileName)
+		if (!fileName)
 			try_leave(status = EFI_OUT_OF_RESOURCES);
 
 		//
-		// locate file system protocol
+		// Locate file system protocol.
 		//
 		UINTN totalHandles													= 0;
-		if(EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiSimpleFileSystemProtocolGuid, nullptr, &totalHandles, &handleArray)))
+
+		if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiSimpleFileSystemProtocolGuid, nullptr, &totalHandles, &handleArray)))
 			try_leave(NOTHING);
 
-		for(UINTN i = 0; i < totalHandles; i ++)
+		for (UINTN i = 0; i < totalHandles; i ++)
 		{
 			EFI_HANDLE theHandle											= handleArray[i];
-			if(!theHandle)
+
+			if (!theHandle)
 				continue;
 
 			//
-			// get file system protocol
+			// Get file system protocol.
 			//
 			EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* fileSystemProtocol				= nullptr;
-			if(EFI_ERROR(EfiBootServices->HandleProtocol(theHandle, &EfiSimpleFileSystemProtocolGuid, reinterpret_cast<VOID**>(&fileSystemProtocol))))
+
+			if (EFI_ERROR(EfiBootServices->HandleProtocol(theHandle, &EfiSimpleFileSystemProtocolGuid, reinterpret_cast<VOID**>(&fileSystemProtocol))))
 				continue;
 
 			//
-			// open root directory
+			// Open root directory.
 			//
 			EFI_FILE_HANDLE rootFile										= nullptr;
-			if(EFI_ERROR(fileSystemProtocol->OpenVolume(fileSystemProtocol, &rootFile)))
+
+			if (EFI_ERROR(fileSystemProtocol->OpenVolume(fileSystemProtocol, &rootFile)))
 				continue;
 
 			//
-			// open boot.efi
+			// Open boot.efi
 			//
 			EFI_FILE_HANDLE bootFile										= nullptr;
 			EFI_STATUS openStatus											= rootFile->Open(rootFile, &bootFile, fileName, EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
 			rootFile->Close(rootFile);
-			if(EFI_ERROR(openStatus))
+
+			if (EFI_ERROR(openStatus))
 				continue;
 
 			//
-			// close it
+			// Close it.
 			//
 			bootFile->Close(bootFile);
 
 			//
-			// get device path
+			// Get device path.
 			//
 			EFI_DEVICE_PATH_PROTOCOL* rootDevicePath						= nullptr;
-			if(EFI_ERROR(status = EfiBootServices->HandleProtocol(theHandle, &EfiDevicePathProtocolGuid, reinterpret_cast<VOID**>(&rootDevicePath))))
+
+			if (EFI_ERROR(status = EfiBootServices->HandleProtocol(theHandle, &EfiDevicePathProtocolGuid, reinterpret_cast<VOID**>(&rootDevicePath))))
 				try_leave(NOTHING);
 
 			//
-			// load it
+			// Load it.
 			//
 			EFI_DEVICE_PATH_PROTOCOL* bootFilePath							= DevPathAppendFilePath(rootDevicePath, fileName);
 			EFI_HANDLE imageHandle											= nullptr;
-			if(EFI_ERROR(status = EfiBootServices->LoadImage(TRUE, EfiImageHandle, bootFilePath, nullptr, 0, &imageHandle)))
+
+			if (EFI_ERROR(status = EfiBootServices->LoadImage(TRUE, EfiImageHandle, bootFilePath, nullptr, 0, &imageHandle)))
 				try_leave(NOTHING);
 
 			//
-			// free file path
+			// Free file path.
 			//
 			MmFreePool(bootFilePath);
 
 			//
-			// get loaded image protocol
+			// Get loaded image protocol.
 			//
 			EFI_LOADED_IMAGE_PROTOCOL* loadedImage							= nullptr;
-			if(EFI_ERROR(status = EfiBootServices->HandleProtocol(imageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedImage))))
+
+			if (EFI_ERROR(status = EfiBootServices->HandleProtocol(imageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedImage))))
 				try_leave(EfiBootServices->UnloadImage(imageHandle));
 
 			//
-			// run it
+			// Run it.
 			//
 			UINTN exitDataSize												= 0;
 			try_leave(status = EfiBootServices->StartImage(imageHandle, &exitDataSize, nullptr));
@@ -365,7 +386,7 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 	}
 	__finally
 	{
-		if(fileName)
+		if (fileName)
 			MmFreePool(fileName);
 	}
 
@@ -375,16 +396,18 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 extern "C"
 {
 //
-// main
+// Main entry point.
 //
 EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 {
 	EFI_STATUS status														= EFI_SUCCESS;
+	IO_FILE_HANDLE installationFolder										= {0};
+	EFI_FILE_INFO* installationFolderInfo									= nullptr;
 
 	__try
 	{
 		//
-		// save handle
+		// Save handle.
 		//
 		EfiImageHandle														= imageHandle;
 		EfiSystemTable														= systemTable;
@@ -595,12 +618,43 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		CHAR8* filePath														= DevPathExtractFilePathName(bootFilePath, TRUE);
 		if(filePath)
 		{
-			if(strstr(filePath, CHAR8_CONST_STRING("com.apple.recovery.boot")))
-            {
-                BlSetBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY, BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_BOOT_IS_NOT_ROOT);
-            }
+			if (strstr(filePath, CHAR8_CONST_STRING("\\.IABootFiles")) || strstr(filePath, CHAR8_CONST_STRING("\\OS X Install Data")) )
+ 			{
+				BlSetBootMode(BOOT_MODE_IS_INSTALLER, 0);
+			} else if(strstr(filePath, CHAR8_CONST_STRING("com.apple.recovery.boot")))
+            		{
+		                BlSetBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY, BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_BOOT_IS_NOT_ROOT);
+        		}
 
 			MmFreePool(filePath);
+
+			if (!BlTestBootMode(BOOT_MODE_IS_INSTALLER))
+			{
+				//
+				// Legacy installer detection.
+				//
+				if (!EFI_ERROR(IoOpenFile(CHAR8_CONST_STRING("System\\Installation\\CDIS"), nullptr, &installationFolder, IO_OPEN_MODE_NORMAL)))
+				{
+					//
+					// Get CDIS file info.
+					//
+					if (!EFI_ERROR(IoGetFileInfo(&installationFolder, &installationFolderInfo)))
+					{
+						//
+						// Check CDIS info (must be a directory).
+						//
+						if (installationFolderInfo)
+						{
+							if (installationFolderInfo->Attribute & EFI_FILE_DIRECTORY)
+								BlSetBootMode(BOOT_MODE_IS_INSTALLER, 0);
+						
+							MmFreePool(installationFolderInfo);
+						}
+					}
+
+					IoCloseFile(&installationFolder);
+				}
+			}
 		}
 
 #ifndef MINORVERSION
@@ -744,6 +798,14 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		// console finalize
 		//
 		CsFinalize();
+
+#if (TARGET_OS == EL_CAPITAN)
+		//
+		// SIP configuration.
+		//
+		if (EFI_ERROR(BlInitCSRState(bootArgs)))
+			try_leave(NOTHING);
+#endif
 
 		//
 		// finish boot args

@@ -14,6 +14,8 @@ STATIC UINT64 BlpMemoryCapacity												= 0;
 STATIC UINT32 BlpMemoryDevices												= 0;
 STATIC UINT64 BlpMemorySize													= 0;
 STATIC CHAR8 BlpBoardId[64]													= {0};
+EFI_GUID BlpSmbiosUuid														= {0};
+
 #define IS_LEAP_YEAR(y)														(((y) % 4 == 0 && (y) % 100 != 0) || (y) % 400 == 0)
 
 //
@@ -43,6 +45,14 @@ CHAR8* BlGetBoardId()
 	UINT32 edxValue															= 0;
 	ArchCpuId(1, &eaxValue, &ebxValue, &ecxValue, &edxValue);
 	return ecxValue & 0x80000000 ? CHAR8_STRING((VOID *)"VMM") : BlpBoardId;
+}
+
+//
+// Get systemId.
+//
+EFI_GUID BlGetSmbiosUuid()
+{
+	return BlpSmbiosUuid;
 }
 
 //
@@ -274,17 +284,18 @@ UINT8* BlpGetStringFromSMBIOSTable(UINT8* startOfStringTable, UINT8 index)
 EFI_STATUS BlDetectMemorySize()
 {
 	EFI_CONFIGURATION_TABLE* theTable										= EfiSystemTable->ConfigurationTable;
+
 	for(UINTN i = 0; i < EfiSystemTable->NumberOfTableEntries; i ++, theTable ++)
 	{
 		if(memcmp(&theTable->VendorGuid, &EfiSmbiosTableGuid, sizeof(EfiSmbiosTableGuid)))
 			continue;
 
-		SMBIOS_TABLE_STRUCTURE* tableStructure								= static_cast<SMBIOS_TABLE_STRUCTURE*>(theTable->VendorTable);
+		SMBIOS_ENTRY_POINT_STRUCTURE* tableStructure						= static_cast<SMBIOS_ENTRY_POINT_STRUCTURE*>(theTable->VendorTable);
 		if(memcmp(tableStructure->AnchorString, "_SM_", sizeof(tableStructure->AnchorString)))
 			break;
 
-		UINT8* startOfTable													= ArchConvertAddressToPointer(tableStructure->TableAddress, UINT8*);
-		UINT8* endOfTable													= startOfTable + tableStructure->TableLength;
+		UINT8* startOfTable													= ArchConvertAddressToPointer(tableStructure->DMI.TableAddress, UINT8*);
+		UINT8* endOfTable													= startOfTable + tableStructure->DMI.TableLength;
 
 		while(startOfTable + sizeof(SMBIOS_TABLE_HEADER) <= endOfTable)
 		{
@@ -310,11 +321,25 @@ EFI_STATUS BlDetectMemorySize()
 				if(table17->Size != 0xffff)
 					BlpMemorySize											+= (static_cast<UINT64>(table17->Size) << ((table17->Size & 0x8000) ? 10 : 20));
 			}
+			else if(tableHeader->Type == 1)
+			{
+				if(startOfTable + sizeof(SMBIOS_TABLE_TYPE1) > endOfTable)
+					break;
+				
+				SMBIOS_TABLE_TYPE1* table1									= reinterpret_cast<SMBIOS_TABLE_TYPE1*>(startOfTable);
+				if(!isEfiNullGuid(&table1->Uuid))
+				{
+					//
+					// Copy SMBIOS UUID into BlpSystemId.
+					//
+					memcpy((VOID*)&BlpSmbiosUuid, (VOID*)&table1->Uuid, 16);
+				}
+			}
 			else if(tableHeader->Type == 2)
 			{
 				if(startOfTable + sizeof(SMBIOS_TABLE_TYPE2) > endOfTable)
 					break;
-
+				
 				SMBIOS_TABLE_TYPE2* table2									= reinterpret_cast<SMBIOS_TABLE_TYPE2*>(startOfTable);
 				if(table2->ProductName)
 				{
@@ -809,6 +834,7 @@ EFI_STATUS BlDecompressLZSS(VOID CONST* compressedBuffer, UINTN compressedSize, 
 	return EFI_SUCCESS;
 }
 
+#if (TARGET_OS >= YOSEMITE)
 //
 // uncompress LZVN
 //
@@ -1269,3 +1295,4 @@ EFI_STATUS BlDecompressLZVN(VOID CONST* compressedBuffer, UINTN aCompressedSize,
 	
 	return EFI_LOAD_ERROR;
 }
+#endif // #if (TARGET_OS => YOSEMITE)
