@@ -2,6 +2,7 @@
 
 ### Top level directory ###
 TOPDIR=$(PWD)
+PREBUILT=$(TOPDIR)/Prebuilt
 
 ### Target OS ###
 TARGET_OS=EL_CAPITAN
@@ -30,24 +31,24 @@ endif
 
 ### Architecture - Intel 32 bit / Intel 64 bit ###
 ifeq ("$(ARCH)", "i386")
-CC=$(TOOLPATH)i686-w64-mingw32-gcc
-CXX=$(TOOLPATH)i686-w64-mingw32-g++
-LD=$(TOOLPATH)i686-w64-mingw32-g++
-AR=$(TOOLPATH)i686-w64-mingw32-ar
-RANLIB=$(TOOLPATH)i686-w64-mingw32-ranlib
-STRIP=$(TOOLPATH)i686-w64-mingw32-strip
+CC=$(TOOLPATH)i686-clover-mingw32-gcc
+CXX=$(TOOLPATH)i686-clover-mingw32-g++
+LD=$(TOOLPATH)i686-clover-mingw32-g++
+AR=$(TOOLPATH)i686-clover-mingw32-ar
+RANLIB=$(TOOLPATH)i686-clover-mingw32-ranlib
+STRIP=$(TOOLPATH)i686-clover-mingw32-strip
 
 ARCHDIR=x86
 ARCHFLAGS=-m32 -malign-double -fno-stack-protector -freorder-blocks -mno-stack-arg-probe -DARCH32
 NASMFLAGS=-f win32 
 MTOC=mv -f
 else
-CC=$(TOOLPATH)x86_64-w64-mingw32-gcc
-CXX=$(TOOLPATH)x86_64-w64-mingw32-g++
-LD=$(TOOLPATH)x86_64-w64-mingw32-g++
-AR=$(TOOLPATH)x86_64-w64-mingw32-ar
-RANLIB=$(TOOLPATH)x86_64-w64-mingw32-ranlib
-STRIP=$(TOOLPATH)x86_64-w64-mingw32-strip
+CC=$(TOOLPATH)x86_64-clover-mingw32-gcc
+CXX=$(TOOLPATH)x86_64-clover-mingw32-g++
+LD=$(TOOLPATH)x86_64-clover-mingw32-g++
+AR=$(TOOLPATH)x86_64-clover-mingw32-ar
+RANLIB=$(TOOLPATH)x86_64-clover-mingw32-ranlib
+STRIP=$(TOOLPATH)x86_64-clover-mingw32-strip
 
 ARCHDIR=x64
 ARCHFLAGS=-m64 -fno-stack-protector -DNO_BUILTIN_VA_FUNCS -mno-red-zone -mno-stack-arg-probe -DWIN64
@@ -104,7 +105,7 @@ LD=ld
 AR=ar
 STRIP = strip
 RANLIB=ranlib
-MTOC="$(TOPDIR)/Prebuilt/mtoc" -subsystem UEFI_APPLICATION -align 0x20
+MTOC="$(PREBUILT)/mtoc" -subsystem UEFI_APPLICATION -align 0x20
 
 ### Architecture - Intel 32 bit / Intel 64 bit ###
 ifeq ("$(ARCH)", "i386")
@@ -120,7 +121,7 @@ ARCHFLAGS = -arch x86_64
 ARCHLDFLAGS =  -u _EfiMain -e _EfiMain
 NASMFLAGS = -f macho64 -DARCH64 -DAPPLEUSE -DARCH64COMP
 STRIP = strip
-ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -msoft-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -D__x86_64__=1
+ARCHCFLAGS = -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -msoft-float -D__x86_64__=1
 EXTRAOBJS=
 endif
 

@@ -1,8 +1,8 @@
 ### efilipo makefile ###
 CC = gcc
 LD = $(CC)
-CFLAGS = -g0 -arch i386 -O3
-LDFLAGS = -g0 -arch i386
+CFLAGS = -g0 -arch i386 -arch x86_64 -O3
+LDFLAGS = -g0 -arch i386 -arch x86_64
 INSTALL = install
 NASM = nasm
 LIPO = lipo
