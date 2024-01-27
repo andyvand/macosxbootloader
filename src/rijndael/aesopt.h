@@ -228,10 +228,10 @@
 #  define ASM_AMD64_C
 #endif
 
-#if (defined ( ASM_X86_V1C ) || defined( ASM_X86_V2 ) || defined( ASM_X86_V2C )) \
+/*#if (defined ( ASM_X86_V1C ) || defined( ASM_X86_V2 ) || defined( ASM_X86_V2C )) \
       && !defined( _M_IX86 ) || defined( ASM_AMD64_C ) && !defined( _M_X64 )
 #  error Assembler code is only available for x86 and AMD64 systems
-#endif
+#endif*/
 
 /*  4. FAST INPUT/OUTPUT OPERATIONS.
 

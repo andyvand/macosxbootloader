@@ -37,7 +37,7 @@ EFI_STATUS ArchCheck64BitCpu()
 //
 // cpu id
 //
-extern "C" VOID __declspec(naked) ArchCpuId(UINT32 command, UINT32* eaxValue, UINT32* ebxValue, UINT32* ecxValue, UINT32* edxValue)
+extern "C" VOID ArchCpuId(UINT32 command, UINT32* eaxValue, UINT32* ebxValue, UINT32* ecxValue, UINT32* edxValue)
 {
 #ifdef _MSC_VER
 	__asm
@@ -77,7 +77,7 @@ extern "C" VOID __declspec(naked) ArchCpuId(UINT32 command, UINT32* eaxValue, UI
 //
 // random
 //
-extern "C" UINTN __declspec(naked) ArchHardwareRandom()
+extern "C" UINTN ArchHardwareRandom()
 {
 #ifdef _MSC_VER
 	__asm
@@ -127,7 +127,7 @@ extern "C" UINTN __declspec(naked) ArchHardwareRandom()
 //
 // get cpu tick
 //
-extern "C" UINT64 __declspec(naked) ArchGetCpuTick()
+extern "C" UINT64 ArchGetCpuTick()
 {
 #ifdef _MSC_VER
 	__asm
@@ -153,7 +153,7 @@ extern "C" UINT64 __declspec(naked) ArchGetCpuTick()
 //
 // transfer to kernel
 //
-extern "C" VOID __declspec(naked) ArchStartKernel(VOID* kernelEntry, VOID* bootArgs)
+extern "C" VOID ArchStartKernel(VOID* kernelEntry, VOID* bootArgs)
 {
 #ifdef _MSC_VER
 	__asm
@@ -194,7 +194,7 @@ extern "C" BOOLEAN MmTranslateVirtualAddress(VOID* virtualAddress, UINT64* physi
 //
 // get cs
 //
-extern "C" UINT32 __declspec(naked) ArchGetSegCs()
+extern "C" UINT32 ArchGetSegCs()
 {
 #ifdef _MSC_VER
 	__asm
@@ -217,7 +217,7 @@ extern "C" UINT32 __declspec(naked) ArchGetSegCs()
 //
 // get idtr
 //
-extern "C" VOID __declspec(naked) ArchGetIdtRegister(KDESCRIPTOR* idtr)
+extern "C" VOID ArchGetIdtRegister(KDESCRIPTOR* idtr)
 {
 #ifdef _MSC_VER
 	__asm
@@ -237,7 +237,7 @@ extern "C" VOID __declspec(naked) ArchGetIdtRegister(KDESCRIPTOR* idtr)
 //
 // set idtr
 //
-extern "C" VOID __declspec(naked) ArchSetIdtRegister(KDESCRIPTOR* idtr)
+extern "C" VOID ArchSetIdtRegister(KDESCRIPTOR* idtr)
 {
 #ifdef _MSC_VER
 	__asm
@@ -276,7 +276,7 @@ extern "C" VOID ArchSweepIcacheRange(VOID* startAddress, UINT32 bytesCount)
 //
 // read port uint8
 //
-extern "C" UINT8 __declspec(naked) ARCH_READ_PORT_UINT8(UINT8* port)
+extern "C" UINT8 ARCH_READ_PORT_UINT8(UINT8* port)
 {
 #ifdef _MSC_VER
 	__asm
@@ -301,7 +301,7 @@ extern "C" UINT8 __declspec(naked) ARCH_READ_PORT_UINT8(UINT8* port)
 //
 // read port uint16
 //
-extern "C" UINT16 __declspec(naked) ARCH_READ_PORT_UINT16(UINT16* port)
+extern "C" UINT16 ARCH_READ_PORT_UINT16(UINT16* port)
 {
 #ifdef _MSC_VER
 	__asm
@@ -326,7 +326,7 @@ extern "C" UINT16 __declspec(naked) ARCH_READ_PORT_UINT16(UINT16* port)
 //
 // read port uint32
 //
-extern "C" UINT32 __declspec(naked) ARCH_READ_PORT_UINT32(UINT32* port)
+extern "C" UINT32 ARCH_READ_PORT_UINT32(UINT32* port)
 {
 #ifdef _MSC_VER
 	__asm
@@ -351,7 +351,7 @@ extern "C" UINT32 __declspec(naked) ARCH_READ_PORT_UINT32(UINT32* port)
 //
 // write port uint8
 //
-extern "C" VOID __declspec(naked) ARCH_WRITE_PORT_UINT8(UINT8* port, UINT8 value)
+extern "C" VOID ARCH_WRITE_PORT_UINT8(UINT8* port, UINT8 value)
 {
 #ifdef _MSC_VER
 	__asm
@@ -373,7 +373,7 @@ extern "C" VOID __declspec(naked) ARCH_WRITE_PORT_UINT8(UINT8* port, UINT8 value
 //
 // write port uint16
 //
-extern "C" VOID __declspec(naked) ARCH_WRITE_PORT_UINT16(UINT16* port, UINT16 value)
+extern "C" VOID ARCH_WRITE_PORT_UINT16(UINT16* port, UINT16 value)
 {
 #ifdef _MSC_VER
 	__asm
@@ -395,7 +395,7 @@ extern "C" VOID __declspec(naked) ARCH_WRITE_PORT_UINT16(UINT16* port, UINT16 va
 //
 // write port uint32
 //
-extern "C" VOID __declspec(naked) ARCH_WRITE_PORT_UINT32(UINT32* port, UINT32 value)
+extern "C" VOID ARCH_WRITE_PORT_UINT32(UINT32* port, UINT32 value)
 {
 #ifdef _MSC_VER
 	__asm
@@ -417,7 +417,7 @@ extern "C" VOID __declspec(naked) ARCH_WRITE_PORT_UINT32(UINT32* port, UINT32 va
 //
 // read register uint8
 //
-extern "C" UINT8 __declspec(naked) ARCH_READ_REGISTER_UINT8(UINT8* port)
+extern "C" UINT8 ARCH_READ_REGISTER_UINT8(UINT8* port)
 {
 #ifdef _MSC_VER
 	__asm
@@ -442,7 +442,7 @@ extern "C" UINT8 __declspec(naked) ARCH_READ_REGISTER_UINT8(UINT8* port)
 //
 // read register uint16
 //
-extern "C" UINT16 __declspec(naked) ARCH_READ_REGISTER_UINT16(UINT16* port)
+extern "C" UINT16 ARCH_READ_REGISTER_UINT16(UINT16* port)
 {
 #ifdef _MSC_VER
 	__asm
@@ -467,7 +467,7 @@ extern "C" UINT16 __declspec(naked) ARCH_READ_REGISTER_UINT16(UINT16* port)
 //
 // read register uint32
 //
-extern "C" UINT32 __declspec(naked) ARCH_READ_REGISTER_UINT32(UINT32* port)
+extern "C" UINT32 ARCH_READ_REGISTER_UINT32(UINT32* port)
 {
 #ifdef _MSC_VER
 	__asm
@@ -492,7 +492,7 @@ extern "C" UINT32 __declspec(naked) ARCH_READ_REGISTER_UINT32(UINT32* port)
 //
 // write port uint8
 //
-extern "C" VOID __declspec(naked) ARCH_WRITE_REGISTER_UINT8(UINT8* port, UINT8 value)
+extern "C" VOID ARCH_WRITE_REGISTER_UINT8(UINT8* port, UINT8 value)
 {
 #ifdef _MSC_VER
 	__asm
@@ -523,7 +523,7 @@ extern "C" VOID __declspec(naked) ARCH_WRITE_REGISTER_UINT8(UINT8* port, UINT8 v
 //
 // write port uint16
 //
-extern "C" VOID __declspec(naked) ARCH_WRITE_REGISTER_UINT16(UINT16* port, UINT16 value)
+extern "C" VOID ARCH_WRITE_REGISTER_UINT16(UINT16* port, UINT16 value)
 {
 #ifdef _MSC_VER
 	__asm
@@ -554,7 +554,7 @@ extern "C" VOID __declspec(naked) ARCH_WRITE_REGISTER_UINT16(UINT16* port, UINT1
 //
 // write port uint32
 //
-extern "C" VOID __declspec(naked) ARCH_WRITE_REGISTER_UINT32(UINT32* port, UINT32 value)
+extern "C" VOID ARCH_WRITE_REGISTER_UINT32(UINT32* port, UINT32 value)
 {
 #ifdef _MSC_VER
 	__asm

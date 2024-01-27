@@ -15,7 +15,7 @@ UINT64 BdPcrPhysicalAddress													= 0;
 //
 // debug breakpoint
 //
-VOID __declspec(naked) BOOTAPI DbgBreakPoint()
+VOID BOOTAPI DbgBreakPoint()
 {
 #ifdef _MSC_VER
 	__asm
@@ -32,7 +32,7 @@ VOID __declspec(naked) BOOTAPI DbgBreakPoint()
 //
 // debug service
 //
-extern "C" VOID __declspec(naked) BOOTAPI DbgService(UINTN serviceType, UINTN info1, UINTN info2, UINTN info3, UINTN info4)
+extern "C" VOID BOOTAPI DbgService(UINTN serviceType, UINTN info1, UINTN info2, UINTN info3, UINTN info4)
 {
 #ifdef _MSC_VER
 	__asm
@@ -76,7 +76,7 @@ extern "C" VOID __declspec(naked) BOOTAPI DbgService(UINTN serviceType, UINTN in
 //
 // debug service
 //
-extern "C" VOID __declspec(naked) BOOTAPI DbgService2(VOID* info1, VOID* info2, UINTN serviceType)
+extern "C" VOID BOOTAPI DbgService2(VOID* info1, VOID* info2, UINTN serviceType)
 {
 #ifdef _MSC_VER
 	__asm
@@ -106,7 +106,7 @@ extern "C" VOID __declspec(naked) BOOTAPI DbgService2(VOID* info1, VOID* info2, 
 //
 // return from exception handler
 //
-VOID __declspec(naked) BdpTrapExit()
+VOID BdpTrapExit()
 {
 #ifdef _MSC_VER
 	__asm
@@ -149,7 +149,7 @@ VOID __declspec(naked) BdpTrapExit()
 //
 // common dispatch
 //
-VOID __declspec(naked) BdpTrapDispatch()
+VOID BdpTrapDispatch()
 {
 #ifdef _MSC_VER
 	__asm
@@ -228,7 +228,7 @@ VOID __declspec(naked) BdpTrapDispatch()
 //
 // single step exception
 //
-VOID __declspec(naked) BdTrap01()
+VOID BdTrap01()
 {
 #ifdef _MSC_VER
 	__asm
@@ -340,7 +340,7 @@ VOID __declspec(naked) BdTrap01()
 //
 // breakpoint exception
 //
-VOID __declspec(naked) BdTrap03()
+VOID BdTrap03()
 {
 #ifdef _MSC_VER
 	__asm
@@ -456,7 +456,7 @@ VOID __declspec(naked) BdTrap03()
 //
 // general protection
 //
-VOID __declspec(naked) BdTrap0d()
+VOID BdTrap0d()
 {
 #ifdef _MSC_VER
 	__asm
@@ -576,7 +576,7 @@ loop_forever:
 //
 // page fault
 //
-VOID __declspec(naked) BdTrap0e()
+VOID BdTrap0e()
 {
 #ifdef _MSC_VER
 	__asm
@@ -704,7 +704,7 @@ loop_forever:
 //
 // debug service
 //
-VOID __declspec(naked) BdTrap2d()
+VOID BdTrap2d()
 {
 #ifdef _MSC_VER
 	__asm
@@ -828,7 +828,7 @@ VOID __declspec(naked) BdTrap2d()
 //
 // save processor context
 //
-VOID __declspec(naked) BOOTAPI BdpSaveProcessorControlState(KPROCESSOR_STATE* processorState)
+VOID BOOTAPI BdpSaveProcessorControlState(KPROCESSOR_STATE* processorState)
 {
 #ifdef _MSC_VER
 	__asm
@@ -926,7 +926,7 @@ VOID BdpSaveKframe(KTRAP_FRAME* trapFrame, CONTEXT* contextRecord)
 //
 // restore processor context
 //
-VOID __declspec(naked) BOOTAPI BdpRestoreProcessorControlState(KPROCESSOR_STATE* processorState)
+VOID BOOTAPI BdpRestoreProcessorControlState(KPROCESSOR_STATE* processorState)
 {
 #ifdef _MSC_VER
 	__asm

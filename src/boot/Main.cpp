@@ -65,7 +65,7 @@ STATIC EFI_STATUS BlpSetupRomVariable()
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return EFI_SUCCESS;
 #endif
 
 		//
@@ -126,7 +126,7 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return EFI_SUCCESS;
 #endif
 
 		//
@@ -190,7 +190,7 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                return EFI_SUCCESS;
 #endif
 		}
 		status																= EFI_UNSUPPORTED;

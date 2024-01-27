@@ -65,7 +65,7 @@ LDFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) -Wl,--subsystem,10 -nostdlib -n -Wl,--scri
 #AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
 AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
 #AESASMDEFS=-DASM_X86_V2C=1 -D_ASM_X86_V2C=1 -DNO_ENCRYPTION_TABLE=1 -DNO_DECRYPTION_TABLE=1
-AESASMDEFS=
+#AESASMDEFS=
 
 ### define ASM_X86_V1C for this object ###
 #EXTRAAESOBJS=aes_x86_v1.o
@@ -131,31 +131,31 @@ CXXFLAGS = "-Wall $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions -
 LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -image_base 0x240 -compatibility_version 1.0 -current_version 2.1 -flat_namespace -print_statistics -map boot.map -sectalign __TEXT __text 0x20  -sectalign __TEXT __eh_frame  0x20 -sectalign __TEXT __ustring 0x20  -sectalign __TEXT __const 0x20   -sectalign __TEXT __ustring 0x20 -sectalign __DATA __data 0x20  -sectalign __DATA __bss 0x20  -sectalign __DATA __common 0x20 -final_output boot.efi"
 
 ifeq ("$(ARCH)", "i386")
-AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
+#AESASMDEFS=-DASM_X86_V1C=1 -D_ASM_X86_V1C=1
 AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
 #AESASMDEFS=-DASM_X86_V2C=1 -D_ASM_X86_V2C=1 -DNO_ENCRYPTION_TABLE=1 -DNO_DECRYPTION_TABLE=1
 #AESASMDEFS=
 
 ### define ASM_X86_V1C for this object ###
-# EXTRAAESOBJS=aes_x86_v1.o
+#EXTRAAESOBJS=aes_x86_v1.o
 
 ### define ASM_X86_V2 or ASM_X86_V2C for this object ###
-#EXTRAAESOBJS=aes_x86_v2.o
+EXTRAAESOBJS=aes_x86_v2.o
 
 ### define no ASM_X86_XXX at all for this ###
-EXTRAAESOBJS=
+#EXTRAAESOBJS=
 
-#ASMCOMPFLAGS="$(AESASMDEFS)"
-ASMCOMPFLAGS=
+ASMCOMPFLAGS="$(AESASMDEFS)"
+#ASMCOMPFLAGS=
 NASMCOMPFLAGS=
 else
 ### define ASM_AMD64_C for this object ###
-# EXTRAAESOBJS=aes_amd64.o
+EXTRAAESOBJS=aes_amd64.o
 
 ### define no ASM_AMD64_C at all for this ###
-EXTRAAESOBJS=
+#EXTRAAESOBJS=
 
-# ASMCOMPFLAGS="-DASM_AMD64_C=1 -D_DASM_AMD64_C=1"
+ASMCOMPFLAGS="-DASM_AMD64_C=1 -D_DASM_AMD64_C=1"
 NASMCOMPFLAGS=-Daes_encrypt=_aes_encrypt -Daes_decrypt=_aes_decrypt
 #ASMCOMPFLAGS=
 endif
