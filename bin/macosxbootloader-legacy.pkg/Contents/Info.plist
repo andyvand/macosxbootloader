@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.AnV.Software.pkg.macosxbootloader-1.0</string>
+	<key>CFBundleName</key>
+	<string>macosxbootloader-1.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>IFMajorVersion</key>
+	<string>1</string>
+	<key>IFMinorVersion</key>
+	<string>0</string>
+	<key>IFPkgBuildDate</key>
+	<date>2014-12-02T21:00:00Z</date>
+	<key>IFPkgBuildVersion</key>
+	<string>14B25</string>
+	<key>IFPkgFlagAuthorizationAction</key>
+	<string>RootAuthorization</string>
+	<key>IFPkgFlagBackgroundAlignment</key>
+	<string>bottomleft</string>
+	<key>IFPkgFlagBackgroundScaling</key>
+	<string>proportional</string>
+	<key>IFPkgFlagDefaultLocation</key>
+	<string>/</string>
+	<key>IFPkgFlagFollowLinks</key>
+	<true/>
+	<key>IFPkgFlagInstallFat</key>
+	<true/>
+	<key>IFPkgFlagInstalledSize</key>
+	<integer>98</integer>
+	<key>IFPkgFlagOverwritePermissions</key>
+	<true/>
+	<key>IFPkgFlagRootVolumeOnly</key>
+	<true/>
+	<key>IFPkgFormatVersion</key>
+	<real>0.10000000000000001</real>
+	<key>IFPkgPayloadFileCount</key>
+	<integer>1</integer>
+</dict>
+</plist>
