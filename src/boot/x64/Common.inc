@@ -143,7 +143,14 @@ struc _EXCEPTION_RECORD64
 	.ExceptionInformations:			resq			12
 endstruc
 
+%ifdef _MSC_VER
+%macro PUBLIC_ROUTINE							1
+	global %1
+	%1:
+%endmacro
+%else
 %macro PUBLIC_ROUTINE							1
 	global _%1
 	_%1:
 %endmacro
+%endif

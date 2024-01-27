@@ -30,7 +30,11 @@
 									cld
 %endmacro
 
+%ifdef _MSC_VER
+extern BdTrap
+%else
 extern _BdTrap
+%endif
 
 global _BdDispatch
 _BdDispatch:
@@ -60,7 +64,11 @@ _BdDispatch:
 									mov					r8 , rbp
 									mov					rdx, rsp
 									mov					rcx, rax
+%ifdef _MSC_VER
+									call				BdTrap
+%else
 									call				_BdTrap
+%endif
 
 									mov					rcx, rsp
 									mov					rbx, [rcx + _KEXCEPTION_FRAME.Rbx]
@@ -166,8 +174,13 @@ PUBLIC_ROUTINE DbgBreakPoint
 									int3
 									retn
 
+%ifdef _MSC_VER
+global DbgService
+DbgService:
+%else
 global _DbgService
 _DbgService:
+%endif
 									mov					rax, rcx
 									mov					rcx, rdx
 									mov					rdx, r8
@@ -177,8 +190,13 @@ _DbgService:
 									int3
 									retn
 
+%ifdef _MSC_VER
+global DbgService2
+DbgService2:
+%else
 global _DbgService2
 _DbgService2:
+%endif
 									mov					rax, r8
 									int					2dh
 									int3

@@ -1,0 +1,9 @@
+﻿  efilipo.c
+C:\Users\andyv\Downloads\macosxbootloader\efilipo\efilipo.c(238,28): warning C4311: 'type cast': pointer truncation from 'unsigned char *' to 'unsigned long'
+C:\Users\andyv\Downloads\macosxbootloader\efilipo\efilipo.c(310,15): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\andyv\Downloads\macosxbootloader\efilipo\efilipo.c(487,14): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\andyv\Downloads\macosxbootloader\efilipo\efilipo.c(492,15): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\andyv\Downloads\macosxbootloader\efilipo\efilipo.c(500,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  Generating code
+  Finished generating code
+  efilipo.vcxproj -> C:\Users\andyv\Downloads\macosxbootloader\efilipo\MSVC\efilipo\ARM64\Release\efilipo.exe

@@ -235,7 +235,7 @@ unsigned int calc_pe_checksum(unsigned char *buf, unsigned int peheader, unsigne
 
 	/* recalc checksum. */
 	while (cur < size) {
-		vall = (unsigned long)buf;
+		vall = (unsigned long)((unsigned long long)buf);
 		val = (unsigned short)(vall & 0xFFFF) + cur;
 
 		if ((cur == peheader + 88) || (cur == peheader + 90))
@@ -307,7 +307,7 @@ int main(int argc, char **argv)
 
 
 		outbuffer[curfile] = (unsigned char *)malloc(filesize[curfile]);
-		checksize = fread(outbuffer[curfile], 1, filesize[curfile], fin);
+		checksize = (int)fread(outbuffer[curfile], 1, filesize[curfile], fin);
         fclose(fin);
 
 		if (checksize != filesize[curfile])
@@ -484,12 +484,12 @@ int main(int argc, char **argv)
 		return -6;
 	}
 
-	checksize = fwrite(&fathdr, sizeof(struct fat_header), 1, fout);
+	checksize = (int)fwrite(&fathdr, sizeof(struct fat_header), 1, fout);
 
 	curfile = 0;
 	while (curfile < (argc - 2))
 	{
-		checksize = fwrite(&(fatarch[curfile]), sizeof(struct fat_arch), 1, fout);
+		checksize = (int)fwrite(&(fatarch[curfile]), sizeof(struct fat_arch), 1, fout);
 
 		++curfile;
 	}
@@ -497,7 +497,7 @@ int main(int argc, char **argv)
 	curfile = 0;
 	while (curfile < (argc - 2))
 	{
-        	checksize = fwrite(outbuffer[curfile], filesize[curfile], 1, fout);
+        	checksize = (int)fwrite(outbuffer[curfile], filesize[curfile], 1, fout);
         
 		++curfile;
 	}

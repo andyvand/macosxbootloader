@@ -1,0 +1,44 @@
+﻿  StdAfx.cpp
+  AcpiUtils.cpp
+  Base64.cpp
+  BootArgs.cpp
+  Config.cpp
+  Console.cpp
+  FileIo.cpp
+  FileVault.cpp
+  Hibernate.cpp
+  LoadDrivers.cpp
+  LoadKernel.cpp
+  MachO.cpp
+  MD5.cpp
+  MemoryMap.cpp
+  NetBoot.cpp
+  Options.cpp
+  PanicDialog.cpp
+  PlatformExpert.cpp
+  SHA256.cpp
+  BootDebugger.cpp
+  Crc32.cpp
+  Debug1394.cpp
+  DebugUsb.cpp
+  DevicePath.cpp
+  DeviceTree.cpp
+  GuidDefine.cpp
+  Main.cpp
+  Memory.cpp
+  MiscUtils.cpp
+  PeImage.cpp
+  RuntimeLib.cpp
+  ArchUtilsX86.cpp
+  CompilerX86.cpp
+  DebuggerUtilsX86.cpp
+  Thunk64.cpp
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(126): warning C4731: 'BdpTrapExit': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(41): warning C4731: 'DbgService': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(363): warning C4731: 'BdTrap03': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(478): warning C4731: 'BdTrap0d': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(598): warning C4731: 'BdTrap0e': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(727): warning C4731: 'BdTrap2d': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(85): warning C4731: 'DbgService2': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(251): warning C4731: 'BdTrap01': frame pointer register 'ebp' modified by inline assembly code
+  boot.vcxproj -> C:\Users\andyv\Downloads\macosxbootloader\bin\x86\Debug\boot.efi

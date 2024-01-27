@@ -22,6 +22,8 @@ Abstract:
 #ifndef _EFI_TYPES_H_
 #define _EFI_TYPES_H_
 
+#include "EfiBind.h"
+
 //
 // EFI Data Types based on ANSI C integer types in EfiBind.h
 //

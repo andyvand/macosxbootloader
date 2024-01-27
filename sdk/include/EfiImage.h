@@ -273,7 +273,11 @@ typedef struct {
 //
 #if defined(__x86_64__)
 #include "x64/EfiPeOptionalHeader.h"
+#elif defined(_M_AMD64)
+#include "x64/EfiPeOptionalHeader.h"
 #elif defined(__i386__)
+#include "x86/EfiPeOptionalHeader.h"
+#elif defined(_M_IX86)
 #include "x86/EfiPeOptionalHeader.h"
 #endif
 

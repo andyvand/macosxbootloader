@@ -1,0 +1,3 @@
+﻿  efilipo.c
+C:\Users\andyv\Downloads\macosxbootloader\efilipo\efilipo.c(356,51): warning C4311: 'type cast': pointer truncation from 'filehdr_t *' to 'unsigned int'
+  efilipo.vcxproj -> C:\Users\andyv\Downloads\macosxbootloader\efilipo\MSVC\efilipo\ARM64\Debug\efilipo.exe

@@ -516,7 +516,7 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		INT32 gfxRestoreStatus												= -1;
 		VOID* startOfPreviewBuffer											= hasPreview ? readBuffer : nullptr;
 		UINT64 previewTotalSize												= restore1Size + imageHeader->FileExtentMapSize - sizeof(POLLED_FILE_EXTENT) * 2 + imageHeader->PreviewSize;
-		previewTotalSize													= hasPreview ? (previewTotalSize + HbpBlockIoProtocol->Media->BlockSize - 1) & ~(HbpBlockIoProtocol->Media->BlockSize - 1) : 0;
+		previewTotalSize													= (UINT32)(hasPreview ? (previewTotalSize + HbpBlockIoProtocol->Media->BlockSize - 1) & ~(HbpBlockIoProtocol->Media->BlockSize - 1) : 0);
 		VOID* endOfPreviewBuffer											= Add2Ptr(startOfPreviewBuffer, previewTotalSize, VOID*);
 		VOID* startOfEncryptBuffer											= nullptr;
 		VOID* endOfEncryptBuffer											= nullptr;

@@ -12,7 +12,7 @@
 //
 VOID CONST* AcpiGetFixedAcpiDescriptionTable();
 
-//
+
 // get machine signature
 //
 EFI_STATUS AcpiGetMachineSignature(UINT32* machineSignature);

@@ -1,0 +1,8 @@
+﻿  BootDebugger.cpp
+  Debug1394.cpp
+  DebugUsb.cpp
+  Main.cpp
+  DebuggerUtilsX86.cpp
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(41): warning C4731: 'DbgService': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(85): warning C4731: 'DbgService2': frame pointer register 'ebp' modified by inline assembly code
+  boot.vcxproj -> C:\Users\andyv\Downloads\macosxbootloader\bin\x86\Release\boot.efi

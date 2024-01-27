@@ -367,6 +367,7 @@ extern "C" EFI_STATUS BdArchDestroy()
 	return EFI_SUCCESS;
 }
 
+#if !defined(_MSC_VER)
 extern "C" VOID __bzero(VOID *s, UINT64 n)
 {
     __builtin_bzero(s, n);
@@ -376,6 +377,7 @@ extern "C" VOID *_alloca(UINT64 n)
 {
     return __builtin_alloca(n);
 }
+#endif
 
 extern "C" VOID ___chkstk_darwin(VOID)
 {

@@ -1573,7 +1573,7 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		// Setup loader table entry.
 		//
 		BdBreakpointInstruction												= KDP_BREAKPOINT_VALUE;
-		BdDebugTrap															= &BdTrap;
+		BdDebugTrap															= (BdDebugRoutine)&BdTrap;
 		if (EFI_ERROR(status = BdpPopulateDataTableEntry(&BdModuleDataTableEntry)))
 #if defined(_MSC_VER)
 			try_leave(NOTHING);

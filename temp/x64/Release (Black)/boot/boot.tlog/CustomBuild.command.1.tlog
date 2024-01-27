@@ -1,0 +1,8 @@
+^C:\USERS\ANDYV\DOWNLOADS\MACOSXBOOTLOADER\SRC\BOOT\X64\COMPILERX64.ASM
+cd "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\" & nasm -o "C:\Users\andyv\Downloads\macosxbootloader\src\..\temp\x64\Release (Black)\boot\CompilerX64.obj" -f win64 -X vc "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\CompilerX64.asm"
+^C:\USERS\ANDYV\DOWNLOADS\MACOSXBOOTLOADER\SRC\BOOT\X64\PORTREGISTERIO.ASM
+cd "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\" & nasm -o "C:\Users\andyv\Downloads\macosxbootloader\src\..\temp\x64\Release (Black)\boot\PortRegisterIo.obj" -f win64 -X vc "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\PortRegisterIo.asm"
+^C:\USERS\ANDYV\DOWNLOADS\MACOSXBOOTLOADER\SRC\BOOT\X64\DEBUGTRAP.ASM
+cd "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\" & nasm -o "C:\Users\andyv\Downloads\macosxbootloader\src\..\temp\x64\Release (Black)\boot\DebugTrap.obj" -f win64 -X vc "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\DebugTrap.asm"
+^C:\USERS\ANDYV\DOWNLOADS\MACOSXBOOTLOADER\SRC\BOOT\X64\TRANSFERROUTINE.ASM
+cd "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\" & nasm -o "C:\Users\andyv\Downloads\macosxbootloader\src\..\temp\x64\Release (Black)\boot\TransferRoutine.obj" -f win64 -X vc "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\TransferRoutine.asm"

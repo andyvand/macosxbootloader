@@ -142,8 +142,16 @@ PUBLIC_ROUTINE ArchGetCpuTick
 									or					rax, rdx
 									retn
 
+%ifdef _MSC_VER
+PUBLIC_ROUTINE __chkstk
+%else
 PUBLIC_ROUTINE _chkstk
+%endif
 									retn
 
+%ifdef _MSC_VER
+PUBLIC_ROUTINE __C_specific_handler
+%else
 PUBLIC_ROUTINE _C_specific_handler
+%endif
 									retn
