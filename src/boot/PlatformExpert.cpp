@@ -76,7 +76,7 @@ CHAR8 CONST* PeGetModelName()
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return (CHAR8 CONST *)NULL;
+            return PepModelName;
 #endif
 
 		DEVICE_TREE_NODE* platformNode										= DevTreeFindNode(CHAR8_CONST_STRING("/efi/platform"), FALSE);
