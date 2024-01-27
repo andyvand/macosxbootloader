@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if [ -e "$3/System/Library/CoreServices/boot.efi" ] ; then
-    echo "Unprotecting boot.efi..."
-	sudo chflags nouchg "$3/System/Library/CoreServices/boot.efi"
-fi
-
-exit 0
