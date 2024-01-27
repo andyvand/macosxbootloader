@@ -35,6 +35,45 @@ extern "C" {
     (ctxt)->xpathCtxt->extra = ctxt
 
 /*
+ * Flags for memory management of RVTs
+ */
+
+/**
+ * XSLT_RVT_LOCAL:
+ *
+ * RVT is destroyed after the current instructions ends.
+ */
+#ifdef LIBXSLT_API_FOR_MACOS14_IOS17_WATCHOS10_TVOS17
+#define XSLT_RVT_LOCAL       1
+#else
+#define XSLT_RVT_LOCAL       ((void *)1)
+#endif
+
+/**
+ * XSLT_RVT_FUNC_RESULT:
+ *
+ * RVT is part of results returned with func:result. The RVT won't be
+ * destroyed after exiting a template and will be reset to XSLT_RVT_LOCAL or
+ * XSLT_RVT_VARIABLE in the template that receives the return value.
+ */
+#ifdef LIBXSLT_API_FOR_MACOS14_IOS17_WATCHOS10_TVOS17
+#define XSLT_RVT_FUNC_RESULT 2
+#else
+#define XSLT_RVT_FUNC_RESULT ((void *)2)
+#endif
+
+/**
+ * XSLT_RVT_GLOBAL:
+ *
+ * RVT is part of a global variable.
+ */
+#ifdef LIBXSLT_API_FOR_MACOS14_IOS17_WATCHOS10_TVOS17
+#define XSLT_RVT_GLOBAL      3
+#else
+#define XSLT_RVT_GLOBAL      ((void *)3)
+#endif
+
+/*
  * Interfaces for the variable module.
  */
 

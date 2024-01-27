@@ -22,12 +22,10 @@ Abstract:
 #ifndef _EFI_DEVICE_PATH_H
 #define _EFI_DEVICE_PATH_H
 
-#ifdef _MSC_VER
+
+
 #pragma pack(1)
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
-#endif
+
 
 //
 // Device Path defines and macros
@@ -74,13 +72,13 @@ typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT8                           Function;
   UINT8                           Device;
-} GNUPACK PCI_DEVICE_PATH;
+} PCI_DEVICE_PATH;
 
 #define HW_PCCARD_DP              0x02
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT8                           FunctionNumber;
-} GNUPACK PCCARD_DEVICE_PATH;
+} PCCARD_DEVICE_PATH;
 
 #define HW_MEMMAP_DP              0x03
 typedef struct {
@@ -88,19 +86,19 @@ typedef struct {
   UINT32                          MemoryType;
   EFI_PHYSICAL_ADDRESS            StartingAddress;
   EFI_PHYSICAL_ADDRESS            EndingAddress;
-} GNUPACK MEMMAP_DEVICE_PATH;
+} MEMMAP_DEVICE_PATH;
 
 #define HW_VENDOR_DP              0x04
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   EFI_GUID                        Guid;
-} GNUPACK VENDOR_DEVICE_PATH;
+} VENDOR_DEVICE_PATH;
 
 #define HW_CONTROLLER_DP          0x05
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT32                          Controller;
-} GNUPACK CONTROLLER_DEVICE_PATH;
+} CONTROLLER_DEVICE_PATH;
 
 //
 // ACPI Device Paths
@@ -112,7 +110,7 @@ typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT32                          HID;
   UINT32                          UID;
-} GNUPACK ACPI_HID_DEVICE_PATH;
+} ACPI_HID_DEVICE_PATH;
 
 #define ACPI_EXTENDED_DP          0x02
 typedef struct {
@@ -124,14 +122,14 @@ typedef struct {
   // Optional variable length _HIDSTR
   // Optional variable length _UIDSTR
   //
-} GNUPACK ACPI_EXTENDED_HID_DEVICE_PATH;
+} ACPI_EXTENDED_HID_DEVICE_PATH;
 
 #define ACPI_ADR_DP               0x03
 
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT32                          ADR;
-} GNUPACK ACPI_ADR_DEVICE_PATH;
+} ACPI_ADR_DEVICE_PATH;
 
 #define ACPI_ADR_DISPLAY_TYPE_OTHER             0
 #define ACPI_ADR_DISPLAY_TYPE_VGA               1
@@ -175,14 +173,14 @@ typedef struct {
   UINT8                           PrimarySecondary;
   UINT8                           SlaveMaster;
   UINT16                          Lun;
-} GNUPACK ATAPI_DEVICE_PATH;
+} ATAPI_DEVICE_PATH;
 
 #define MSG_SCSI_DP               0x02
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT16                          Pun;
   UINT16                          Lun;
-} GNUPACK SCSI_DEVICE_PATH;
+} SCSI_DEVICE_PATH;
 
 #define MSG_FIBRECHANNEL_DP       0x03
 typedef struct {
@@ -190,21 +188,21 @@ typedef struct {
   UINT32                          Reserved;
   UINT64                          WWN;
   UINT64                          Lun;
-} GNUPACK FIBRECHANNEL_DEVICE_PATH;
+} FIBRECHANNEL_DEVICE_PATH;
 
 #define MSG_1394_DP               0x04
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT32                          Reserved;
   UINT64                          Guid;
-} GNUPACK F1394_DEVICE_PATH;
+} F1394_DEVICE_PATH;
 
 #define MSG_USB_DP                0x05
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT8                           ParentPortNumber;
   UINT8                           InterfaceNumber;
-} GNUPACK USB_DEVICE_PATH;
+} USB_DEVICE_PATH;
 
 #define MSG_USB_CLASS_DP          0x0f
 typedef struct {
@@ -214,7 +212,7 @@ typedef struct {
   UINT8                           DeviceClass;
   UINT8                           DeviceSubClass;
   UINT8                           DeviceProtocol;
-} GNUPACK USB_CLASS_DEVICE_PATH;
+} USB_CLASS_DEVICE_PATH;
 
 #define MSG_USB_WWID_DP           0x10
 typedef struct {
@@ -225,13 +223,13 @@ typedef struct {
   //
   // CHAR16                     SerialNumber[];
   //
-} GNUPACK USB_WWID_DEVICE_PATH;
+} USB_WWID_DEVICE_PATH;
 
 #define MSG_DEVICE_LOGICAL_UNIT_DP  0x11
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT8                           Lun;
-} GNUPACK DEVICE_LOGICAL_UNIT_DEVICE_PATH;
+} DEVICE_LOGICAL_UNIT_DEVICE_PATH;
 
 #define MSG_SATA_DP               0x12
 typedef struct {
@@ -239,7 +237,7 @@ typedef struct {
   UINT16                          HBAPortNumber;
   UINT16                          PortMultiplierPortNumber;
   UINT16                          Lun;
-} GNUPACK SATA_DEVICE_PATH;
+} SATA_DEVICE_PATH;
 
 #define SATA_HBA_DIRECT_CONNECT_FLAG 0x8000
 
@@ -247,14 +245,14 @@ typedef struct {
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   UINT32                          Tid;
-} GNUPACK I2O_DEVICE_PATH;
+} I2O_DEVICE_PATH;
 
 #define MSG_MAC_ADDR_DP           0x0b
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   EFI_MAC_ADDRESS                 MacAddress;
   UINT8                           IfType;
-} GNUPACK MAC_ADDR_DEVICE_PATH;
+} MAC_ADDR_DEVICE_PATH;
 
 #define MSG_IPv4_DP               0x0c
 typedef struct {
@@ -265,7 +263,7 @@ typedef struct {
   UINT16                          RemotePort;
   UINT16                          Protocol;
   BOOLEAN                         StaticIpAddress;
-} GNUPACK IPv4_DEVICE_PATH;
+} IPv4_DEVICE_PATH;
 
 #define MSG_IPv6_DP               0x0d
 typedef struct {
@@ -276,7 +274,7 @@ typedef struct {
   UINT16                          RemotePort;
   UINT16                          Protocol;
   BOOLEAN                         StaticIpAddress;
-} GNUPACK IPv6_DEVICE_PATH;
+} IPv6_DEVICE_PATH;
 
 #define MSG_INFINIBAND_DP         0x09
 typedef struct {
@@ -286,7 +284,7 @@ typedef struct {
   UINT64                          ServiceId;
   UINT64                          TargetPortId;
   UINT64                          DeviceId;
-} GNUPACK INFINIBAND_DEVICE_PATH;
+} INFINIBAND_DEVICE_PATH;
 
 #define INFINIBAND_RESOURCE_FLAG_IOC_SERVICE                0x01
 #define INFINIBAND_RESOURCE_FLAG_EXTENDED_BOOT_ENVIRONMENT  0x02
@@ -302,36 +300,26 @@ typedef struct {
   UINT8                           DataBits;
   UINT8                           Parity;
   UINT8                           StopBits;
-} GNUPACK UART_DEVICE_PATH;
+} UART_DEVICE_PATH;
 
 //
 // Use VENDOR_DEVICE_PATH struct
 //
 #define MSG_VENDOR_DP             0x0a
 
-#define DEVICE_PATH_MESSAGING_PC_ANSI \
-{ 0xe0c14753, 0xf9be, 0x11d2, {  0x9a, 0x0c, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d } }
-
-#define DEVICE_PATH_MESSAGING_VT_100 \
-{ 0xdfa66065, 0xb419, 0x11d3, { 0x9a, 0x2d, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d } }
-
-#define DEVICE_PATH_MESSAGING_VT_100_PLUS \
-{ 0x7baec70b, 0x57e0, 0x4c76, { 0x8e, 0x87, 0x2f, 0x9e, 0x28, 0x08, 0x83, 0x43 } }
-
-#define DEVICE_PATH_MESSAGING_VT_UTF8 \
-{ 0xad15a0d6, 0x8bec, 0x4acf, { 0xa0, 0x73, 0xd0, 0x1d, 0xe7, 0x7e, 0x2d, 0x88 } }
-
-#define DEVICE_PATH_MESSAGING_UART_FLOW_CONTROL \
-{ 0x37499a9d, 0x542f, 0x4c89, { 0xa0, 0x26, 0x35, 0xda, 0x14, 0x20, 0x94, 0xe4 } }
+#define DEVICE_PATH_MESSAGING_PC_ANSI           { 0xe0c14753, 0xf9be, 0x11d2, {0x9a, 0x0c, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d} }
+#define DEVICE_PATH_MESSAGING_VT_100            { 0xdfa66065, 0xb419, 0x11d3, {0x9a, 0x2d, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d} }
+#define DEVICE_PATH_MESSAGING_VT_100_PLUS       { 0x7baec70b, 0x57e0, 0x4c76, {0x8e, 0x87, 0x2f, 0x9e, 0x28, 0x08, 0x83, 0x43} }
+#define DEVICE_PATH_MESSAGING_VT_UTF8           { 0xad15a0d6, 0x8bec, 0x4acf, {0xa0, 0x73, 0xd0, 0x1d, 0xe7, 0x7e, 0x2d, 0x88} }
+#define DEVICE_PATH_MESSAGING_UART_FLOW_CONTROL { 0x37499a9d, 0x542f, 0x4c89, {0xa0, 0x26, 0x35, 0xda, 0x14, 0x20, 0x94, 0xe4} }
 
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   EFI_GUID                        Guid;
   UINT32                          FlowControlMap;
-} GNUPACK UART_FLOW_CONTROL_DEVICE_PATH;
+} UART_FLOW_CONTROL_DEVICE_PATH;
 
-#define DEVICE_PATH_MESSAGING_SAS \
-{ 0xd487ddb4, 0x008b, 0x11d9, { 0xaf, 0xdc, 0x00, 0x10, 0x83, 0xff, 0xca, 0x4d } }
+#define DEVICE_PATH_MESSAGING_SAS   { 0xd487ddb4, 0x008b, 0x11d9, {0xaf, 0xdc, 0x00, 0x10, 0x83, 0xff, 0xca, 0x4d} }
 
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
@@ -341,7 +329,7 @@ typedef struct {
   UINT64                          Lun;
   UINT16                          DeviceTopology;
   UINT16                          RelativeTargetPort;
-} GNUPACK SAS_DEVICE_PATH;
+} SAS_DEVICE_PATH;
 
 #define MSG_ISCSI_DP              0x13
 typedef struct {
@@ -351,7 +339,7 @@ typedef struct {
   UINT64                          Lun;
   UINT16                          TargetPortalGroupTag;
   // CHAR8                        iSCSI Target Name
-} GNUPACK ISCSI_DEVICE_PATH;
+} ISCSI_DEVICE_PATH;
 
 #define ISCSI_LOGIN_OPTION_NO_HEADER_DIGEST             0x0000
 #define ISCSI_LOGIN_OPTION_HEADER_DIGEST_USING_CRC32C   0x0002
@@ -376,7 +364,7 @@ typedef struct {
   UINT8                           Signature[16];
   UINT8                           MBRType;
   UINT8                           SignatureType;
-} GNUPACK HARDDRIVE_DEVICE_PATH;
+} HARDDRIVE_DEVICE_PATH;
 
 #define MBR_TYPE_PCAT             0x01
 #define MBR_TYPE_EFI_PARTITION_TABLE_HEADER 0x02
@@ -390,7 +378,7 @@ typedef struct {
   UINT32                          BootEntry;
   UINT64                          PartitionStart;
   UINT64                          PartitionSize;
-} GNUPACK CDROM_DEVICE_PATH;
+} CDROM_DEVICE_PATH;
 
 //
 // Use VENDOR_DEVICE_PATH struct
@@ -401,7 +389,7 @@ typedef struct {
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   CHAR16                          PathName[1];
-} GNUPACK FILEPATH_DEVICE_PATH;
+} FILEPATH_DEVICE_PATH;
 
 #define SIZE_OF_FILEPATH_DEVICE_PATH EFI_FIELD_OFFSET(FILEPATH_DEVICE_PATH,PathName)
 
@@ -409,26 +397,26 @@ typedef struct {
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL        Header;
   EFI_GUID                        Protocol;
-} GNUPACK MEDIA_PROTOCOL_DEVICE_PATH;
+} MEDIA_PROTOCOL_DEVICE_PATH;
 
 #define MEDIA_FV_DP  0x07
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL  Header;
   EFI_GUID                  NameGuid;
-} GNUPACK MEDIA_FW_VOL_DEVICE_PATH;
+} MEDIA_FW_VOL_DEVICE_PATH;
 
 #define MEDIA_FV_FILEPATH_DP  0x06
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL  Header;
   EFI_GUID                  NameGuid;
-} GNUPACK MEDIA_FW_VOL_FILEPATH_DEVICE_PATH;
+} MEDIA_FW_VOL_FILEPATH_DEVICE_PATH;
 
 #define MEDIA_RELATIVE_OFFSET_RANGE_DP 0x08
 typedef struct {
   EFI_DEVICE_PATH_PROTOCOL  Header;
   UINT64                    StartingOffset;
   UINT64                    EndingOffset;
-} GNUPACK MEDIA_RELATIVE_OFFSET_RANGE_DEVICE_PATH;
+} MEDIA_RELATIVE_OFFSET_RANGE_DEVICE_PATH;
 
 //
 // BBS Device Path
@@ -440,7 +428,7 @@ typedef struct {
   UINT16                          DeviceType;
   UINT16                          StatusFlag;
   CHAR8                           String[1];
-} GNUPACK BBS_BBS_DEVICE_PATH;
+} BBS_BBS_DEVICE_PATH;
 
 //
 // DeviceType definitions - from BBS specification
@@ -454,13 +442,12 @@ typedef struct {
 #define BBS_TYPE_BEV              0x80
 #define BBS_TYPE_UNKNOWN          0xFF
 
-#define UNKNOWN_DEVICE_GUID \
-{ 0xcf31fac5, 0xc24e, 0x11d2, { 0x85, 0xf3, 0x0, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b } }
+#define UNKNOWN_DEVICE_GUID { 0xcf31fac5, 0xc24e, 0x11d2,  {0x85, 0xf3, 0x0, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b} }
 
 typedef struct {
   VENDOR_DEVICE_PATH              DevicePath;
   UINT8                           LegacyDriveLetter;
-} GNUPACK UNKNOWN_DEVICE_VENDOR_DEVICE_PATH;
+} UNKNOWN_DEVICE_VENDOR_DEVICE_PATH;
 
 
 //
@@ -511,7 +498,7 @@ typedef union {
                                        Offset;
 
   BBS_BBS_DEVICE_PATH                  Bbs;
-} GNUPACK EFI_DEV_PATH;
+} EFI_DEV_PATH;
 
 
 
@@ -562,10 +549,9 @@ typedef union {
 
   BBS_BBS_DEVICE_PATH                  *Bbs;
   UINT8                                *Raw;
-} GNUPACK EFI_DEV_PATH_PTR;
+} EFI_DEV_PATH_PTR;
 
-#ifdef _MSC_VER
 #pragma pack()
-#endif
+
 
 #endif

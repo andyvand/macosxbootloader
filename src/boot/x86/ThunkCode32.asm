@@ -16,22 +16,6 @@ section .data
 section .rdata
 %endif
 									align				16
-%ifndef APPLE
-%ifdef ARCH64
-PUBLIC_SYMBOL ?ArchThunk64BufferStart@@3PAEA
-%else
 PUBLIC_SYMBOL _ArchThunk64BufferStart
-%endif
-%else
-PUBLIC_SYMBOL ArchThunk64BufferStart
-%endif
 									incbin				"ThunkCode64.dat"
-%ifndef APPLE
-%ifdef ARCH64
-PUBLIC_SYMBOL ?ArchThunk64BufferEnd@@3PAEA
-%else
 PUBLIC_SYMBOL _ArchThunk64BufferEnd
-%endif
-%else
-PUBLIC_SYMBOL ArchThunk64BufferEnd
-%endif

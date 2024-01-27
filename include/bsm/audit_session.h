@@ -38,29 +38,7 @@
 #include <bsm/audit.h>
 #include <bsm/audit_kevents.h>	/* Required for AUE_SESSION_* event def's. */
 
-/* Defined audit session flags for the ai_flags member of auditinfo_addr.
- * These are opaque to XNU itself, although some may be of interest to certain
- * kernel extensions, notably AU_SESSION_FLAG_HAS_CONSOLE_ACCESS.
- */
-enum audit_session_flags {
-        /* The initial session created by PID 1. */
-        AU_SESSION_FLAG_IS_INITIAL         = 0x0001,
-
-        /* The graphics subsystem (CoreGraphics, etc.) is available. */
-        AU_SESSION_FLAG_HAS_GRAPHIC_ACCESS = 0x0010,
-
-        /* /dev/tty is available. */
-        AU_SESSION_FLAG_HAS_TTY            = 0x0020,
-
-        /* The session was created for a remote connection. */
-        AU_SESSION_FLAG_IS_REMOTE          = 0x1000,
-
-        /* The console and associated devices are available. */
-        AU_SESSION_FLAG_HAS_CONSOLE_ACCESS = 0x2000,
-
-        /* An active, authenticated user is associated with the session. */
-        AU_SESSION_FLAG_HAS_AUTHENTICATED =  0x4000,
-};
+#include <os/availability.h>
 
 /*
  * Audit session device.
@@ -104,7 +82,8 @@ typedef struct au_sdev_handle {
  * @return Upon success returns the audit session device handle.  Otherwise,
  * NULL is returned and the errno is set to indicate the error.
  */
-au_sdev_handle_t *au_sdev_open(int flags);
+au_sdev_handle_t *au_sdev_open(int flags)
+	API_AVAILABLE(macos(10.8)) API_UNAVAILABLE(ios, watchos, tvos);
 
 /*
  * au_sdev_close()
@@ -116,7 +95,8 @@ au_sdev_handle_t *au_sdev_open(int flags);
  * @return Upon successful completion 0 is returned.  Otherwise, errno is set
  * to indicate the error.
  */
-int au_sdev_close(au_sdev_handle_t *ash);
+int au_sdev_close(au_sdev_handle_t *ash)
+	API_AVAILABLE(macos(10.8)) API_UNAVAILABLE(ios, watchos, tvos);
 
 /*
  * au_sdev_fd()
@@ -127,7 +107,8 @@ int au_sdev_close(au_sdev_handle_t *ash);
  *
  * @return File descriptor of the audit session device.
  */
-int au_sdev_fd(au_sdev_handle_t *ash);
+int au_sdev_fd(au_sdev_handle_t *ash)
+	API_AVAILABLE(macos(10.8)) API_UNAVAILABLE(ios, watchos, tvos);
 
 /*
  * au_sdev_read_aia()
@@ -149,8 +130,8 @@ int au_sdev_fd(au_sdev_handle_t *ash);
  * @return Upon sucessful completetion 0 is returned and the event and aia_p 
  * parameters will be populated.  Otherwise, errno is set to indicate the error.
  */
-int au_sdev_read_aia(au_sdev_handle_t *ash, int *event,
-    auditinfo_addr_t *aia_p);
+int au_sdev_read_aia(au_sdev_handle_t *ash, int *event, auditinfo_addr_t *aia_p)
+	API_AVAILABLE(macos(10.8)) API_UNAVAILABLE(ios, watchos, tvos);
 
 __END_DECLS
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2013 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 2002-2017 Apple Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -19,6 +19,7 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
+
 
 #ifndef __MATH_H__
 #define __MATH_H__
@@ -40,13 +41,13 @@ __BEGIN_DECLS
     taking advantage of GCC's __FLT_EVAL_METHOD__ (which a compiler may
     define anytime and GCC does) that shadows FLT_EVAL_METHOD (which a
     compiler must define only in float.h).                                    */
-#if __FLT_EVAL_METHOD__ == 0
+#if __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == -1
     typedef float float_t;
     typedef double double_t;
 #elif __FLT_EVAL_METHOD__ == 1
     typedef double float_t;
     typedef double double_t;
-#elif __FLT_EVAL_METHOD__ == 2 || __FLT_EVAL_METHOD__ == -1
+#elif __FLT_EVAL_METHOD__ == 2
     typedef long double float_t;
     typedef long double double_t;
 #else /* __FLT_EVAL_METHOD__ */
@@ -84,7 +85,7 @@ __BEGIN_DECLS
 #   define FP_FAST_FMA     1
 #   define FP_FAST_FMAF    1
 #   define FP_FAST_FMAL    1
-#elif (defined __i386__ || defined __x86_64__) && defined __FMA__
+#elif (defined __i386__ || defined __x86_64__) && (defined __FMA__ || defined __AVX512F__)
 /*  When targeting the FMA ISA extension, fma() and fmaf( ) are generally
     about as fast as (or faster than) separate multiply and add of the same
     operands, but fmal( ) may be more costly.                                 */
@@ -123,19 +124,6 @@ extern int __math_errhandling(void);
  *                                                                            *
  ******************************************************************************/
 
-#if (defined __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 1080) || \
-    (defined __IPHONE_OS_VERSION_MIN_REQUIRED && __IPHONE_OS_VERSION_MIN_REQUIRED < 60000)
-#   if defined __i386__ || defined __x86_64__
-#       define __fpclassifyl __fpclassify
-#       define __isnormall   __isnormal
-#       define __isfinitel   __isfinite
-#       define __isinfl      __isinf
-#       define __isnanl      __isnan
-#   elif defined __arm__
-#       define __fpclassifyd __fpclassify
-#   endif
-#endif
-
 #define fpclassify(x)                                                    \
     ( sizeof(x) == sizeof(float)  ? __fpclassifyf((float)(x))            \
     : sizeof(x) == sizeof(double) ? __fpclassifyd((double)(x))           \
@@ -145,8 +133,7 @@ extern int __fpclassifyf(float);
 extern int __fpclassifyd(double);
 extern int __fpclassifyl(long double);
 
-#if (defined(__GNUC__) && 0 == __FINITE_MATH_ONLY__) || \
-    (defined __IPHONE_OS_VERSION_MIN_REQUIRED && __IPHONE_OS_VERSION_MIN_REQUIRED < 60000 && defined __arm__)
+#if (defined(__GNUC__) && 0 == __FINITE_MATH_ONLY__)
 /*  These inline functions may fail to return expected results if unsafe
     math optimizations like those enabled by -ffast-math are turned on.
     Thus, (somewhat surprisingly) you only get the fast inline
@@ -561,12 +548,17 @@ extern long double fmal(long double, long double, long double);
 #define islessgreater(x, y) __builtin_islessgreater((x),(y))
 #define isunordered(x, y) __builtin_isunordered((x),(y))
 
-/* Legacy BSD API: please use C99 INFINITY macro instead.                     */
-extern float __inff(void) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-extern double __inf(void) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-extern long double __infl(void) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-/* Implementation detail; please use the standard C NAN macro instead.        */
-extern float __nan(void) __OSX_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_NA);
+#if defined __i386__ || defined __x86_64__
+/* Deprecated functions; use the INFINITY and NAN macros instead.             */
+extern float __inff(void)
+__API_DEPRECATED("use `(float)INFINITY` instead", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+extern double __inf(void)
+__API_DEPRECATED("use `INFINITY` instead", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+extern long double __infl(void)
+__API_DEPRECATED("use `(long double)INFINITY` instead", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+extern float __nan(void)
+__API_DEPRECATED("use `NAN` instead", macos(10.0, 10.14)) __API_UNAVAILABLE(ios, watchos, tvos);
+#endif
 
 /******************************************************************************
  *  Reentrant variants of lgamma[fl]                                          *
@@ -574,9 +566,9 @@ extern float __nan(void) __OSX_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_NA);
 
 #ifdef _REENTRANT
 /*  Reentrant variants of the lgamma[fl] functions.                           */
-extern float lgammaf_r(float, int *) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_1);
-extern double lgamma_r(double, int *) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_1);
-extern long double lgammal_r(long double, int *) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_1);
+extern float lgammaf_r(float, int *) __API_AVAILABLE(macos(10.6), ios(3.1));
+extern double lgamma_r(double, int *) __API_AVAILABLE(macos(10.6), ios(3.1));
+extern long double lgammal_r(long double, int *) __API_AVAILABLE(macos(10.6), ios(3.1));
 #endif /* _REENTRANT */
 
 /******************************************************************************
@@ -594,15 +586,15 @@ extern long double lgammal_r(long double, int *) __OSX_AVAILABLE_STARTING(__MAC_
     Apple platforms.                                                          */
 
 /*  __exp10(x) returns 10**x.  Edge cases match those of exp( ) and exp2( ).  */
-extern float __exp10f(float) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-extern double __exp10(double) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
+extern float __exp10f(float) __API_AVAILABLE(macos(10.9), ios(7.0));
+extern double __exp10(double) __API_AVAILABLE(macos(10.9), ios(7.0));
 
 /*  __sincos(x,sinp,cosp) computes the sine and cosine of x with a single
     function call, storing the sine in the memory pointed to by sinp, and
     the cosine in the memory pointed to by cosp. Edge cases match those of
     separate calls to sin( ) and cos( ).                                      */
-__header_always_inline void __sincosf(float __x, float *__sinp, float *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-__header_always_inline void __sincos(double __x, double *__sinp, double *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
+__header_always_inline void __sincosf(float __x, float *__sinp, float *__cosp);
+__header_always_inline void __sincos(double __x, double *__sinp, double *__cosp);
 
 /*  __sinpi(x) returns the sine of pi times x; __cospi(x) and __tanpi(x) return
     the cosine and tangent, respectively.  These functions can produce a more
@@ -611,20 +603,39 @@ __header_always_inline void __sincos(double __x, double *__sinp, double *__cosp)
     multiplication M_PI * x.  They may also be significantly more efficient in
     some cases because the argument reduction for these functions is easier
     to compute.  Consult the man pages for edge case details.                 */
-extern float __cospif(float) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-extern double __cospi(double) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-extern float __sinpif(float) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-extern double __sinpi(double) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-extern float __tanpif(float) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-extern double __tanpi(double) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
+extern float __cospif(float) __API_AVAILABLE(macos(10.9), ios(7.0));
+extern double __cospi(double) __API_AVAILABLE(macos(10.9), ios(7.0));
+extern float __sinpif(float) __API_AVAILABLE(macos(10.9), ios(7.0));
+extern double __sinpi(double) __API_AVAILABLE(macos(10.9), ios(7.0));
+extern float __tanpif(float) __API_AVAILABLE(macos(10.9), ios(7.0));
+extern double __tanpi(double) __API_AVAILABLE(macos(10.9), ios(7.0));
 
+#if (defined __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 1090) || \
+    (defined __IPHONE_OS_VERSION_MIN_REQUIRED && __IPHONE_OS_VERSION_MIN_REQUIRED < 70000)
+/*  __sincos and __sincosf were introduced in OSX 10.9 and iOS 7.0.  When
+    targeting an older system, we simply split them up into discrete calls
+    to sin( ) and cos( ).                                                     */
+__header_always_inline void __sincosf(float __x, float *__sinp, float *__cosp) {
+  *__sinp = sinf(__x);
+  *__cosp = cosf(__x);
+}
+
+__header_always_inline void __sincos(double __x, double *__sinp, double *__cosp) {
+  *__sinp = sin(__x);
+  *__cosp = cos(__x);
+}
+#else
 /*  __sincospi(x,sinp,cosp) computes the sine and cosine of pi times x with a
     single function call, storing the sine in the memory pointed to by sinp,
     and the cosine in the memory pointed to by cosp.  Edge cases match those
     of separate calls to __sinpi( ) and __cospi( ), and are documented in the
-    man pages.                                                                */
-__header_always_inline void __sincospif(float __x, float *__sinp, float *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
-__header_always_inline void __sincospi(double __x, double *__sinp, double *__cosp) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
+    man pages.
+ 
+    These functions were introduced in OSX 10.9 and iOS 7.0.  Because they are
+    implemented as header inlines, weak-linking does not function as normal,
+    and they are simply hidden when targeting earlier OS versions.            */
+__header_always_inline void __sincospif(float __x, float *__sinp, float *__cosp);
+__header_always_inline void __sincospi(double __x, double *__sinp, double *__cosp);
 
 /*  Implementation details of __sincos and __sincospi allowing them to return
     two results while allowing the compiler to optimize away unnecessary load-
@@ -658,18 +669,19 @@ __header_always_inline void __sincospi(double __x, double *__sinp, double *__cos
     const struct __double2 __stret = __sincospi_stret(__x);
     *__sinp = __stret.__sinval; *__cosp = __stret.__cosval;
 }
+#endif
 
 /******************************************************************************
  *  POSIX/UNIX extensions to the C standard                                   *
  ******************************************************************************/
 
 #if __DARWIN_C_LEVEL >= 199506L
-extern double j0(double) __OSX_AVAILABLE_STARTING(__MAC_10_0,__IPHONE_3_2); 
-extern double j1(double) __OSX_AVAILABLE_STARTING(__MAC_10_0,__IPHONE_3_2); 
-extern double jn(int, double) __OSX_AVAILABLE_STARTING(__MAC_10_0,__IPHONE_3_2); 
-extern double y0(double) __OSX_AVAILABLE_STARTING(__MAC_10_0,__IPHONE_3_2); 
-extern double y1(double) __OSX_AVAILABLE_STARTING(__MAC_10_0,__IPHONE_3_2); 
-extern double yn(int, double) __OSX_AVAILABLE_STARTING(__MAC_10_0,__IPHONE_3_2); 
+extern double j0(double) __API_AVAILABLE(macos(10.0), ios(3.2));
+extern double j1(double) __API_AVAILABLE(macos(10.0), ios(3.2));
+extern double jn(int, double) __API_AVAILABLE(macos(10.0), ios(3.2));
+extern double y0(double) __API_AVAILABLE(macos(10.0), ios(3.2));
+extern double y1(double) __API_AVAILABLE(macos(10.0), ios(3.2));
+extern double yn(int, double) __API_AVAILABLE(macos(10.0), ios(3.2));
 extern double scalb(double, double); 
 extern int signgam;
 
@@ -692,6 +704,25 @@ extern int signgam;
 #define MAXFLOAT    0x1.fffffep+127f
 #endif /* __DARWIN_C_LEVEL >= 199506L */
 
+/*  Long-double versions of M_E, etc for convenience on Intel where long-
+    double is not the same as double.  Define __MATH_LONG_DOUBLE_CONSTANTS
+    to make these constants available.                                        */
+#if defined __MATH_LONG_DOUBLE_CONSTANTS
+#define M_El        0xa.df85458a2bb4a9bp-2L
+#define M_LOG2El    0xb.8aa3b295c17f0bcp-3L
+#define M_LOG10El   0xd.e5bd8a937287195p-5L
+#define M_LN2l      0xb.17217f7d1cf79acp-4L
+#define M_LN10l     0x9.35d8dddaaa8ac17p-2L
+#define M_PIl       0xc.90fdaa22168c235p-2L
+#define M_PI_2l     0xc.90fdaa22168c235p-3L
+#define M_PI_4l     0xc.90fdaa22168c235p-4L
+#define M_1_PIl     0xa.2f9836e4e44152ap-5L
+#define M_2_PIl     0xa.2f9836e4e44152ap-4L
+#define M_2_SQRTPIl 0x9.06eba8214db688dp-3L
+#define M_SQRT2l    0xb.504f333f9de6484p-3L
+#define M_SQRT1_2l  0xb.504f333f9de6484p-4L
+#endif /* defined __MATH_LONG_DOUBLE_CONSTANTS */
+
 /******************************************************************************
  *  Legacy BSD extensions to the C standard                                   *
  ******************************************************************************/
@@ -708,18 +739,26 @@ extern int signgam;
 #define	TLOSS		5
 #define	PLOSS		6
 
-/* Legacy BSD API: please use C99 lrint( ) instead.                           */
-extern long int rinttol(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-/* Legacy BSD API: please use C99 lround( ) instead.                          */
-extern long int roundtol(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-/* Legacy BSD API: please use C99 remainder( ) instead.                       */
-extern double drem(double, double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-/* Legacy BSD API: please use C99 isfinite( ) instead.                        */
-extern int finite(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-/* Legacy BSD API: please use C99 tgamma( ) instead.                          */
-extern double gamma(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
-/* Legacy BSD API: please use C99 frexp( ) instead.                           */
-extern double significand(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
+#if defined __i386__ || defined __x86_64__
+/* Legacy BSD API; use the C99 `lrint( )` function instead.                   */
+extern long int rinttol(double)
+__API_DEPRECATED_WITH_REPLACEMENT("lrint", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+/* Legacy BSD API; use the C99 `lround( )` function instead.                  */
+extern long int roundtol(double)
+__API_DEPRECATED_WITH_REPLACEMENT("lround", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+/* Legacy BSD API; use the C99 `remainder( )` function instead.               */
+extern double drem(double, double)
+__API_DEPRECATED_WITH_REPLACEMENT("remainder", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+/* Legacy BSD API; use the C99 `isfinite( )` macro instead.                   */
+extern int finite(double)
+__API_DEPRECATED("Use `isfinite((double)x)` instead.", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+/* Legacy BSD API; use the C99 `tgamma( )` function instead.                  */
+extern double gamma(double)
+__API_DEPRECATED_WITH_REPLACEMENT("tgamma", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+/* Legacy BSD API; use `2*frexp( )` or `scalbn(x, -ilogb(x))` instead.        */
+extern double significand(double)
+__API_DEPRECATED("Use `2*frexp( )` or `scalbn(x, -ilogb(x))` instead.", macos(10.0, 10.9)) __API_UNAVAILABLE(ios, watchos, tvos);
+#endif
 
 #if !defined __cplusplus
 struct exception {
@@ -729,10 +768,10 @@ struct exception {
     double arg2;
     double retval;
 };
-/* Legacy API: does not do anything useful.                                   */
-extern int matherr(struct exception *) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
+
 #endif /* !defined __cplusplus */
 #endif /* __DARWIN_C_LEVEL >= __DARWIN_C_FULL */
 
 __END_DECLS
 #endif /* __MATH_H__ */
+

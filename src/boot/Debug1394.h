@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef _DEBUG1394_H_
-#define _DEBUG1394_H_
-
 #include "BootDebuggerPrivate.h"
 
 //
@@ -31,5 +28,3 @@ UINT32 Bd1394ReceivePacket(UINT32 packetType, STRING* messageHeader, STRING* mes
 // close debug device
 //
 EFI_STATUS Bd1394CloseDebuggerDevice();
-
-#endif

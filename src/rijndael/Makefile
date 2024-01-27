@@ -1,3 +1,8 @@
+TOPDIR=../..
+PREBUILT=$(TOPDIR)/Prebuilt
+CC=../../Prebuilt/clang
+CXX=../../Prebuilt/clang
+
 ### Rijndael Mac OS X makefile ###
 
 %.o: %.c

@@ -8,7 +8,7 @@
 #include "StdAfx.h"
 #include "DebugUsb.h"
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
 #endif
 
@@ -96,7 +96,7 @@ typedef struct _DEBUG_USB_GLOBAL_DATA
 	// debug port number
 	//
 	UINT32																	DebugPortNumber;
-} GNUPACK DEBUG_USB_GLOBAL_DATA;
+}DEBUG_USB_GLOBAL_DATA;
 
 //
 // usb setup packet
@@ -127,9 +127,9 @@ typedef struct _DEBUG_USB_SETUP_PACKET
 	// length
 	//
 	UINT16																	Length;
-} GNUPACK DEBUG_USB_SETUP_PACKET;
+}DEBUG_USB_SETUP_PACKET;
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -160,14 +160,20 @@ DEBUG_USB_GLOBAL_DATA* BdUsbpGlobalData										= nullptr;
 STATIC BOOLEAN BdUsbpWait(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 millisecond)
 {
 	BOOLEAN retValue														= FALSE;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// read FRINDEX
 		//
 		UINT32 temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x0c, UINT32*));
 		if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// FRINDEX will be updated every 125 microseconds
@@ -184,14 +190,22 @@ STATIC BOOLEAN BdUsbpWait(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 millisecond)
 			// stopped
 			//
 			if(!(temp & 1))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// read FRINDEX
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x0c, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// XXX: overflow?
@@ -200,11 +214,14 @@ STATIC BOOLEAN BdUsbpWait(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 millisecond)
 				break;
 		}
 		retValue															= TRUE;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return retValue;
 }
 
@@ -214,27 +231,44 @@ STATIC BOOLEAN BdUsbpWait(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 millisecond)
 STATIC BOOLEAN BdUsbpHaltController(DEBUG_USB_GLOBAL_DATA* globalData)
 {
 	BOOLEAN retValue														= FALSE;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// read USBSTS
 		//
 		UINT32 temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x04, UINT32*));
 		if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// check already Halted
 		//
 		if(temp & 0x1000)
-			try_leave(retValue = TRUE);
+        {
+#if defined(_MSC_VER)
+            try_leave(retValue = TRUE);
+#else
+            retValue = TRUE;
+            return retValue;
+#endif
+        }
 
 		//
 		// read USBCMD
 		//
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x00, UINT32*));
 		if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// stop
@@ -252,19 +286,32 @@ STATIC BOOLEAN BdUsbpHaltController(DEBUG_USB_GLOBAL_DATA* globalData)
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x04, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// check Halted
 			//
-			if(temp & 0x1000)
-				try_leave(retValue = TRUE);
+            if(temp & 0x1000) {
+#if defined(_MSC_VER)
+                try_leave(retValue = TRUE);
+#else
+                retValue = TRUE;
+                return retValue;
+#endif
+            }
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return retValue;
 }
 
@@ -274,20 +321,30 @@ STATIC BOOLEAN BdUsbpHaltController(DEBUG_USB_GLOBAL_DATA* globalData)
 STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalData, EFI_PCI_IO_PROTOCOL* pciIoProtocol)
 {
 	BOOLEAN retValue														= FALSE;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// halt host controller
 		//
 		if(!BdUsbpHaltController(globalData))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read USBCMD
 		//
 		UINT32 temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x00, UINT32*));
 		if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// reset
@@ -305,7 +362,11 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x00, UINT32*));
 			if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// check reset complete
@@ -318,13 +379,21 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 		// timeout
 		//
 		if(temp & 2)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// schedule enabled
 		//
 		if(temp & 0x30)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// run
@@ -347,7 +416,11 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x04, UINT32*));
 			if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// check Halted
@@ -360,28 +433,44 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 		// timeout
 		//
 		if(temp & 0x1000)
-			try_leave(NOTHING);
-		
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
+
 		//
 		// read debug port status
 		//
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 		if(temp == 0xffffffff)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// set in-use owner
 		//
 		ARCH_WRITE_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*), temp | 0x40000400);
 		if(!BdUsbpWait(globalData, 20))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read HCSPARAMS
 		//
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->BaseRegister, 0x04, UINT32*));
 		if(temp == 0xffffffff)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// check port power control
@@ -392,14 +481,21 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 			temp															= ARCH_READ_REGISTER_UINT32(port);
 			ARCH_WRITE_REGISTER_UINT32(port, temp | 0x1000);
 			if(!BdUsbpWait(globalData, 20))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 		}
 		retValue															= TRUE;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return retValue;
 }
 
@@ -493,8 +589,10 @@ STATIC BOOLEAN BdUsbpInitializeController(DEBUG_USB_GLOBAL_DATA* globalData, EFI
 STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAddress, DEBUG_USB_SETUP_PACKET const* setupPacket, VOID* dataBuffer, UINT32* dataLength)
 {
 	BOOLEAN retValue														= FALSE;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// write data
 		//
@@ -522,7 +620,11 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 		//
 		UINT32 temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 		if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// WRITE, GO, LENGTH=8, DONE#
@@ -539,7 +641,11 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 			if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// check DONE
@@ -565,7 +671,11 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 			// too many errors
 			//
 			if(errorCount > 3)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// write PIDs (IN)
@@ -587,7 +697,11 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 				//
 				temp														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 				if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 					try_leave(NOTHING);
+#else
+                    return FALSE;
+#endif
 
 				//
 				// check DONE
@@ -615,14 +729,22 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 			//
 			UINT32 pid														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x04, UINT32*));
 			if(pid == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// STALL
 			//
 			pid																= (pid >> 16) & 0xff;
 			if(pid == 0x1e)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// DATA1
@@ -635,14 +757,22 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 		// timeout
 		//
 		if(retry == maxRetry)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read data length
 		//
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 		if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// check length
@@ -669,7 +799,11 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 			// too many errors
 			//
 			if(errorCount > 3)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// write PIDs (OUT | DATA1)
@@ -691,7 +825,11 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 				//
 				temp														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 				if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 					try_leave(NOTHING);
+#else
+                    return FALSE;
+#endif
 
 				//
 				// check DONE
@@ -719,20 +857,33 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 			//
 			UINT32 pid														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x04, UINT32*));
 			if(pid == 0xffffffff)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// ACK, NYET
 			//
 			pid																= (pid >> 16) & 0xff;
-			if(pid == 0xd2 || pid == 0x96)
-				try_leave(retValue = TRUE);
+            if(pid == 0xd2 || pid == 0x96) {
+#if defined(_MSC_VER)
+                try_leave(retValue = TRUE);
+#else
+                retValue = TRUE;
+                return retValue;
+#endif
+            }
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return retValue;
 }
 
@@ -742,8 +893,10 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAddress, DEBUG_USB_SETUP_PACKET const* setupPacket, VOID* dataBuffer, UINT32 dataLength)
 {
 	BOOLEAN retValue														= FALSE;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// write data
 		//
@@ -771,7 +924,11 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 		//
 		UINT32 temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 		if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// WRITE, GO, LENGTH=8, DONE#
@@ -788,7 +945,11 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 			if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// check DONE
@@ -817,7 +978,11 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 				// too many errors
 				//
 				if(errorCount > 3)
+#if defined(_MSC_VER)
 					try_leave(NOTHING);
+#else
+                    return FALSE;
+#endif
 
 				//
 				// write data buffer
@@ -845,7 +1010,11 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 					//
 					temp													= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 					if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 						try_leave(NOTHING);
+#else
+                        return FALSE;
+#endif
 
 					//
 					// check DONE
@@ -873,14 +1042,22 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 				//
 				UINT32 pid													= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x04, UINT32*));
 				if(pid == 0xffffffff)
+#if defined(_MSC_VER)
 					try_leave(NOTHING);
+#else
+                    return FALSE;
+#endif
 
 				//
 				// STALL
 				//
 				pid															= (pid >> 16) & 0xff;
 				if(pid == 0x1e)
+#if defined(_MSC_VER)
 					try_leave(NOTHING);
+#else
+                    return FALSE;
+#endif
 
 				//
 				// ACK, NYET
@@ -893,7 +1070,11 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 			// timeout
 			//
 			if(retry == maxRetry)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 		}
 
 		//
@@ -907,7 +1088,11 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 			// too many errors
 			//
 			if(errorCount > 3)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// write PIDs (IN)
@@ -929,7 +1114,11 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 				//
 				temp														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 				if(temp == 0xffffffff)
-					try_leave(NOTHING);
+#if defined(_MSC_VER)
+                    try_leave(NOTHING);
+#else
+                    return FALSE;
+#endif
 
 				//
 				// check DONE
@@ -957,14 +1146,22 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 			//
 			UINT32 pid														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x04, UINT32*));
 			if(pid == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// STALL
 			//
 			pid																= (pid >> 16) & 0xff;
 			if(pid == 0x1e)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// DATA1
@@ -976,19 +1173,30 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 				//
 				temp														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 				if(temp == 0xffffffff)
-					try_leave(NOTHING);
+#if defined(_MSC_VER)
+                    try_leave(NOTHING);
+#else
+                    return FALSE;
+#endif
 
 				//
 				// check length
 				//
+#if defined(_MSC_VER)
 				try_leave(retValue = (temp & 0xf) ? FALSE : TRUE);
+#else
+                return (retValue = (temp & 0xf)) ? FALSE : TRUE;
+#endif
 			}
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return retValue;
 }
 
@@ -1051,20 +1259,34 @@ STATIC BOOLEAN BdUsbpTrySetupDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOLEAN haltHostController, BOOLEAN* devicePresent)
 {
 	BOOLEAN retValue														= FALSE;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// read PORTSC
 		//
 		UINT32 temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x40 + globalData->DebugPortNumber * 4, UINT32*));
 		if(temp == 0xffffffff)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 		//
 		// device not present
 		//
-		if(!(temp & 1))
-			try_leave(*devicePresent = FALSE; if(haltHostController) BdUsbpHaltController(globalData));
+        if(!(temp & 1)) {
+#if defined(_MSC_VER)
+            try_leave(*devicePresent = FALSE; if(haltHostController) BdUsbpHaltController(globalData));
+#else
+            *devicePresent = FALSE;
+            if (haltHostController)
+                BdUsbpHaltController(globalData);
+#endif
+            
+        }
 
 		//
 		// port reset (it must also write a zero to Port Enable bit)
@@ -1076,14 +1298,22 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 		// wait reset
 		//
 		if(!BdUsbpWait(globalData, 20))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read PORTSC
 		//
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x40 + globalData->DebugPortNumber * 4, UINT32*));
 		if(temp == 0xffffffff)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// complete reset
@@ -1094,14 +1324,22 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 		// wait reset complete
 		//
 		if(!BdUsbpWait(globalData, 5))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read PORTSC
 		//
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x40 + globalData->DebugPortNumber * 4, UINT32*));
 		if(temp == 0xffffffff)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// check device present, port enabled
@@ -1113,7 +1351,11 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// enable debug port
@@ -1125,7 +1367,11 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x40 + globalData->DebugPortNumber * 4, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// disable port
@@ -1137,26 +1383,42 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 		// halt host controller
 		//
 		if(haltHostController && !BdUsbpHaltController(globalData))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read debug status
 		//
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0, UINT32*));
 		if(temp == 0xffffffff)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// check enabled
 		//
 		if(!(temp & 0x10000000))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// setup device
 		//
 		if(!BdUsbpTrySetupDevice(globalData))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// set in-use
@@ -1164,11 +1426,14 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 		retValue															= TRUE;
 		temp																= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0, UINT32*));
 		ARCH_WRITE_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*), temp | 0x400);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return retValue;
 }
 
@@ -1179,14 +1444,20 @@ STATIC BOOLEAN BdUsbpReinitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 {
 	BOOLEAN devicePresent													= FALSE;
 	BOOLEAN retValue														= FALSE;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// read USBCMD
 		//
 		UINT32 temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x00, UINT32*));
 		if(temp == 0xffffffff)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// check stopped
@@ -1203,7 +1474,11 @@ STATIC BOOLEAN BdUsbpReinitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// Owner = 0, Enabled = 0
@@ -1225,7 +1500,11 @@ STATIC BOOLEAN BdUsbpReinitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 			// check connect status
 			//
 			if(!(temp & 1))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			//
 			// try initialize device
@@ -1249,11 +1528,14 @@ STATIC BOOLEAN BdUsbpReinitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 			//
 			ARCH_WRITE_REGISTER_UINT32(Add2Ptr(globalData->OperationalRegister, 0x00, UINT32*), temp);
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return retValue;
 }
 
@@ -1264,8 +1546,10 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 {
 	UINT32 retValue															= KDP_PACKET_RESEND;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// write device address
 		//
@@ -1284,7 +1568,11 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                    try_leave(NOTHING);
+#else
+                    return -1;
+#endif
 
 			//
 			// Read#, GO, Done#
@@ -1302,7 +1590,11 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 				//
 				temp														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 				if(temp == 0xffffffff)
-					try_leave(NOTHING);
+#if defined(_MSC_VER)
+                    try_leave(NOTHING);
+#else
+                    return -1;
+#endif
 
 				//
 				// check done
@@ -1314,8 +1606,15 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 			//
 			// timeout, reinitialize device
 			//
-			if(!(temp & 0x10000))
-				try_leave(CsPrintf(CHAR8_CONST_STRING("[READ] timeout\n")); BdUsbpReinitializeDevice(globalData));
+            if (!(temp & 0x10000)) {
+#if defined(_MSC_VER)
+                try_leave(CsPrintf(CHAR8_CONST_STRING("[READ] timeout\n")); BdUsbpReinitializeDevice(globalData));
+#else
+                CsPrintf(CHAR8_CONST_STRING("[READ] timeout\n"));
+                BdUsbpReinitializeDevice(globalData);
+                return -1;
+#endif
+            }
 
 			//
 			// clear Done
@@ -1333,20 +1632,35 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x04, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                    try_leave(NOTHING);
+#else
+                    return -1;
+#endif
 
 			//
 			// check received PID, NAK
 			//
 			temp															= (temp >> 16) & 0xff;
 			if(temp == 0x5a)
-				try_leave(retValue = KDP_PACKET_TIMEOUT);
+#if defined(_MSC_VER)
+                try_leave(retValue = KDP_PACKET_TIMEOUT);
+#else
+                retValue = KDP_PACKET_TIMEOUT;
+                return retValue;
+#endif
 
 			//
 			// STALL
 			//
-			if(temp == 0x1e)
-				try_leave(CsPrintf(CHAR8_CONST_STRING("[READ] STALL\n")));
+            if(temp == 0x1e) {
+#if defined(_MSC_VER)
+                try_leave(CsPrintf(CHAR8_CONST_STRING("[READ] STALL\n")));
+#else
+                CsPrintf(CHAR8_CONST_STRING("[READ] STALL\n"));
+                return -1;
+#endif
+            }
 
 			//
 			// not the one, retry
@@ -1367,7 +1681,11 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// read data buffer
@@ -1380,13 +1698,22 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 				memcpy(dataBuffer, &data0, sizeof(data0));
 				memcpy(Add2Ptr(dataBuffer, sizeof(data0), VOID*), &data1, sizeof(data1));
 			}
+
+#if defined(_MSC_VER)
 			try_leave(retValue = KDP_PACKET_RECEIVED);
+#else
+            retValue = KDP_PACKET_RECEIVED;
+            return retValue;
+#endif
 		}
 		CsPrintf(CHAR8_CONST_STRING("[READ] max retry 0x%08x\n"), temp);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 	}
+#endif
+
 	return retValue;
 }
 
@@ -1396,8 +1723,10 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST* dataBuffer, UINT32 dataLength)
 {
 	UINT32 retValue															= KDP_PACKET_RESEND;
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// write device address
 		//
@@ -1427,7 +1756,11 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 			if(temp == 0xffffffff)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// Write, Go, DataLength, Done#
@@ -1445,7 +1778,11 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 				//
 				temp														= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x00, UINT32*));
 				if(temp == 0xffffffff)
-					try_leave(NOTHING);
+#if defined(_MSC_VER)
+                    try_leave(NOTHING);
+#else
+                    return -1;
+#endif
 
 				//
 				// check done
@@ -1458,7 +1795,11 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 			// timeout
 			//
 			if(!(temp & 0x10000))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// clear Done
@@ -1476,20 +1817,34 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 			//
 			temp															= ARCH_READ_REGISTER_UINT32(Add2Ptr(globalData->DebugRegister, 0x04, UINT32*));
 			if(temp == 0xffffffff)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// check received PID, NAK
 			//
 			temp															= (temp >> 16) & 0xff;
-			if(temp == 0x5a)
-				try_leave(retValue = KDP_PACKET_TIMEOUT);
+            if(temp == 0x5a) {
+#if defined(_MSC_VER)
+                try_leave(retValue = KDP_PACKET_TIMEOUT);
+#else
+                retValue = KDP_PACKET_TIMEOUT;
+                return retValue;
+#endif
+            }
 
 			//
 			// STALL
 			//
 			if(temp == 0x1e)
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// ACK, NYET
@@ -1504,10 +1859,13 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 			globalData->NextSendDataPid										= globalData->NextSendDataPid == 0xc3 ? 0x4b : 0xc3;
 			break;
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 	}
+#endif
+
 	return retValue;
 }
 
@@ -1800,13 +2158,21 @@ VOID BdUsbSendPacket(UINT32 packetType, STRING* messageHeader, STRING* messageDa
 STATIC UINT32 BdUsbpReadDebuggerPacket(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 packetType, KD_PACKET* packetHeader, STRING* messageHeader, STRING* messageData)
 {
 	UINT32 result															= KDP_PACKET_RECEIVED;
-	__try
+#if defined(_MSC_VER)
+    __try
 	{
+#endif
 		//
 		// check reinitialize device
 		//
-		if(!BdUsbpCheckReinitializeDevice(globalData))
-			try_leave(result = KDP_PACKET_TIMEOUT);
+        if(!BdUsbpCheckReinitializeDevice(globalData)) {
+#if defined(_MSC_VER)
+            try_leave(result = KDP_PACKET_TIMEOUT);
+#else
+            result = KDP_PACKET_TIMEOUT;
+            return result;
+#endif
+        }
 
 		//
 		// receive data
@@ -1850,8 +2216,15 @@ STATIC UINT32 BdUsbpReadDebuggerPacket(DEBUG_USB_GLOBAL_DATA* globalData, UINT32
 			//
 			// check status
 			//
-			if(result != KDP_PACKET_RECEIVED)
-				try_leave(if(result == KDP_PACKET_RESEND) globalData->NeedReinitializeDevice = TRUE);
+            if(result != KDP_PACKET_RECEIVED) {
+#if defined(_MSC_VER)
+                try_leave(if (result == KDP_PACKET_RESEND) globalData->NeedReinitializeDevice = TRUE);
+#else
+                if (result == KDP_PACKET_RESEND)
+                    globalData->NeedReinitializeDevice = TRUE;
+                return result;
+#endif
+            }
 
 			//
 			// check NAME?
@@ -1859,7 +2232,7 @@ STATIC UINT32 BdUsbpReadDebuggerPacket(DEBUG_USB_GLOBAL_DATA* globalData, UINT32
 			if(receiveLength == 5 && !memcmp(&globalData->PacketHeader, "NAME?", 5))
 			{
 				DEBUG_USB_SEND_BUFFER sendBuffer[2];
-				sendBuffer[0].Buffer										= (VOID *)"NAME=";
+				sendBuffer[0].Buffer										= (VOID*)"NAME=";
 				sendBuffer[0].Length										= 5;
 				sendBuffer[1].Buffer										= globalData->TargetName;
 				sendBuffer[1].Length										= globalData->NameLength + 1;
@@ -1870,14 +2243,27 @@ STATIC UINT32 BdUsbpReadDebuggerPacket(DEBUG_USB_GLOBAL_DATA* globalData, UINT32
 			//
 			// poll breakin
 			//
-			if(packetType == PACKET_TYPE_KD_POLL_BREAKIN)
-				try_leave(result = receiveLength && (globalData->PacketHeader.PacketLeader & 0xff) == BREAKIN_PACKET_BYTE ? KDP_PACKET_RECEIVED : KDP_PACKET_TIMEOUT);
-
+            if(packetType == PACKET_TYPE_KD_POLL_BREAKIN) {
+#if defined(_MSC_VER)
+                try_leave(result = receiveLength && (globalData->PacketHeader.PacketLeader & 0xff) == BREAKIN_PACKET_BYTE ? KDP_PACKET_RECEIVED : KDP_PACKET_TIMEOUT);
+#else
+                result = receiveLength && (globalData->PacketHeader.PacketLeader & 0xff) == BREAKIN_PACKET_BYTE ? KDP_PACKET_RECEIVED : KDP_PACKET_TIMEOUT;
+                return result;
+#endif
+            }
 			//
 			// check packet header length
 			//
-			if(receiveLength < sizeof(globalData->PacketHeader))
-				try_leave(CsPrintf(CHAR8_CONST_STRING("[RECV] small length %08x\n"), receiveLength); result = KDP_PACKET_RESEND);
+            if(receiveLength < sizeof(globalData->PacketHeader)) {
+#if defined(_MSC_VER)
+                try_leave(CsPrintf(CHAR8_CONST_STRING("[RECV] small length %08x\n"), receiveLength); result = KDP_PACKET_RESEND);
+#else
+                CsPrintf(CHAR8_CONST_STRING("[RECV] small length %08x\n"), receiveLength);
+                result = KDP_PACKET_RESEND;
+                return result;
+#endif
+            }
+            
 
 			//
 			// copy packet header
@@ -1900,11 +2286,14 @@ STATIC UINT32 BdUsbpReadDebuggerPacket(DEBUG_USB_GLOBAL_DATA* globalData, UINT32
 			}
 			break;
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
+
 	return result;
 }
 
@@ -2047,17 +2436,29 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		if(!loaderOptions || !loaderOptions[0])
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// check target name
 		//
 		CHAR8 CONST* targetName												= strstr(loaderOptions, CHAR8_CONST_STRING("/targetname="));
-		if(!targetName)
-			try_leave(status = EFI_INVALID_PARAMETER);
+        if(!targetName) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_INVALID_PARAMETER);
+#else
+            status = EFI_INVALID_PARAMETER;
+            return status;
+#endif
+        }
 
 		//
 		// connect wait
@@ -2073,7 +2474,11 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		// connect all
 		//
 		if(strstr(loaderOptions, CHAR8_CONST_STRING("/connectall")) && EFI_ERROR(status = BlConnectAllController()))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// parse location
@@ -2089,7 +2494,11 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		//
 		EFI_PCI_IO_PROTOCOL* pciIoProtocol									= nullptr;
 		if(EFI_ERROR(status	= BlFindPciDevice(segment, bus, device, func, PCI_CLASS_SERIAL, PCI_CLASS_SERIAL_USB, 0x20, &pciIoProtocol, nullptr)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// get bar attribute
@@ -2098,32 +2507,58 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		UINT64 barLength													= 0;
 		BOOLEAN isMemorySpace												= FALSE;
 		if(EFI_ERROR(status = BlGetPciBarAttribute(pciIoProtocol, 0, &phyAddress, &barLength, &isMemorySpace)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// check bar length
 		//
-		if(barLength < 0x400 || !isMemorySpace)
-			try_leave(status = EFI_NOT_FOUND);
+        if(barLength < 0x400 || !isMemorySpace) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// start device
 		//
 		if(EFI_ERROR(status = BlStartPciDevice(pciIoProtocol, FALSE, TRUE, TRUE)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// 4GB check
 		//
-		if(phyAddress >= 4 * 1024 * 1024 * 1024ULL)
-			try_leave(status = EFI_NOT_FOUND);
+        if(phyAddress >= 4 * 1024 * 1024 * 1024ULL) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// allocate global data
 		//
 		BdUsbpGlobalData													= static_cast<DEBUG_USB_GLOBAL_DATA*>(MmAllocatePool(sizeof(DEBUG_USB_GLOBAL_DATA)));
-		if(!BdUsbpGlobalData)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!BdUsbpGlobalData) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// save target name
@@ -2141,8 +2576,14 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		//
 		// initialize controller
 		//
-		if(!BdUsbpInitializeController(BdUsbpGlobalData, pciIoProtocol) || !BdUsbpInitializeDevice(BdUsbpGlobalData, !!strstr(loaderOptions, CHAR8_CONST_STRING("/waitusb"))))
-			try_leave(status = EFI_DEVICE_ERROR);
+        if(!BdUsbpInitializeController(BdUsbpGlobalData, pciIoProtocol) || !BdUsbpInitializeDevice(BdUsbpGlobalData, !!strstr(loaderOptions, CHAR8_CONST_STRING("/waitusb")))) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_DEVICE_ERROR);
+#else
+            status = EFI_DEVICE_ERROR;
+            return status;
+#endif
+        }
 
 		//
 		// set next packet id
@@ -2150,15 +2591,19 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		BdNextPacketIdToSend												= INITIAL_PACKET_ID | SYNC_PACKET_ID;
 		BdPacketIdExpected													= INITIAL_PACKET_ID;
 		status																= EFI_SUCCESS;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(EFI_ERROR(status) && BdUsbpGlobalData)
 		{
 			MmFreePool(BdUsbpGlobalData);
 			BdUsbpGlobalData												= nullptr;
 		}
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }

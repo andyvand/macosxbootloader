@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <os/availability.h>
 
 #if TARGET_OS_WIN32
 
@@ -117,7 +118,7 @@ typedef size_t cache_cost_t;
  * 
  *@result Returns 0 for success, non-zero for failure.
  */
-CACHE_PUBLIC_API int cache_create(const char *name, cache_attributes_t *attrs, cache_t **cache_out);
+CACHE_PUBLIC_API int cache_create(const char *name, const cache_attributes_t *attrs, cache_t **cache_out) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
 
 /*!
  * @function cache_set_and_retain
@@ -153,7 +154,7 @@ CACHE_PUBLIC_API int cache_create(const char *name, cache_attributes_t *attrs, c
  * memory pressure to select which cache values to evict.  Zero is a 
  * valid cost. 
  */
-CACHE_PUBLIC_API int cache_set_and_retain(cache_t *cache, void *key, void *value, cache_cost_t cost);
+CACHE_PUBLIC_API int cache_set_and_retain(cache_t *cache, void *key, void *value, cache_cost_t cost) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
 
 /*!
  * @function cache_get_and_retain
@@ -176,7 +177,7 @@ CACHE_PUBLIC_API int cache_set_and_retain(cache_t *cache, void *key, void *value
  * Fetches value for key, retains value, and stores value in value_out.
  * Caller should release value using cache_release_value(). 
  */
-CACHE_PUBLIC_API int cache_get_and_retain(cache_t *cache, void *key, void **value_out);
+CACHE_PUBLIC_API int cache_get_and_retain(cache_t *cache, void *key, void **value_out) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
 
 /*!
  * @function cache_release_value
@@ -196,7 +197,7 @@ CACHE_PUBLIC_API int cache_get_and_retain(cache_t *cache, void *key, void **valu
  * Releases a previously retained cache value. When the reference count 
  * reaches zero the cache may make the value purgeable or destroy it. 
  */
-CACHE_PUBLIC_API int cache_release_value(cache_t *cache, void *value);
+CACHE_PUBLIC_API int cache_release_value(cache_t *cache, void *value) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
 
 /*!
  * @function cache_remove
@@ -217,7 +218,7 @@ CACHE_PUBLIC_API int cache_release_value(cache_t *cache, void *value);
  * will fail.  Invokes the key release callback immediately.  Invokes the 
  * value release callback once value's retain count is zero. 
  */
-CACHE_PUBLIC_API int cache_remove(cache_t *cache, void *key);
+CACHE_PUBLIC_API int cache_remove(cache_t *cache, void *key) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
 
 /*!
  *@function cache_remove_all
@@ -230,7 +231,7 @@ CACHE_PUBLIC_API int cache_remove(cache_t *cache, void *key);
  *
  * @result Returns 0 for success, non-zero for failure.
  */
-CACHE_PUBLIC_API int cache_remove_all(cache_t *cache);
+CACHE_PUBLIC_API int cache_remove_all(cache_t *cache) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
 
 /*! 
  * @function cache_destroy
@@ -249,14 +250,14 @@ CACHE_PUBLIC_API int cache_remove_all(cache_t *cache);
  * the cache object is freed.  If retained cache values exist then 
  * returns EAGAIN. 
  */
-CACHE_PUBLIC_API int cache_destroy(cache_t *cache);
+CACHE_PUBLIC_API int cache_destroy(cache_t *cache) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
 
 /*!
  * @group Cache Callbacks
  */
 
 /*!
- * @function cache_key_hash_cb_t
+ * @typedef cache_key_hash_cb_t
  *
  * @abstract 
  * Calculates a hash value using key.
@@ -274,7 +275,7 @@ CACHE_PUBLIC_API int cache_destroy(cache_t *cache);
 typedef uintptr_t (*cache_key_hash_cb_t)(void *key, void *user_data);
 
 /*! 
- * @function cache_key_is_equal_cb_t
+ * @typedef cache_key_is_equal_cb_t
  *
  * @abstract 
  * Determines if two keys are equal.
@@ -298,7 +299,7 @@ typedef uintptr_t (*cache_key_hash_cb_t)(void *key, void *user_data);
 typedef bool (*cache_key_is_equal_cb_t)(void *key1, void *key2, void *user_data);
 
 /*! 
- * @function cache_key_retain_cb_t
+ * @typedef cache_key_retain_cb_t
  *
  * @abstract 
  * Retains a key.
@@ -322,7 +323,7 @@ typedef bool (*cache_key_is_equal_cb_t)(void *key1, void *key2, void *user_data)
 typedef void (*cache_key_retain_cb_t)(void *key_in, void **key_out, void *user_data);
 
 /*! 
- * @function cache_value_retain_cb_t
+ * @typedef cache_value_retain_cb_t
  *
  * @abstract 
  * Retains a value.
@@ -341,7 +342,7 @@ typedef void (*cache_key_retain_cb_t)(void *key_in, void **key_out, void *user_d
 typedef void (*cache_value_retain_cb_t)(void *value_in, void *user_data);
 
 /*! 
- * @function cache_release_cb_t
+ * @typedef cache_release_cb_t
  * 
  * @abstract 
  * Releases or deallocates a cache value.
@@ -356,17 +357,18 @@ typedef void (*cache_value_retain_cb_t)(void *value_in, void *user_data);
  * Called when a key or value is removed from the cache, ie. when the
  * cache no longer references it.  In the common case the key or value
  * should be deallocated, or released if reference counted.
- * If the callback is NULL then the cache calls free() on key_or_value. 
+ * If the callback is NULL then it is not called.
  */
 typedef void (*cache_release_cb_t)(void *key_or_value, void *user_data);
 
 /*!
- * @function cache_value_make_nonpurgeable_cb_t
+ * @typedef cache_value_make_nonpurgeable_cb_t
  *
  * @abstract
  * Makes a cache value nonpurgeable and tests to see if value is still valid.
  *
  * @param value
+ * Cache value to make nonpurgeable.
  *
  * @param user_data User-provided value passed during cache creation.
  *
@@ -379,7 +381,7 @@ typedef void (*cache_release_cb_t)(void *key_or_value, void *user_data);
 typedef bool (*cache_value_make_nonpurgeable_cb_t)(void *value, void *user_data);
 
 /*! 
- * @function cache_value_make_purgeable_cb_t
+ * @typedef cache_value_make_purgeable_cb_t
  *
  * @abstract
  * Makes a cache value purgeable.  
@@ -403,14 +405,14 @@ typedef void (*cache_value_make_purgeable_cb_t)(void *value, void *user_data);
  * 
  * @abstract Callbacks passed to cache_create() to customize cache behavior.
  *
- * @field key_hash_cb Key hash callback
- * @field key_is_equal_cb Key is equal callback
- * @field key_retain_cb Key retain callback
- * @field key_release_cb Key release callback
- * @field value_retain_cb Value retain callback
- * @field value_release_cb Value release callback
- * @field value_make_nonpurgeable_cb Value make nonpurgeable callback
- * @field value_make_purgeable_cb Value make purgeable callback
+ * @field key_hash_cb Key hash callback.
+ * @field key_is_equal_cb Key is equal callback.
+ * @field key_retain_cb Key retain callback.
+ * @field key_release_cb Key release callback.
+ * @field value_retain_cb Value retain callback.
+ * @field value_release_cb Value release callback.
+ * @field value_make_nonpurgeable_cb Value make nonpurgeable callback.
+ * @field value_make_purgeable_cb Value make purgeable callback.
  * @field version Attributes version number used for binary compatibility.
  * @field user_data Passed to all callbacks.  May be NULL.
  */
@@ -419,7 +421,7 @@ struct CACHE_PUBLIC_API cache_attributes_s {
     cache_key_hash_cb_t key_hash_cb;                               
     cache_key_is_equal_cb_t key_is_equal_cb;                        
     
-    cache_key_retain_cb_t  key_retain_cb;
+    cache_key_retain_cb_t key_retain_cb;
     cache_release_cb_t key_release_cb;
     cache_release_cb_t value_release_cb;                           
     

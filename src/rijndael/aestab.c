@@ -27,10 +27,6 @@
 
 #define DO_TABLES
 
-#if defined(ASM_X86_V2)
-#undef FIXED_TABLES
-#endif
-
 #include <stdlib.h>
 #include "aes.h"
 #include "aesopt.h"
@@ -187,13 +183,13 @@
 
 #include "aestab.h"
 
-#if !defined(ASM_X86_V2)
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
 
 #if defined(FIXED_TABLES)
+
 /* implemented in case of wrong call for fixed tables */
 
 AES_RETURN aes_init(void)
@@ -219,6 +215,7 @@ AES_RETURN aes_init(void)
     set in x with x in the range 1 < x < 0x00000200.   This form is
     used so that locals within fi can be bytes rather than words
 */
+
 static uint_8t hibit(const uint_32t x)
 {   uint_8t r = (uint_8t)((x >> 1) | (x >> 2));
 
@@ -393,7 +390,6 @@ AES_RETURN aes_init(void)
     init = 1;
     return EXIT_SUCCESS;
 }
-#endif
 
 #endif
 

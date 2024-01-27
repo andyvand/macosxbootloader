@@ -27,11 +27,6 @@ Abstract:
 #ifndef _EFI_API_H_
 #define _EFI_API_H_
 
-#ifdef _MSC_VER
-#undef  EFIAPI
-#define EFIAPI __cdecl
-#endif
-
 #include EFI_PROTOCOL_DEFINITION (DevicePath)
 #include EFI_PROTOCOL_DEFINITION (SimpleTextIn)
 #include EFI_PROTOCOL_DEFINITION (SimpleTextOut)

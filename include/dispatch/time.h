@@ -33,6 +33,9 @@
 #include <mach/clock_types.h>
 #endif
 
+DISPATCH_ASSUME_NONNULL_BEGIN
+DISPATCH_ASSUME_ABI_SINGLE_BEGIN
+
 #ifdef NSEC_PER_SEC
 #undef NSEC_PER_SEC
 #endif
@@ -45,6 +48,10 @@
 #ifdef NSEC_PER_MSEC
 #undef NSEC_PER_MSEC
 #endif
+#ifdef MSEC_PER_SEC
+#undef MSEC_PER_SEC
+#endif
+#define MSEC_PER_SEC 1000ull
 #define NSEC_PER_SEC 1000000000ull
 #define NSEC_PER_MSEC 1000000ull
 #define USEC_PER_SEC 1000000ull
@@ -64,6 +71,11 @@ struct timespec;
  */
 typedef uint64_t dispatch_time_t;
 
+enum {
+	DISPATCH_WALLTIME_NOW DISPATCH_ENUM_API_AVAILABLE
+			(macos(10.14), ios(12.0), tvos(12.0), watchos(5.0))	= ~1ull,
+};
+
 #define DISPATCH_TIME_NOW (0ull)
 #define DISPATCH_TIME_FOREVER (~0ull)
 
@@ -71,15 +83,19 @@ typedef uint64_t dispatch_time_t;
  * @function dispatch_time
  *
  * @abstract
- * Create dispatch_time_t relative to the default clock or modify an existing
- * dispatch_time_t.
+ * Create a dispatch_time_t relative to the current value of the default or
+ * wall time clock, or modify an existing dispatch_time_t.
  *
  * @discussion
- * On Mac OS X the default clock is based on mach_absolute_time().
+ * On Apple platforms, the default clock is based on mach_absolute_time().
  *
  * @param when
- * An optional dispatch_time_t to add nanoseconds to. If zero is passed, then
- * dispatch_time() will use the result of mach_absolute_time().
+ * An optional dispatch_time_t to add nanoseconds to. If DISPATCH_TIME_NOW is
+ * passed, then dispatch_time() will use the default clock (which is based on
+ * mach_absolute_time() on Apple platforms). If DISPATCH_WALLTIME_NOW is used,
+ * dispatch_time() will use the value returned by gettimeofday(3).
+ * dispatch_time(DISPATCH_WALLTIME_NOW, delta) is equivalent to
+ * dispatch_walltime(NULL, delta).
  *
  * @param delta
  * Nanoseconds to add.
@@ -87,8 +103,9 @@ typedef uint64_t dispatch_time_t;
  * @result
  * A new dispatch_time_t.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 dispatch_time_t
 dispatch_time(dispatch_time_t when, int64_t delta);
 
@@ -102,8 +119,10 @@ dispatch_time(dispatch_time_t when, int64_t delta);
  * On Mac OS X the wall clock is based on gettimeofday(3).
  *
  * @param when
- * A struct timespect to add time to. If NULL is passed, then
+ * A struct timespec to add time to. If NULL is passed, then
  * dispatch_walltime() will use the result of gettimeofday(3).
+ * dispatch_walltime(NULL, delta) returns the same value as
+ * dispatch_time(DISPATCH_WALLTIME_NOW, delta).
  *
  * @param delta
  * Nanoseconds to add.
@@ -111,11 +130,15 @@ dispatch_time(dispatch_time_t when, int64_t delta);
  * @result
  * A new dispatch_time_t.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 dispatch_time_t
-dispatch_walltime(const struct timespec *when, int64_t delta);
+dispatch_walltime(const struct timespec *_Nullable when, int64_t delta);
 
 __END_DECLS
+
+DISPATCH_ASSUME_ABI_SINGLE_END
+DISPATCH_ASSUME_NONNULL_END
 
 #endif

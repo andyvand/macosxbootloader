@@ -1,4 +1,3 @@
-
 struc _KDESCRIPTOR
 	.Padding						resw			3
 	.Limit							resw			1
@@ -145,6 +144,6 @@ struc _EXCEPTION_RECORD64
 endstruc
 
 %macro PUBLIC_ROUTINE							1
-								global %1
-								%1:
+	global _%1
+	_%1:
 %endmacro

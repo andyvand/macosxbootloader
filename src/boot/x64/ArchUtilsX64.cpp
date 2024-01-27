@@ -5,25 +5,24 @@
 //	purpose:	arch utils
 //********************************************************************
 
-#include "stdafx.h"
 #include "../StdAfx.h"
 #include "ArchDefine.h"
-
-
-#ifdef _MSC_VER
-extern "C"
-{
-	void _local_unwind(void)
-	{
-	}
-}
-#endif
 
 //
 // global
 //
 typedef VOID (BOOTAPI *ArchTransferRoutine)(VOID* kernelEntry, VOID* bootArgs);
-ArchTransferRoutine	ArchpTransferRoutine									= nullptr;
+ArchTransferRoutine	ArchpTransferRoutine									/*= nullptr*/;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    extern VOID ArchTransferRoutineBegin();
+    extern VOID ArchTransferRoutineEnd();
+#ifdef __cplusplus
+}
+#endif
 
 //
 // init phase 0
@@ -38,15 +37,13 @@ EFI_STATUS ArchInitialize0()
 //
 EFI_STATUS ArchInitialize1()
 {
-	extern VOID ArchTransferRoutineBegin();
-	extern VOID ArchTransferRoutineEnd();
 	UINTN bytesCount														= ArchConvertPointerToAddress(&ArchTransferRoutineEnd) - ArchConvertPointerToAddress(&ArchTransferRoutineBegin);
 	UINT64 physicalAddress													= 4 * 1024 * 1024 * 1024ULL - 1;
 	VOID* transferRoutineBuffer												= MmAllocatePages(AllocateMaxAddress, EfiLoaderCode, EFI_SIZE_TO_PAGES(bytesCount), &physicalAddress);
 	if(!transferRoutineBuffer)
 		return EFI_OUT_OF_RESOURCES;
 
-	memcpy(transferRoutineBuffer, (VOID CONST *)&ArchTransferRoutineBegin, bytesCount);
+	memcpy(transferRoutineBuffer, (const void *)&ArchTransferRoutineBegin, bytesCount);
 	ArchpTransferRoutine													= reinterpret_cast<ArchTransferRoutine>(transferRoutineBuffer);
 	return EFI_SUCCESS;
 }

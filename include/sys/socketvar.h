@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000-2014 Apple Inc. All rights reserved.
+ * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
  *
  * @APPLE_OSREFERENCE_LICENSE_HEADER_START@
- * 
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -11,10 +11,10 @@
  * unlawful or unlicensed copies of an Apple operating system, or to
  * circumvent, violate, or enable the circumvention or violation of, any
  * terms of an Apple operating system software license agreement.
- * 
+ *
  * Please obtain a copy of the License at
  * http://www.opensource.apple.com/apsl/ and read it before using this file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -22,12 +22,12 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
- * 
+ *
  * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
  */
 /* Copyright (c) 1998, 1999 Apple Computer, Inc. All Rights Reserved */
 /* Copyright (c) 1995 NeXT Computer, Inc. All Rights Reserved */
-/*-
+/*
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -70,85 +70,121 @@
  */
 
 #ifndef _SYS_SOCKETVAR_H_
-#define	_SYS_SOCKETVAR_H_
+#define _SYS_SOCKETVAR_H_
 
 #include <sys/appleapiopts.h>
 #include <sys/cdefs.h>
+#include <sys/constrained_ctypes.h>
+#include <sys/types.h> /* u_quad_t */
+#include <TargetConditionals.h>
+#include <uuid/uuid.h>
 
-typedef	u_quad_t so_gen_t;
+typedef u_quad_t so_gen_t;
 
 
 
 
 #if defined(__LP64__)
-#define	_XSOCKET_PTR(x)		u_int32_t
+#define _XSOCKET_PTR(x)         u_int32_t
 #else
-#define	_XSOCKET_PTR(x)		x
+#define _XSOCKET_PTR(x)         x
 #endif
 
 
 #pragma pack(4)
 
 struct xsockbuf {
-	u_int32_t	sb_cc;
-	u_int32_t	sb_hiwat;
-	u_int32_t	sb_mbcnt;
-	u_int32_t	sb_mbmax;
-	int32_t		sb_lowat;
-	short		sb_flags;
-	short		sb_timeo;
+	u_int32_t       sb_cc;
+	u_int32_t       sb_hiwat;
+	u_int32_t       sb_mbcnt;
+	u_int32_t       sb_mbmax;
+	int32_t         sb_lowat;
+	short           sb_flags;
+	short           sb_timeo;
 };
 
 /*
  * Externalized form of struct socket used by the sysctl(3) interface.
  */
-struct	xsocket {
-	u_int32_t		xso_len;	/* length of this structure */
-	_XSOCKET_PTR(struct socket *) xso_so;	/* makes a convenient handle */
-	short			so_type;
-	short			so_options;
-	short			so_linger;
-	short			so_state;
-	_XSOCKET_PTR(caddr_t)	so_pcb;		/* another convenient handle */
-	int			xso_protocol;
-	int			xso_family;
-	short			so_qlen;
-	short			so_incqlen;
-	short			so_qlimit;
-	short			so_timeo;
-	u_short			so_error;
-	pid_t			so_pgid;
-	u_int32_t		so_oobmark;
-	struct xsockbuf		so_rcv;
-	struct xsockbuf		so_snd;
-	uid_t			so_uid;		/* XXX */
+struct xsocket {
+	u_int32_t               xso_len;        /* length of this structure */
+	_XSOCKET_PTR(struct socket *) xso_so;   /* makes a convenient handle */
+	short                   so_type;
+	short                   so_options;
+	short                   so_linger;
+	short                   so_state;
+	_XSOCKET_PTR(caddr_t)   so_pcb;         /* another convenient handle */
+	int                     xso_protocol;
+	int                     xso_family;
+	short                   so_qlen;
+	short                   so_incqlen;
+	short                   so_qlimit;
+	short                   so_timeo;
+	u_short                 so_error;
+	pid_t                   so_pgid;
+	u_int32_t               so_oobmark;
+	struct xsockbuf         so_rcv;
+	struct xsockbuf         so_snd;
+	uid_t                   so_uid;         /* XXX */
 };
 
-#if !CONFIG_EMBEDDED
-struct	xsocket64 {
-	u_int32_t		xso_len;	/* length of this structure */
-	u_int64_t		xso_so;		/* makes a convenient handle */
-	short			so_type;
-	short			so_options;
-	short			so_linger;
-	short			so_state;
-	u_int64_t		so_pcb;		/* another convenient handle */
-	int			xso_protocol;
-	int			xso_family;
-	short			so_qlen;
-	short			so_incqlen;
-	short			so_qlimit;
-	short			so_timeo;
-	u_short			so_error;
-	pid_t			so_pgid;
-	u_int32_t		so_oobmark;
-	struct xsockbuf		so_rcv;
-	struct xsockbuf		so_snd;
-	uid_t			so_uid;		/* XXX */
+#if XNU_TARGET_OS_OSX || KERNEL || !(TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR)
+struct  xsocket64 {
+	u_int32_t               xso_len;        /* length of this structure */
+	u_int64_t               xso_so;         /* makes a convenient handle */
+	short                   so_type;
+	short                   so_options;
+	short                   so_linger;
+	short                   so_state;
+	u_int64_t               so_pcb;         /* another convenient handle */
+	int                     xso_protocol;
+	int                     xso_family;
+	short                   so_qlen;
+	short                   so_incqlen;
+	short                   so_qlimit;
+	short                   so_timeo;
+	u_short                 so_error;
+	pid_t                   so_pgid;
+	u_int32_t               so_oobmark;
+	struct xsockbuf         so_rcv;
+	struct xsockbuf         so_snd;
+	uid_t                   so_uid;         /* XXX */
 };
-#endif /* !CONFIG_EMBEDDED */
+#endif /* XNU_TARGET_OS_OSX || KERNEL || !(TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR) */
 
 
 #pragma pack()
+
+
+// Tracker actions
+enum so_tracker_action {
+	SO_TRACKER_ACTION_INVALID = 0,
+	SO_TRACKER_ACTION_ADD = 1,
+	SO_TRACKER_ACTION_DUMP_BY_APP = 2,
+	SO_TRACKER_ACTION_DUMP_ALL = 3,
+	SO_TRACKER_ACTION_DUMP_MAX,
+};
+
+// Tracker TLV attributes
+enum so_tracker_attribute {
+	SO_TRACKER_ATTRIBUTE_INVALID = 0,
+	SO_TRACKER_ATTRIBUTE_ADDRESS_FAMILY = 1,
+	SO_TRACKER_ATTRIBUTE_ADDRESS  = 2,
+	SO_TRACKER_ATTRIBUTE_APP_UUID = 3,
+	SO_TRACKER_ATTRIBUTE_DOMAIN = 4,
+	SO_TRACKER_ATTRIBUTE_DOMAIN_OWNER = 5,
+	SO_TRACKER_ATTRIBUTE_FLAGS = 6,
+	SO_TRACKER_ATTRIBUTE_DUMP_ENTRY = 7,
+	SO_TRACKER_ATTRIBUTE_MEMORY_USED = 8,
+	SO_TRACKER_ATTRIBUTE_MAX,
+};
+
+// Tracker flags
+#define SO_TRACKER_ATTRIBUTE_FLAGS_APP_APPROVED     0x00000001
+#define SO_TRACKER_ATTRIBUTE_FLAGS_TRACKER          0x00000002
+#define SO_TRACKER_ATTRIBUTE_FLAGS_DOMAIN_SHORT     0x00000004
+
+#define SO_TRACKER_TRANSPARENCY_VERSION         3
+extern int tracker_action(int action, char *buffer, size_t buffer_size);
 
 #endif /* !_SYS_SOCKETVAR_H_ */

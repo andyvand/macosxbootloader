@@ -29,12 +29,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * @(#) $Header: /tcpdump/master/libpcap/pcap/namedb.h,v 1.1 2006-10-04 18:09:22 guy Exp $ (LBL)
  */
 
 #ifndef lib_pcap_namedb_h
 #define lib_pcap_namedb_h
+
+#ifdef __APPLE__
+#include <stdio.h>		/* FILE */
+#endif /* __APPLE__ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +47,10 @@ extern "C" {
  * XXX this stuff doesn't belong in this interface, but this
  * library already must do name to address translation, so
  * on systems that don't have support for /etc/ethers, we
- * export these hooks since they'll
+ * export these hooks since they're already being used by
+ * some applications (such as tcpdump) and already being
+ * marked as exported in some OSes offering libpcap (such
+ * as Debian).
  */
 struct pcap_etherent {
 	u_char addr[6];
@@ -54,21 +59,39 @@ struct pcap_etherent {
 #ifndef PCAP_ETHERS_FILE
 #define PCAP_ETHERS_FILE "/etc/ethers"
 #endif
-struct	pcap_etherent *pcap_next_etherent(FILE *);
-u_char *pcap_ether_hostton(const char*);
-u_char *pcap_ether_aton(const char *);
+PCAP_AVAILABLE_0_4
+PCAP_API struct	pcap_etherent *pcap_next_etherent(FILE *);
 
-bpf_u_int32 **pcap_nametoaddr(const char *);
-#ifdef INET6
-struct addrinfo *pcap_nametoaddrinfo(const char *);
-#endif
-bpf_u_int32 pcap_nametonetaddr(const char *);
+PCAP_AVAILABLE_0_4
+PCAP_API u_char *pcap_ether_hostton(const char*);
 
-int	pcap_nametoport(const char *, int *, int *);
-int	pcap_nametoportrange(const char *, int *, int *, int *);
-int	pcap_nametoproto(const char *);
-int	pcap_nametoeproto(const char *);
-int	pcap_nametollc(const char *);
+PCAP_AVAILABLE_0_4
+PCAP_API u_char *pcap_ether_aton(const char *);
+
+PCAP_AVAILABLE_0_4
+PCAP_API bpf_u_int32 **pcap_nametoaddr(const char *)
+PCAP_DEPRECATED(pcap_nametoaddr, "this is not reentrant; use 'pcap_nametoaddrinfo' instead");
+
+PCAP_AVAILABLE_0_4
+PCAP_API struct addrinfo *pcap_nametoaddrinfo(const char *);
+
+PCAP_AVAILABLE_0_4
+PCAP_API bpf_u_int32 pcap_nametonetaddr(const char *);
+
+PCAP_AVAILABLE_0_4
+PCAP_API int	pcap_nametoport(const char *, int *, int *);
+
+PCAP_AVAILABLE_0_4
+PCAP_API int	pcap_nametoportrange(const char *, int *, int *, int *);
+
+PCAP_AVAILABLE_0_4
+PCAP_API int	pcap_nametoproto(const char *);
+
+PCAP_AVAILABLE_0_4
+PCAP_API int	pcap_nametoeproto(const char *);
+
+PCAP_AVAILABLE_0_4
+PCAP_API int	pcap_nametollc(const char *);
 /*
  * If a protocol is unknown, PROTO_UNDEF is returned.
  * Also, pcap_nametoport() returns the protocol along with the port number.
@@ -76,11 +99,6 @@ int	pcap_nametollc(const char *);
  * can be either tcp or udp) PROTO_UNDEF is returned.
  */
 #define PROTO_UNDEF		-1
-
-/* XXX move these to pcap-int.h? */
-int __pcap_atodn(const char *, bpf_u_int32 *);
-int __pcap_atoin(const char *, bpf_u_int32 *);
-u_short	__pcap_nametodnaddr(const char *);
 
 #ifdef __cplusplus
 }

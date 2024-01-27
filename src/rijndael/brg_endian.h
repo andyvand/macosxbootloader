@@ -34,11 +34,9 @@
 /* Include files where endian defines and byteswap functions may reside */
 #if defined( __sun )
 #  include <sys/isa_defs.h>
-#elif defined( __EFI__ )
-#  include <sys/_endian.h>
 #elif defined( __FreeBSD__ ) || defined( __OpenBSD__ ) || defined( __NetBSD__ )
 #  include <sys/endian.h>
-#elif defined( BSD ) && ( BSD >= 199103 ) || defined( __APPLE__ ) || defined( ARCH32 ) || \
+#elif defined( BSD ) && ( BSD >= 199103 ) || defined( __APPLE__ ) || \
       defined( __CYGWIN32__ ) || defined( __DJGPP__ ) || defined( __osf__ )
 #  include <machine/endian.h>
 #elif defined( __linux__ ) || defined( __GNUC__ ) || defined( __GNU_LIBRARY__ )
@@ -108,11 +106,9 @@
 
 #if   defined( __alpha__ ) || defined( __alpha ) || defined( i386 )       || \
       defined( __i386__ )  || defined( _M_I86 )  || defined( _M_IX86 )    || \
-      defined( __x86_64__ )|| defined(_AMD64_)   || defined( x86_64 ) || \
       defined( __OS2__ )   || defined( sun386 )  || defined( __TURBOC__ ) || \
       defined( vax )       || defined( vms )     || defined( VMS )        || \
-      defined( __VMS )     || defined( _M_X64 )  || defined( _M_AMD64 ) || \
-      defined( _M_X86 )    || defined( _X86_ )
+      defined( __VMS )     || defined( _M_X64 )
 #  define PLATFORM_BYTE_ORDER IS_LITTLE_ENDIAN
 
 #elif defined( AMIGA )   || defined( applec )    || defined( __AS400__ )  || \
@@ -121,8 +117,7 @@
       defined( __MRC__ ) || defined( __MVS__ )   || defined( __MWERKS__ ) || \
       defined( sparc )   || defined( __sparc)    || defined( SYMANTEC_C ) || \
       defined( __VOS__ ) || defined( __TIGCC__ ) || defined( __TANDEM )   || \
-      defined( THINK_C ) || defined( __VMCMS__ ) || defined( _AIX ) || \
-      defined( __ppc__ ) || defined( __ppc64__ )
+      defined( THINK_C ) || defined( __VMCMS__ ) || defined( _AIX )
 #  define PLATFORM_BYTE_ORDER IS_BIG_ENDIAN
 
 #elif 0     /* **** EDIT HERE IF NECESSARY **** */

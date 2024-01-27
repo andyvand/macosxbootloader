@@ -8,41 +8,27 @@
 #include "StdAfx.h"
 #include "DebugUsb.h"
 
-#ifdef __i386__
-#ifdef APPLEEXTRA
-extern "C"
-{
-    VOID __bzero(VOID *b, UINTN length)
-    {
-        CHAR8 *ptr = (CHAR8 *)b;
-
-        while (length--)
-        {
-            *ptr++ = 0;
-        }
-    }
-}
-#endif
-#endif
-
 //
-// read debug options
+// Read debug options.
 //
 STATIC EFI_STATUS BlpReadDebugOptions(CHAR8** debugOptions)
 {
 	*debugOptions															= nullptr;
 	UINTN variableSize														= 0;
-	EFI_STATUS status														= EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-windbg-args"), &AppleNVRAMVariableGuid, nullptr, &variableSize, nullptr);
-	if(status != EFI_BUFFER_TOO_SMALL)
+	EFI_STATUS status														= EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-windbg-args"), &AppleNVRAMVariableGuid, nullptr, &variableSize, nullptr);
+
+	if (status != EFI_BUFFER_TOO_SMALL)
 		return status;
 
 	CHAR8* variableBuffer													= static_cast<CHAR8*>(MmAllocatePool(variableSize + sizeof(CHAR8)));
-	if(!variableBuffer)
+
+	if (!variableBuffer)
 		return EFI_OUT_OF_RESOURCES;
 
 	variableBuffer[variableSize]											= 0;
-	status																	= EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-windbg-args"), &AppleNVRAMVariableGuid, nullptr, &variableSize, variableBuffer);
-	if(!EFI_ERROR(status))
+	status																	= EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-windbg-args"), &AppleNVRAMVariableGuid, nullptr, &variableSize, variableBuffer);
+
+	if (!EFI_ERROR(status))
 		*debugOptions														= variableBuffer;
 	else
 		MmFreePool(variableBuffer);
@@ -51,61 +37,73 @@ STATIC EFI_STATUS BlpReadDebugOptions(CHAR8** debugOptions)
 }
 
 //
-// setup rom variable
+// Setup ROM variable.
 //
 STATIC EFI_STATUS BlpSetupRomVariable()
 {
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
-		// ROM = [0xffffff01, 0xffffff07)
+		// ROM = [0xffffff01, 0xffffff07).
 		//
 		UINT32 attribute													= EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS;
 		UINT8 romBuffer[6]													= {0};
 		UINTN dataSize														= sizeof(romBuffer);
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"ROM"), &AppleFirmwareVariableGuid, nullptr, &dataSize, romBuffer)))
-			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"ROM"), &AppleFirmwareVariableGuid, attribute, sizeof(romBuffer), ArchConvertAddressToPointer(0xffffff01, VOID*));
+
+		if (EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"ROM"), &AppleFirmwareVariableGuid, nullptr, &dataSize, romBuffer)))
+			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"ROM"), &AppleFirmwareVariableGuid, attribute, sizeof(romBuffer), ArchConvertAddressToPointer(0xffffff01, VOID*));
 
 		//
-		// check MLB
+		// Check MLB.
 		//
 		UINT8 mlbBuffer[0x80]												= {0};
 		dataSize															= sizeof(mlbBuffer);
-		if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"MLB"), &AppleFirmwareVariableGuid, nullptr, &dataSize, mlbBuffer)))
-			try_leave(NOTHING);
+
+		if (!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"MLB"), &AppleFirmwareVariableGuid, nullptr, &dataSize, mlbBuffer)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// search [0xffffff08, 0xffffff50)
+		// Search [0xffffff08, 0xffffff50).
 		//
 		UINT8 tempBuffer[0x48];
 		memset(tempBuffer, 0xff, sizeof(tempBuffer));
 		EfiBootServices->CopyMem(tempBuffer, ArchConvertAddressToPointer(0xffffff08, VOID*), sizeof(tempBuffer));
-		for(UINTN i = 0; i < 4; i ++)
+
+		for (UINTN i = 0; i < 4; i ++)
 		{
-			if(tempBuffer[i * 0x12] == 0xff)
+			if (tempBuffer[i * 0x12] == 0xff)
 			{
-				if(i)
+				if (i)
 				{
 					dataSize												= 0;
-					UINT8* mlbBuffer										= tempBuffer + i * 0x12 - 0x12;
-					while(mlbBuffer[dataSize] != ' ')
+					UINT8* mlb_buffer										= tempBuffer + i * 0x12 - 0x12;
+
+					while (mlb_buffer[dataSize] != ' ')
 						dataSize											+= 1;
 
-					EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"MLB"), &AppleFirmwareVariableGuid, attribute, dataSize, mlbBuffer);
+					EfiRuntimeServices->SetVariable(CHAR16_STRING(L"MLB"), &AppleFirmwareVariableGuid, attribute, dataSize, mlb_buffer);
 				}
+
 				break;
 			}
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
 
 	return EFI_SUCCESS;
 }
 
-#ifndef MINORVERSION
 //
 // Check board-id.
 //
@@ -117,13 +115,19 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 	CHAR8* fileBuffer														= nullptr;
 	XML_TAG* rootTag														= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// VMM ok.
 		//
 		if (!strnicmp(boardId, CHAR8_CONST_STRING("VMM"), 3))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// Check current directory.
@@ -150,14 +154,24 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 		//
 		// Check default file.
 		//
-		if (EFI_ERROR(status) && EFI_ERROR(status = IoReadWholeFile(bootFilePath, CHAR8_CONST_STRING("System\\Library\\CoreServices\\PlatformSupport.plist"), &fileBuffer, nullptr, TRUE)))
-			try_leave(status = EFI_SUCCESS);
+        if (EFI_ERROR(status) && EFI_ERROR(status = IoReadWholeFile(bootFilePath, CHAR8_CONST_STRING("System\\Library\\CoreServices\\PlatformSupport.plist"), &fileBuffer, nullptr, TRUE))) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_SUCCESS);
+#else
+            status = EFI_SUCCESS;
+            return status;
+#endif
+        }
 
 		//
 		// Parse the file.
 		//
 		if (EFI_ERROR(status = CmParseXmlFile(fileBuffer, &rootTag)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// Get tag value.
@@ -173,12 +187,18 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 				continue;
 
 			if (!strcmp(supportedId->StringValue, boardId))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 		}
 		status																= EFI_UNSUPPORTED;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if (fileDevPath)
 			MmFreePool(fileDevPath);
 
@@ -190,11 +210,12 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 
 		if (rootTag)
 			CmFreeTag(rootTag);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }
-#endif
 
 //
 // Run recovery booter.
@@ -204,15 +225,23 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
 	EFI_STATUS status														= EFI_SUCCESS;
 	EFI_DEVICE_PATH_PROTOCOL* recoveryFilePath								= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// Get current partition number.
 		//
 		UINT32 partitionNumber												= DevPathGetPartitionNumber(bootDevicePath);
 
-		if (partitionNumber == -1)
-			try_leave(status = EFI_NOT_FOUND);
+        if (partitionNumber == -1) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// Root partition is followed by recovery partition.
@@ -225,24 +254,42 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
 		//
 		EFI_HANDLE recoveryPartitionHandle									= DevPathGetPartitionHandleByNumber(bootDevicePath, partitionNumber);
 
-		if (!recoveryPartitionHandle)
-			try_leave(status = EFI_NOT_FOUND);
+        if (!recoveryPartitionHandle) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// Get recovery partition device path.
 		//
 		EFI_DEVICE_PATH_PROTOCOL* recoveryPartitionDevicePath				= DevPathGetDevicePathProtocol(recoveryPartitionHandle);
 
-		if (!recoveryPartitionDevicePath)
-			try_leave(status = EFI_NOT_FOUND);
+        if (!recoveryPartitionDevicePath) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// Get recovery file path.
 		//
 		recoveryFilePath													= DevPathAppendFilePath(recoveryPartitionDevicePath, CHAR16_CONST_STRING(L"\\com.apple.recovery.boot\\boot.efi"));
 
-		if (!recoveryFilePath)
-			try_leave(status = EFI_NOT_FOUND);
+        if (!recoveryFilePath) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// Load image.
@@ -252,33 +299,51 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
 		if (EFI_ERROR(status = EfiBootServices->LoadImage(FALSE, EfiImageHandle, recoveryFilePath, nullptr, 0, &imageHandle)))
 		{
 			if (!BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// Get root UUID.
 			//
 			CHAR8 CONST* rootUUID											= CmGetStringValueForKey(nullptr, CHAR8_CONST_STRING("Root UUID"), nullptr);
 
-			if (!rootUUID)
-				try_leave(status = EFI_NOT_FOUND);
+            if (!rootUUID) {
+#if defined(_MSC_VER)
+                try_leave(status = EFI_NOT_FOUND);
+#else
+            	status = EFI_NOT_FOUND;
+                return status;
+#endif
+            }
 
 			//
 			// Load booter.
 			//
 			if (EFI_ERROR(status = IoLoadBooterWithRootUUID(bootFilePath, rootUUID, &imageHandle)))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 		}
 
 		//
 		// Start it.
 		//
 		status																= EfiBootServices->StartImage(imageHandle, nullptr, nullptr);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if (recoveryFilePath)
 			MmFreePool(recoveryFilePath);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }
@@ -292,14 +357,22 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 	EFI_HANDLE* handleArray													= nullptr;
 	CHAR16* fileName														= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// Convert file name.
 		//
 		fileName															= BlAllocateUnicodeFromUtf8(bootFileName, strlen(bootFileName));
-		if (!fileName)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if (!fileName) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// Locate file system protocol.
@@ -307,7 +380,11 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 		UINTN totalHandles													= 0;
 
 		if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiSimpleFileSystemProtocolGuid, nullptr, &totalHandles, &handleArray)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		for (UINTN i = 0; i < totalHandles; i ++)
 		{
@@ -353,7 +430,11 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 			EFI_DEVICE_PATH_PROTOCOL* rootDevicePath						= nullptr;
 
 			if (EFI_ERROR(status = EfiBootServices->HandleProtocol(theHandle, &EfiDevicePathProtocolGuid, reinterpret_cast<VOID**>(&rootDevicePath))))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// Load it.
@@ -362,7 +443,11 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 			EFI_HANDLE imageHandle											= nullptr;
 
 			if (EFI_ERROR(status = EfiBootServices->LoadImage(TRUE, EfiImageHandle, bootFilePath, nullptr, 0, &imageHandle)))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 
 			//
 			// Free file path.
@@ -374,38 +459,53 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 			//
 			EFI_LOADED_IMAGE_PROTOCOL* loadedImage							= nullptr;
 
-			if (EFI_ERROR(status = EfiBootServices->HandleProtocol(imageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedImage))))
-				try_leave(EfiBootServices->UnloadImage(imageHandle));
+            if (EFI_ERROR(status = EfiBootServices->HandleProtocol(imageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedImage)))) {
+#if defined(_MSC_VER)
+                try_leave(EfiBootServices->UnloadImage(imageHandle));
+#else
+                return EfiBootServices->UnloadImage(imageHandle);
+#endif
+            }
 
 			//
 			// Run it.
 			//
 			UINTN exitDataSize												= 0;
+#if defined(_MSC_VER)
 			try_leave(status = EfiBootServices->StartImage(imageHandle, &exitDataSize, nullptr));
+#else
+            status = EfiBootServices->StartImage(imageHandle, &exitDataSize, nullptr);
+            return status;
+#endif
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if (fileName)
 			MmFreePool(fileName);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }
 
-extern "C"
-{
 //
 // Main entry point.
 //
+extern "C"
 EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 	IO_FILE_HANDLE installationFolder										= {0};
 	EFI_FILE_INFO* installationFolderInfo									= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// Save handle.
 		//
@@ -415,216 +515,259 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		EfiRuntimeServices													= systemTable->RuntimeServices;
 
 		//
-		// stop watchdog timer
+		// Stop watchdog timer.
 		//
 		EfiBootServices->SetWatchdogTimer(0, 0, 0, nullptr);
 
 		//
-		// memory initialize
+		// Memory initialisation.
 		//
-		if(EFI_ERROR(status = MmInitialize()))
-        {
+		if (EFI_ERROR(status = MmInitialize()))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
-        }
+#else
+            return -1;
+#endif
 
 		//
-		// init arch phase 0
+		// Initialise arch phase 0.
 		//
-		if(EFI_ERROR(status = ArchInitialize0()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = ArchInitialize0()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// get debug options
+		// Get debug options.
 		//
 		CHAR8* debugOptions													= nullptr;
 		BlpReadDebugOptions(&debugOptions);
 
-#ifndef MINORVERSION
 		//
-		// init boot debugger
+		// Init boot debugger.
 		//
 		//debugOptions														= CHAR8_STRING("/debug=1394 /channel=12 /break /connectall /runapple=/System/Library/CoreServices/boot.apple");
 		//debugOptions														= CHAR8_STRING("/debug=1394 /channel=12 /break /connectall /connectwait=5");
-		if(EFI_ERROR(status = BdInitialize(debugOptions)))
-        {
-			try_leave(NOTHING);
-        }
+
+		if (EFI_ERROR(status = BdInitialize(debugOptions)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
 #endif
 
 		//
-		// run apple's boot.efi
+		// Run Apple's boot.efi
 		//
 		CHAR8 CONST* appleBootFileName										= debugOptions ? strstr(debugOptions, CHAR8_CONST_STRING("/runapple=")) : nullptr;
-		if(appleBootFileName)
-        {
-			try_leave(status = BlpRunAppleBoot(appleBootFileName + 10));
+
+        if (appleBootFileName) {
+#if defined(_MSC_VER)
+            try_leave(status = BlpRunAppleBoot(appleBootFileName + 10));
+#else
+            status = BlpRunAppleBoot(appleBootFileName + 10);
+            return status;
+#endif
         }
 
 		//
-		// init arch parse 1
+		// Initialise arch parse 1.
 		//
-		if(EFI_ERROR(status = ArchInitialize1()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = ArchInitialize1()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// initialize console
+		// Initialize console.
 		//
-		if(EFI_ERROR(status = CsInitialize()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = CsInitialize()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// fix rom variable
+		// Fix ROM variable.
 		//
-		if(EFI_ERROR(status = BlpSetupRomVariable()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = BlpSetupRomVariable()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// initialize device tree
+		// Initialize device tree.
 		//
-		if(EFI_ERROR(status = DevTreeInitialize()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = DevTreeInitialize()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// init platform expert
+		// Detect memory size.
 		//
-		if(EFI_ERROR(status = PeInitialize()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = BlDetectMemorySize()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// detect memory size
+		// Init platform expert.
 		//
-		if(EFI_ERROR(status = BlDetectMemorySize()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = PeInitialize()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
-#ifndef MINORVERSION
 		//
-		// check hibernate
+		// Check hibernate.
 		//
 		UINT8 coreStorageVolumeKeyIdent[16]									= {0};
 		BOOLEAN resumeFromCoreStorage										= HbStartResumeFromHibernate(coreStorageVolumeKeyIdent);
 
-		if(resumeFromCoreStorage)
-        {
+		if (resumeFromCoreStorage)
 			BlSetBootMode(BOOT_MODE_HIBER_FROM_FV, 0);
-        }
-#endif
 
 		//
-		// enable ASLR
+		// Enable ASLR.
 		//
 		LdrSetupASLR(TRUE, 0);
 
-#ifndef MINORVERSION
 		//
-		// detect hot key
+		// Detect hot key.
 		//
-		if(EFI_ERROR(status = BlDetectHotKey()))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = BlDetectHotKey()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
 #endif
 
 		//
-		// get loaded image protocol
+		// Get loaded image protocol.
 		//
 		EFI_LOADED_IMAGE_PROTOCOL* loadedBootImage							= nullptr;
-		if(EFI_ERROR(status = EfiBootServices->HandleProtocol(EfiImageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedBootImage))))
-        {
-			try_leave(NOTHING);
-        }
+
+		if (EFI_ERROR(status = EfiBootServices->HandleProtocol(EfiImageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedBootImage))))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// allocate buffer
+		// Allocate buffer.
 		//
 		UINTN loaderOptionsSize												= (loadedBootImage->LoadOptionsSize / sizeof(CHAR16) + 1) * sizeof(CHAR8);
 		CHAR8* loaderOptions												= static_cast<CHAR8*>(MmAllocatePool(loaderOptionsSize));
-		if(!loaderOptions)
-        {
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+
+        if (!loaderOptions) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
         }
 
 		//
-		// unicode -> utf8
+		// Convert unicode to UTF8.
 		//
-		if(EFI_ERROR(status = BlUnicodeToUtf8(static_cast<CHAR16*>(loadedBootImage->LoadOptions), loadedBootImage->LoadOptionsSize / sizeof(CHAR16), loaderOptions, loaderOptionsSize / sizeof(CHAR8))))
-        {
-			try_leave(NOTHING);
-        }
-
-		//
-		// detect root device
-		//
-		EFI_HANDLE bootDeviceHandle											= loadedBootImage->DeviceHandle;
-		EFI_DEVICE_PATH_PROTOCOL* bootFilePath								= loadedBootImage->FilePath;
-		if(EFI_ERROR(status = IoDetectRoot(&bootDeviceHandle, &bootFilePath, debugOptions && strstr(debugOptions, CHAR8_CONST_STRING("/detectboot")))))
-        {
-			try_leave(NOTHING);
-        }
-
-		//
-		// get boot device path
-		//
-		EFI_DEVICE_PATH_PROTOCOL* bootDevicePath							= DevPathGetDevicePathProtocol(bootDeviceHandle);
-		if(!bootDevicePath)
-        {
-			try_leave(status = EFI_DEVICE_ERROR);
-        }
-
-		//
-		// process option
-		//
-		CHAR8* kernelCommandLine											= nullptr;
-        BOOLEAN usingKernelCache                                            = FALSE;
-		if(EFI_ERROR(status = BlProcessOptions(loaderOptions, &kernelCommandLine, bootDevicePath, bootFilePath, &usingKernelCache)))
-        {
-			try_leave(NOTHING);
-        }
-
-		//
-		// check 64-bit cpu
-		//
-		if(EFI_ERROR(status = ArchCheck64BitCpu()))
-        {
-			try_leave(NOTHING);
-        }
-
-#ifndef MINORVERSION
-		//
-		// compact check
-		//
-		if(!BlTestBootMode(BOOT_MODE_SKIP_BOARD_ID_CHECK) && EFI_ERROR(status = BlpCheckBoardId(BlGetBoardId(), bootFilePath)))
-        {
-			try_leave(NOTHING);
-        }
+		if (EFI_ERROR(status = BlUnicodeToUtf8(static_cast<CHAR16*>(loadedBootImage->LoadOptions), loadedBootImage->LoadOptionsSize / sizeof(CHAR16), loaderOptions, loaderOptionsSize / sizeof(CHAR8))))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
 #endif
 
 		//
-		// check recovery
+		// Detect root device.
+		//
+		EFI_HANDLE bootDeviceHandle											= loadedBootImage->DeviceHandle;
+		EFI_DEVICE_PATH_PROTOCOL* bootFilePath								= loadedBootImage->FilePath;
+
+		if (EFI_ERROR(status = IoDetectRoot(&bootDeviceHandle, &bootFilePath, debugOptions && strstr(debugOptions, CHAR8_CONST_STRING("/detectboot")))))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// Get boot device path.
+		//
+		EFI_DEVICE_PATH_PROTOCOL* bootDevicePath							= DevPathGetDevicePathProtocol(bootDeviceHandle);
+
+        if (!bootDevicePath) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_DEVICE_ERROR);
+#else
+            status = EFI_DEVICE_ERROR;
+            return status;
+#endif
+        }
+
+		//
+		// Process option.
+		//
+		CHAR8* kernelCommandLine											= nullptr;
+
+		if (EFI_ERROR(status = BlProcessOptions(loaderOptions, &kernelCommandLine, bootDevicePath, bootFilePath)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// Check 64-bit CPU.
+		//
+		if (EFI_ERROR(status = ArchCheck64BitCpu()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// Compact check
+		//
+		if (!BlTestBootMode(BOOT_MODE_SKIP_BOARD_ID_CHECK) && EFI_ERROR(status = BlpCheckBoardId(BlGetBoardId(), bootFilePath)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// Createmedia installer and recovery boot detection.
+		//
 		//
 		CHAR8* filePath														= DevPathExtractFilePathName(bootFilePath, TRUE);
-		if(filePath)
+
+		if (filePath)
 		{
 			if (strstr(filePath, CHAR8_CONST_STRING("\\.IABootFiles")) || strstr(filePath, CHAR8_CONST_STRING("\\OS X Install Data")) )
- 			{
+			{
 				BlSetBootMode(BOOT_MODE_IS_INSTALLER, 0);
-			} else if(strstr(filePath, CHAR8_CONST_STRING("com.apple.recovery.boot")))
-            		{
-		                BlSetBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY, BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_BOOT_IS_NOT_ROOT);
-        		}
+			}
+			else if (strstr(filePath, CHAR8_CONST_STRING("com.apple.recovery.boot")))
+			{
+				BlSetBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY, BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_BOOT_IS_NOT_ROOT);
+			}
 
 			MmFreePool(filePath);
 
@@ -657,145 +800,107 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 			}
 		}
 
-#ifndef MINORVERSION
 		//
-		// show panic dialog
+		// Show panic dialog.
 		//
-		if(!BlTestBootMode(BOOT_MODE_SKIP_PANIC_DIALOG | BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY | BOOT_MODE_HIBER_FROM_FV | BOOT_MODE_SAFE))
+		if (!BlTestBootMode(BOOT_MODE_SKIP_PANIC_DIALOG | BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY | BOOT_MODE_HIBER_FROM_FV | BOOT_MODE_SAFE))
 			BlShowPanicDialog(&kernelCommandLine);
-#endif
 
 		//
-		// run recovery.efi
+		// Run recovery.efi
 		//
-		if(BlTestBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE))
-        {
+		if (BlTestBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE))
 			BlpRunRecoveryEfi(bootDevicePath, bootFilePath);
-        }
 
-#ifndef MINORVERSION
 		//
-		// check FileVault2
+		// Check FileVault2.
 		//
-		if(BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
-        {
+		if (BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
 			FvLookupUnlockCoreVolumeKey(bootDevicePath, resumeFromCoreStorage);
-        }
 
-        //
-		// restore graph config
 		//
-		if(!BlTestBootMode(BOOT_MODE_HAS_FILE_VAULT2_CONFIG))
-        {
+		// Restore graph config.
+		//
+		if (!BlTestBootMode(BOOT_MODE_HAS_FILE_VAULT2_CONFIG))
 			CsConnectDevice(FALSE, FALSE);
-        }
-#endif
 
 		//
-		// setup console mode
+		// Setup console mode.
 		//
-		if(BlTestBootMode(BOOT_MODE_VERBOSE))
+		if (BlTestBootMode(BOOT_MODE_VERBOSE))
 		{
 			CsSetConsoleMode(TRUE, FALSE);
-
-            // Print boot.efi info for verbose mode
-            CsPrintf(CHAR8_CONST_STRING("boot.efi start ("));
-#if defined(_X86_) || defined(_M_X86) || defined(__i386__)
-            CsPrintf(CHAR8_CONST_STRING("32-bit)\n"));
-#else
-            CsPrintf(CHAR8_CONST_STRING("64-bit)\n"));
-#endif
 		}
 		else
 		{
-			if(!EFI_ERROR(CsInitializeGraphMode()))
-            {
+			if (!EFI_ERROR(CsInitializeGraphMode()))
 				CsDrawBootImage(TRUE);
-            }
 		}
 
-#ifndef MINORVERSION
 		//
-		// continue hibernate
+		// Continue hibernate.
 		//
-		if(resumeFromCoreStorage)
+		if (resumeFromCoreStorage)
 		{
 			UINT8 coreStorageVolumeKey[16]									= {0};
-			if(FvFindCoreVolumeKey(coreStorageVolumeKeyIdent, coreStorageVolumeKey, sizeof(coreStorageVolumeKey)))
-            {
-                HbContinueResumeFromHibernate(coreStorageVolumeKey, sizeof(coreStorageVolumeKey));
-            }
+
+			if (FvFindCoreVolumeKey(coreStorageVolumeKeyIdent, coreStorageVolumeKey, sizeof(coreStorageVolumeKey)))
+				HbContinueResumeFromHibernate(coreStorageVolumeKey, sizeof(coreStorageVolumeKey));
 		}
+
+		//
+		// Load prelinkedkernel/kernel cache.
+		//
+		MACH_O_LOADED_INFO kernelInfo										= {0};
+		status																= LdrLoadKernelCache(&kernelInfo, bootDevicePath);
+		BOOLEAN usingKernelCache											= !EFI_ERROR(status);
+
+		if (!usingKernelCache && LdrGetKernelCacheOverride())
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
 #endif
 
 		//
-		// load kernel cache
+		// Load kernel.
 		//
-		MACH_O_LOADED_INFO kernelInfo										= {0};
-
-        if (usingKernelCache == TRUE)
-        {
-            status														= LdrLoadKernelCache(&kernelInfo, bootDevicePath);
-
-            usingKernelCache                                            = !EFI_ERROR(status);
-        }
-
-		if(!usingKernelCache)
-        {
-           if (LdrGetKernelCacheOverride())
-           {
-                try_leave(NOTHING);
-           }
-        }
+		if (!usingKernelCache && EFI_ERROR(status = LdrLoadKernel(&kernelInfo)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// load kernel
-		//
-        if(!usingKernelCache)
-        {
-            if(EFI_ERROR(status = LdrLoadKernel(&kernelInfo)))
-            {
-                try_leave(NOTHING);
-            }
-        }
-
-		//
-		// initialize boot args
+		// Initialize boot args.
 		//
 		BOOT_ARGS* bootArgs													= nullptr;
 
-        if(EFI_ERROR(status = BlInitializeBootArgs(bootDevicePath, bootFilePath, bootDeviceHandle, kernelCommandLine, &bootArgs)))
-        {
+		if (EFI_ERROR(status = BlInitializeBootArgs(bootDevicePath, bootFilePath, bootDeviceHandle, kernelCommandLine, &bootArgs)))
+#if defined(_MSC_VER)
             try_leave(NOTHING);
-        }
-
-		//
-		// load driver
-		//
-        if(!usingKernelCache)
-        {
-            if(EFI_ERROR(status = LdrLoadDrivers()))
-            {
-                try_leave(NOTHING);
-            }
-        }
-
-        // AnV - RAM disk is incompatible with Hackintosh
-		//
-		// load ramdisk
-		//
-#ifndef MINORVERSION
-		LdrLoadRamDisk();
+#else
+            return -1;
 #endif
 
-        // Notifity user we are starting the kernel on verbose mode...
-        if(BlTestBootMode(BOOT_MODE_VERBOSE))
-        {
-            CsPrintf(CHAR8_CONST_STRING("Finalise settings and start kernel...\n"));
-        }
+		//
+		// Load driver.
+		//
+		if (!usingKernelCache && EFI_ERROR(status = LdrLoadDrivers()))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
-		// console finalize
+		// Load ramdisk.
+		//
+		LdrLoadRamDisk();
+
+		//
+		// Console finalize.
 		//
 		CsFinalize();
 
@@ -804,34 +909,37 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		// SIP configuration.
 		//
 		if (EFI_ERROR(BlInitCSRState(bootArgs)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
+#endif
+		//
+		// Finish boot args.
+		//
+		if (EFI_ERROR(status = BlFinalizeBootArgs(bootArgs, kernelCommandLine, bootDeviceHandle, &kernelInfo)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
 #endif
 
 		//
-		// finish boot args
-		//
-        if(EFI_ERROR(status = BlFinalizeBootArgs(bootArgs, kernelCommandLine, bootDeviceHandle, &kernelInfo)))
-        {
-            try_leave(NOTHING);
-        }
-
-#ifndef MINORVERSION
-		//
-		// stop debugger
+		// Stop debugger.
 		//
 		BdFinalize();
-#endif
 
 		//
-		// start kernel
+		// Start kernel.
 		//
-        ArchStartKernel(ArchConvertAddressToPointer(kernelInfo.EntryPointPhysicalAddress, VOID*), bootArgs);
+		ArchStartKernel(ArchConvertAddressToPointer(kernelInfo.EntryPointPhysicalAddress, VOID*), bootArgs);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 	}
+#endif
 
 	return status;
 }
-}
-

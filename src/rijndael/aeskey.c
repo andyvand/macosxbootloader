@@ -74,19 +74,19 @@ extern "C"
 #if defined(AES_128) || defined( AES_VAR )
 
 #define ke4(k,i) \
-{   k[4*(i)+4] = (ss[0] ^= ls_box(ss[3],3) ^ t_use(r,c)[i]); \
-    k[4*(i)+5] = (ss[1] ^= ss[0]); \
-    k[4*(i)+6] = (ss[2] ^= ss[1]); \
-    k[4*(i)+7] = (ss[3] ^= ss[2]); \
+{   k[4*(i)+4] = ss[0] ^= ls_box(ss[3],3) ^ t_use(r,c)[i]; \
+    k[4*(i)+5] = ss[1] ^= ss[0]; \
+    k[4*(i)+6] = ss[2] ^= ss[1]; \
+    k[4*(i)+7] = ss[3] ^= ss[2]; \
 }
 
 AES_RETURN aes_encrypt_key128(const unsigned char *key, aes_encrypt_ctx cx[1])
 {   uint_32t    ss[4];
 
-    cx->ks[0] = (ss[0] = word_in(key, 0));
-    cx->ks[1] = (ss[1] = word_in(key, 1));
-    cx->ks[2] = (ss[2] = word_in(key, 2));
-    cx->ks[3] = (ss[3] = word_in(key, 3));
+    cx->ks[0] = ss[0] = word_in(key, 0);
+    cx->ks[1] = ss[1] = word_in(key, 1);
+    cx->ks[2] = ss[2] = word_in(key, 2);
+    cx->ks[3] = ss[3] = word_in(key, 3);
 
 #ifdef ENC_KS_UNROLL
     ke4(cx->ks, 0);  ke4(cx->ks, 1);

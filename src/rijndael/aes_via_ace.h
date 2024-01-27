@@ -396,7 +396,7 @@ INLINE int via_rng_in(void *buf)
     return val;
 }
 
-INLINE void via_ecb_op5(
+INLINE volatile  void via_ecb_op5(
             const void *k, const void *c, const void *s, void *d, int l)
 {
     NEH_REKEY;
@@ -408,7 +408,7 @@ INLINE void via_ecb_op5(
     NEH_ECB;
 }
 
-INLINE void via_cbc_op6(
+INLINE volatile  void via_cbc_op6(
             const void *k, const void *c, const void *s, void *d, int l, void *v)
 {
     NEH_REKEY;
@@ -421,7 +421,7 @@ INLINE void via_cbc_op6(
     NEH_CBC;
 }
 
-INLINE void via_cbc_op7(
+INLINE volatile  void via_cbc_op7(
         const void *k, const void *c, const void *s, void *d, int l, void *v, void *w)
 {
     NEH_REKEY;
@@ -437,7 +437,7 @@ INLINE void via_cbc_op7(
     asm("movsl; movsl; movsl; movsl\n\t");
 }
 
-INLINE void via_cfb_op6(
+INLINE volatile  void via_cfb_op6(
             const void *k, const void *c, const void *s, void *d, int l, void *v)
 {
     NEH_REKEY;
@@ -450,7 +450,7 @@ INLINE void via_cfb_op6(
     NEH_CFB;
 }
 
-INLINE void via_cfb_op7(
+INLINE volatile  void via_cfb_op7(
         const void *k, const void *c, const void *s, void *d, int l, void *v, void *w)
 {
     NEH_REKEY;
@@ -466,7 +466,7 @@ INLINE void via_cfb_op7(
     asm("movsl; movsl; movsl; movsl\n\t");
 }
 
-INLINE void via_ofb_op6(
+INLINE volatile  void via_ofb_op6(
             const void *k, const void *c, const void *s, void *d, int l, void *v)
 {
     NEH_REKEY;

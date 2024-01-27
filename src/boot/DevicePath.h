@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef _DEVICEPATH_H_
-#define _DEVICEPATH_H_
-
 //
 // get device path size
 //
@@ -69,5 +66,3 @@ UINT32 DevPathGetPartitionNumber(EFI_DEVICE_PATH_PROTOCOL* devicePath);
 // get partition handle by number
 //
 EFI_HANDLE DevPathGetPartitionHandleByNumber(EFI_DEVICE_PATH_PROTOCOL* referencePath, UINT32 number);
-
-#endif

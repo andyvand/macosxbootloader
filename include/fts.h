@@ -63,6 +63,11 @@
 #include <sys/_types/_ino_t.h>
 #include <sys/_types/_nlink_t.h>
 
+#include <Availability.h>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
+
 typedef struct {
 	struct _ftsent *fts_cur;	/* current node */
 	struct _ftsent *fts_child;	/* linked list of children */
@@ -88,17 +93,18 @@ typedef struct {
 #define	FTS_PHYSICAL	0x010		/* physical walk */
 #define	FTS_SEEDOT	0x020		/* return dot and dot-dot */
 #define	FTS_XDEV	0x040		/* don't cross devices */
-#define	FTS_WHITEOUT	0x080		/* return whiteout information */
+#define	FTS_WHITEOUT	0x080		/* (no longer supported) return whiteout information */
 #define	FTS_COMFOLLOWDIR 0x400		/* (non-std) follow command line symlinks for directories only */
-#if (defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1090) || (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 70000)
+#if (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED < 1090) || (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 70000)
+#define	FTS_OPTIONMASK	0x4ff		/* valid user option mask */
+#else
 #define	FTS_NOSTAT_TYPE	0x800		/* (non-std) no stat, but use d_type in struct dirent when available */
 #define	FTS_OPTIONMASK	0xcff		/* valid user option mask */
-#else
-#define	FTS_OPTIONMASK	0x4ff		/* valid user option mask */
 #endif
 
 #define	FTS_NAMEONLY	0x100		/* (private) child names only */
 #define	FTS_STOP	0x200		/* (private) unrecoverable error */
+#define	FTS_THREAD_FCHDIR	0x400	/* (private) use pthread_fchdir_np */
 #ifdef __BLOCKS__
 #define	FTS_BLOCK_COMPAR 0x80000000	/* fts_compar is a block */
 #endif /* __BLOCKS__ */
@@ -114,7 +120,7 @@ typedef struct _ftsent {
 	char *fts_accpath;		/* access path */
 	char *fts_path;			/* root path */
 	int fts_errno;			/* errno for this node */
-	int fts_symfd;			/* fd for symlink */
+	int fts_symfd;			/* fd for symlink or chdir */
 	unsigned short fts_pathlen;	/* strlen(fts_path) */
 	unsigned short fts_namelen;	/* strlen(fts_name) */
 
@@ -124,6 +130,7 @@ typedef struct _ftsent {
 
 #define	FTS_ROOTPARENTLEVEL	-1
 #define	FTS_ROOTLEVEL		 0
+#define	FTS_MAXLEVEL		 0x7fffffff
 	short fts_level;		/* depth (-1 to N) */
 
 #define	FTS_D		 1		/* preorder directory */
@@ -145,6 +152,7 @@ typedef struct _ftsent {
 #define	FTS_DONTCHDIR	 0x01		/* don't chdir .. to the parent */
 #define	FTS_SYMFOLLOW	 0x02		/* followed a symlink to get here */
 #define	FTS_ISW		 0x04		/* this is a whiteout object */
+#define	FTS_CHDIRFD 0x08 /* indicates the fts_symfd field was set for chdir */
 	unsigned short fts_flags;	/* private flags for FTSENT structure */
 
 #define	FTS_AGAIN	 1		/* read node again */
@@ -166,11 +174,19 @@ int	 fts_close(FTS *) __DARWIN_INODE64(fts_close);
 FTS	*fts_open(char * const *, int,
 	    int (*)(const FTSENT **, const FTSENT **)) __DARWIN_INODE64(fts_open);
 #ifdef __BLOCKS__
+#if __has_attribute(noescape)
+#define __fts_noescape __attribute__((__noescape__))
+#else
+#define __fts_noescape
+#endif
 FTS	*fts_open_b(char * const *, int,
-	    int (^)(const FTSENT **, const FTSENT **)) __DARWIN_INODE64(fts_open_b) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_2);
+	    int (^)(const FTSENT **, const FTSENT **) __fts_noescape)
+	    __DARWIN_INODE64(fts_open_b) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_2);
 #endif /* __BLOCKS__ */
 FTSENT	*fts_read(FTS *) __DARWIN_INODE64(fts_read);
 int	 fts_set(FTS *, FTSENT *, int) __DARWIN_INODE64(fts_set);
 __END_DECLS
 
+#pragma clang diagnostic pop
 #endif /* !_FTS_H_ */
+

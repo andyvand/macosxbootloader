@@ -7,12 +7,7 @@
 
 #pragma once
 
-#ifndef _PANICDIALOG_H_
-#define _PANICDIALOG_H_
-
 //
 // show panic dialog
 //
 VOID BlShowPanicDialog(CHAR8** kernelCommandLine);
-
-#endif

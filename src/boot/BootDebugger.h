@@ -5,14 +5,21 @@
 //	purpose:	boot debugger
 //********************************************************************
 
-#pragma once
+#ifndef __BOOTDEBUGGER_H__
+#define __BOOTDEBUGGER_H__
 
-#ifndef _BOOTDEBUGGER_H_
-#define _BOOTDEBUGGER_H_
+#if defined(_MSC_VER)
+#pragma once
+#endif
 
 //
 // initialize boot debugger
 //
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions);
 
 //
@@ -45,4 +52,8 @@ UINT32 DbgPrint(CHAR8 CONST* printFormat, ...);
 //
 EFI_STATUS BdFinalize();
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* __BOOTDEBUGGER_H__ */

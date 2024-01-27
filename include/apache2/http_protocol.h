@@ -54,11 +54,32 @@ AP_DECLARE_DATA extern ap_filter_rec_t *ap_old_write_func;
  */
 
 /**
+ * Read an empty request and set reasonable defaults.
+ * @param c The current connection
+ * @return The new request_rec
+ */
+AP_DECLARE(request_rec *) ap_create_request(conn_rec *c);
+
+/**
  * Read a request and fill in the fields.
  * @param c The current connection
  * @return The new request_rec
  */
 request_rec *ap_read_request(conn_rec *c);
+
+/**
+ * Parse and validate the request line.
+ * @param r The current request
+ * @return 1 on success, 0 on failure
+ */
+AP_DECLARE(int) ap_parse_request_line(request_rec *r);
+
+/**
+ * Validate the request header and select vhost.
+ * @param r The current request
+ * @return 1 on success, 0 on failure
+ */
+AP_DECLARE(int) ap_check_request_header(request_rec *r);
 
 /**
  * Read the mime-encoded headers.
@@ -74,6 +95,13 @@ AP_DECLARE(void) ap_get_mime_headers(request_rec *r);
  */
 AP_DECLARE(void) ap_get_mime_headers_core(request_rec *r,
                                           apr_bucket_brigade *bb);
+
+/**
+ * Run post_read_request hook and validate.
+ * @param r The current request
+ * @return OK or HTTP_...
+ */
+AP_DECLARE(int) ap_post_read_request(request_rec *r);
 
 /* Finish up stuff after a request */
 
@@ -145,6 +173,27 @@ AP_DECLARE(const char *) ap_make_content_type(request_rec *r,
  */
 AP_DECLARE(void) ap_setup_make_content_type(apr_pool_t *pool);
 
+/** A structure with the ingredients for a file based etag */
+typedef struct etag_rec etag_rec;
+
+/**
+ * @brief A structure with the ingredients for a file based etag
+ */
+struct etag_rec {
+    /** Optional vary list validator */
+    const char *vlist_validator;
+    /** Time when the request started */
+    apr_time_t request_time;
+    /** finfo.protection (st_mode) set to zero if no such file */
+    apr_finfo_t *finfo;
+    /** File pathname used when generating a digest */
+    const char *pathname;
+    /** File descriptor used when generating a digest */
+    apr_file_t *fd;
+    /** Force a non-digest etag to be weak */
+    int force_weak;
+};
+
 /**
  * Construct an entity tag from the resource information.  If it's a real
  * file, build in some of the file characteristics.
@@ -156,10 +205,25 @@ AP_DECLARE(void) ap_setup_make_content_type(apr_pool_t *pool);
 AP_DECLARE(char *) ap_make_etag(request_rec *r, int force_weak);
 
 /**
+ * Construct an entity tag from information provided in the etag_rec
+ * structure.
+ * @param r The current request
+ * @param er The etag record, containing ingredients for the etag.
+ */
+AP_DECLARE(char *) ap_make_etag_ex(request_rec *r, etag_rec *er);
+
+/**
  * Set the E-tag outgoing header
  * @param r The current request
  */
 AP_DECLARE(void) ap_set_etag(request_rec *r);
+
+/**
+ * Set the E-tag outgoing header, with the option of forcing a strong ETag.
+ * @param r The current request
+ * @param fd The file descriptor
+ */
+AP_DECLARE(void) ap_set_etag_fd(request_rec *r, apr_file_t *fd);
 
 /**
  * Set the last modified time for the file being sent
@@ -411,7 +475,27 @@ AP_DECLARE(int) ap_rwrite(const void *buf, int nbyte, request_rec *r);
  */
 static APR_INLINE int ap_rputs(const char *str, request_rec *r)
 {
-    return ap_rwrite(str, (int)strlen(str), r);
+    apr_size_t len;
+
+    len = strlen(str);
+
+    for (;;) {
+        if (len <= INT_MAX) {
+            return ap_rwrite(str, (int)len, r);
+        }
+        else {
+            int rc;
+
+            rc = ap_rwrite(str, INT_MAX, r);
+            if (rc < 0) {
+                return rc;
+            }
+            else {
+                str += INT_MAX;
+                len -= INT_MAX;
+            }
+        }
+    }
 }
 
 /**
@@ -466,6 +550,17 @@ AP_DECLARE(int) ap_index_of_response(int status);
  */
 AP_DECLARE(const char *) ap_get_status_line(int status);
 
+/**
+ * Return the Status-Line for a given status code (excluding the
+ * HTTP-Version field). If an invalid status code is passed,
+ * "500 Internal Server Error" will be returned, whereas an unknown
+ * status will be returned like "xxx Status xxx".
+ * @param p The pool to allocate from when status is unknown
+ * @param status The HTTP status code
+ * @return The Status-Line
+ */
+AP_DECLARE(const char *) ap_get_status_line_ex(apr_pool_t *p, int status);
+
 /* Reading a block of data from the client connection (e.g., POST arg) */
 
 /**
@@ -501,6 +596,23 @@ AP_DECLARE(int) ap_should_client_block(request_rec *r);
  *         if EOF, or -1 if there was an error
  */
 AP_DECLARE(long) ap_get_client_block(request_rec *r, char *buffer, apr_size_t bufsiz);
+
+/**
+ * Map specific APR codes returned by the filter stack to HTTP error
+ * codes, or the default status code provided. Use it as follows:
+ *
+ * return ap_map_http_request_error(rv, HTTP_BAD_REQUEST);
+ *
+ * If the filter has already handled the error, AP_FILTER_ERROR will
+ * be returned, which is cleanly passed through.
+ *
+ * These mappings imply that the filter stack is reading from the
+ * downstream client, the proxy will map these codes differently.
+ * @param rv APR status code
+ * @param status Default HTTP code should the APR code not be recognised
+ * @return Mapped HTTP status code
+ */
+AP_DECLARE(int) ap_map_http_request_error(apr_status_t rv, int status);
 
 /**
  * In HTTP/1.1, any method can have a body.  However, most GET handlers
@@ -541,7 +653,11 @@ AP_DECLARE(void) ap_note_digest_auth_failure(request_rec *r);
 AP_DECLARE_HOOK(int, note_auth_failure, (request_rec *r, const char *auth_type))
 
 /**
- * Get the password from the request headers
+ * Get the password from the request headers. This function has multiple side
+ * effects due to its prior use in the old authentication framework.
+ * ap_get_basic_auth_components() should be preferred.
+ *
+ * @deprecated @see ap_get_basic_auth_components
  * @param r The current request
  * @param pw The password as set in the headers
  * @return 0 (OK) if it set the 'pw' argument (and assured
@@ -554,6 +670,25 @@ AP_DECLARE_HOOK(int, note_auth_failure, (request_rec *r, const char *auth_type))
  */
 AP_DECLARE(int) ap_get_basic_auth_pw(request_rec *r, const char **pw);
 
+#define AP_GET_BASIC_AUTH_PW_NOTE "AP_GET_BASIC_AUTH_PW_NOTE"
+
+/**
+ * Get the username and/or password from the request's Basic authentication
+ * headers. Unlike ap_get_basic_auth_pw(), calling this function has no side
+ * effects on the passed request_rec.
+ *
+ * @param r The current request
+ * @param username If not NULL, set to the username sent by the client
+ * @param password If not NULL, set to the password sent by the client
+ * @return APR_SUCCESS if the credentials were successfully parsed and returned;
+ *         APR_EINVAL if there was no authentication header sent or if the
+ *         client was not using the Basic authentication scheme. username and
+ *         password are unchanged on failure.
+ */
+AP_DECLARE(apr_status_t) ap_get_basic_auth_components(const request_rec *r,
+                                                      const char **username,
+                                                      const char **password);
+
 /**
  * parse_uri: break apart the uri
  * @warning Side Effects:
@@ -565,17 +700,24 @@ AP_DECLARE(int) ap_get_basic_auth_pw(request_rec *r, const char **pw);
  */
 AP_CORE_DECLARE(void) ap_parse_uri(request_rec *r, const char *uri);
 
+#define AP_GETLINE_FOLD 1 /* Whether to merge continuation lines */
+#define AP_GETLINE_CRLF 2 /* Whether line ends must be in the form CR LF */
+#define AP_GETLINE_NOSPC_EOL 4 /* Whether to consume up to and including the
+                                  end of line on APR_ENOSPC */
+
 /**
  * Get the next line of input for the request
  * @param s The buffer into which to read the line
  * @param n The size of the buffer
  * @param r The request
- * @param fold Whether to merge continuation lines
+ * @param flags Bit flag of multiple parsing options
+ *              AP_GETLINE_FOLD Whether to merge continuation lines
+ *              AP_GETLINE_CRLF Whether line ends must be in the form CR LF
  * @return The length of the line, if successful
  *         n, if the line is too big to fit in the buffer
  *         -1 for miscellaneous errors
  */
-AP_DECLARE(int) ap_getline(char *s, int n, request_rec *r, int fold);
+AP_DECLARE(int) ap_getline(char *s, int n, request_rec *r, int flags);
 
 /**
  * Get the next line of input for the request
@@ -593,7 +735,9 @@ AP_DECLARE(int) ap_getline(char *s, int n, request_rec *r, int fold);
  * @param n The size of the buffer
  * @param read The length of the line.
  * @param r The request
- * @param fold Whether to merge continuation lines
+ * @param flags Bit flag of multiple parsing options
+ *              AP_GETLINE_FOLD Whether to merge continuation lines
+ *              AP_GETLINE_CRLF Whether line ends must be in the form CR LF
  * @param bb Working brigade to use when reading buckets
  * @return APR_SUCCESS, if successful
  *         APR_ENOSPC, if the line is too big to fit in the buffer
@@ -602,7 +746,7 @@ AP_DECLARE(int) ap_getline(char *s, int n, request_rec *r, int fold);
 #if APR_CHARSET_EBCDIC
 AP_DECLARE(apr_status_t) ap_rgetline(char **s, apr_size_t n,
                                      apr_size_t *read,
-                                     request_rec *r, int fold,
+                                     request_rec *r, int flags,
                                      apr_bucket_brigade *bb);
 #else /* ASCII box */
 #define ap_rgetline(s, n, read, r, fold, bb) \
@@ -612,7 +756,7 @@ AP_DECLARE(apr_status_t) ap_rgetline(char **s, apr_size_t n,
 /** @see ap_rgetline */
 AP_DECLARE(apr_status_t) ap_rgetline_core(char **s, apr_size_t n,
                                           apr_size_t *read,
-                                          request_rec *r, int fold,
+                                          request_rec *r, int flags,
                                           apr_bucket_brigade *bb);
 
 /**
@@ -682,6 +826,207 @@ AP_DECLARE_HOOK(const char *,http_scheme,(const request_rec *r))
  * @return The current port
  */
 AP_DECLARE_HOOK(apr_port_t,default_port,(const request_rec *r))
+
+
+#define AP_PROTOCOL_HTTP1        "http/1.1"
+
+/**
+ * Determine the list of protocols available for a connection/request. This may
+ * be collected with or without any request sent, in which case the request is 
+ * NULL. Or it may be triggered by the request received, e.g. through the 
+ * "Upgrade" header.
+ *
+ * This hook will be run whenever protocols are being negotiated (ALPN as
+ * one example). It may also be invoked at other times, e.g. when the server
+ * wants to advertise protocols it is capable of switching to.
+ * 
+ * The identifiers for protocols are taken from the TLS extension type ALPN:
+ * https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xml
+ *
+ * If no protocols are added to the proposals, the server not perform any
+ * switch. If the protocol selected from the proposals is the protocol
+ * already in place, also no protocol switch will be invoked.
+ *
+ * The client may already have announced the protocols it is willing to
+ * accept. These will then be listed as offers. This parameter may also
+ * be NULL, indicating that offers from the client are not known and
+ * the hooks should propose all protocols that are valid for the
+ * current connection/request.
+ *
+ * All hooks are run, unless one returns an error. Proposals may contain
+ * duplicates. The order in which proposals are added is usually ignored.
+ * 
+ * @param c The current connection
+ * @param r The current request or NULL
+ * @param s The server/virtual host selected
+ * @param offers A list of protocol identifiers offered by the client or
+ *               NULL to indicated that the hooks are free to propose 
+ * @param proposals The list of protocol identifiers proposed by the hooks
+ * @return OK or DECLINED
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE_HOOK(int,protocol_propose,(conn_rec *c, request_rec *r,
+                                      server_rec *s,
+                                      const apr_array_header_t *offers,
+                                      apr_array_header_t *proposals))
+
+/**
+ * Perform a protocol switch on the connection. The exact requirements for
+ * that depend on the protocol in place and the one switched to. The first 
+ * protocol module to handle the switch is the last module run.
+ * 
+ * For a connection level switch (r == NULL), the handler must on return
+ * leave the conn_rec in a state suitable for processing the switched
+ * protocol, e.g. correct filters in place.
+ *
+ * For a request triggered switch (r != NULL), the protocol switch is done
+ * before the response is sent out. When switching from "http/1.1" via Upgrade
+ * header, the 101 intermediate response will have been sent. The
+ * hook needs then to process the connection until it can be closed. Which
+ * the server will enforce on hook return.
+ * Any error the hook might encounter must already be sent by the hook itself
+ * to the client in whatever form the new protocol requires.
+ *
+ * @param c The current connection
+ * @param r The current request or NULL
+ * @param s The server/virtual host selected
+ * @param protocol The protocol identifier we try to switch to
+ * @return OK or DECLINED
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE_HOOK(int,protocol_switch,(conn_rec *c, request_rec *r,
+                                     server_rec *s,
+                                     const char *protocol))
+
+/**
+ * Return the protocol used on the connection. Modules implementing
+ * protocol switching must register here and return the correct protocol
+ * identifier for connections they switched.
+ *
+ * To find out the protocol for the current connection, better call
+ * @see ap_get_protocol which internally uses this hook.
+ *
+ * @param c The current connection
+ * @return The identifier of the protocol in place or NULL
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE_HOOK(const char *,protocol_get,(const conn_rec *c))
+
+/**
+ * Get the protocols that the connection and optional request may
+ * upgrade to - besides the protocol currently active on the connection. These
+ * values may be used to announce to a client what choices it has.
+ *
+ * If report_all == 0, only protocols more preferable than the one currently
+ * being used, are reported. Otherwise, all available protocols beside the
+ * current one are being reported.
+ *
+ * @param c The current connection
+ * @param r The current request or NULL
+ * @param s The server/virtual host selected or NULL
+ * @param report_all include also protocols less preferred than the current one
+ * @param pupgrades on return, possible protocols to upgrade to in descending order 
+ *                 of preference. Maybe NULL if none are available.    
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE(apr_status_t) ap_get_protocol_upgrades(conn_rec *c, request_rec *r, 
+                                                  server_rec *s, int report_all, 
+                                                  const apr_array_header_t **pupgrades);
+                                                  
+/**
+ * Select a protocol for the given connection and optional request. Will return
+ * the protocol identifier selected which may be the protocol already in place
+ * on the connection. The selected protocol will be NULL if non of the given
+ * choices could be agreed upon (e.g. no proposal as made).
+ *
+ * A special case is where the choices itself is NULL (instead of empty). In
+ * this case there are no restrictions imposed on protocol selection.
+ *
+ * @param c The current connection
+ * @param r The current request or NULL
+ * @param s The server/virtual host selected
+ * @param choices A list of protocol identifiers, normally the clients whishes
+ * @return The selected protocol or NULL if no protocol could be agreed upon
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE(const char *) ap_select_protocol(conn_rec *c, request_rec *r, 
+                                            server_rec *s,
+                                            const apr_array_header_t *choices);
+
+/**
+ * Perform the actual protocol switch. The protocol given must have been
+ * selected before on the very same connection and request pair.
+ *
+ * @param c The current connection
+ * @param r The current request or NULL
+ * @param s The server/virtual host selected
+ * @param protocol the protocol to switch to
+ * @return APR_SUCCESS, if caller may continue processing as usual
+ *         APR_EOF,     if caller needs to stop processing the connection
+ *         APR_EINVAL,  if the protocol is already in place
+ *         APR_NOTIMPL, if no module performed the switch
+ *         Other errors where appropriate
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE(apr_status_t) ap_switch_protocol(conn_rec *c, request_rec *r, 
+                                            server_rec *s,
+                                            const char *protocol);
+
+/**
+ * Call the protocol_get hook to determine the protocol currently in use
+ * for the given connection.
+ *
+ * Unless another protocol has been switch to, will default to
+ * @see AP_PROTOCOL_HTTP1 and modules implementing a  new protocol must
+ * report a switched connection via the protocol_get hook.
+ *
+ * @param c The connection to determine the protocol for
+ * @return the protocol in use, never NULL
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE(const char *) ap_get_protocol(conn_rec *c);
+
+/**
+ * Check if the given protocol is an allowed choice on the given
+ * combination of connection, request and server. 
+ *
+ * When server is NULL, it is taken from request_rec, unless
+ * request_rec is NULL. Then it is taken from the connection base
+ * server.
+ *
+ * @param c The current connection
+ * @param r The current request or NULL
+ * @param s The server/virtual host selected or NULL
+ * @param protocol the protocol to switch to
+ * @return != 0 iff protocol is allowed
+ * @bug This API or implementation and order of operations should be considered
+ * experimental and will continue to evolve in future 2.4 releases, with
+ * a corresponding minor module magic number (MMN) bump to indicate the
+ * API revision level.
+ */
+AP_DECLARE(int) ap_is_allowed_protocol(conn_rec *c, request_rec *r,
+                                       server_rec *s, const char *protocol);
 
 /** @see ap_bucket_type_error */
 typedef struct ap_bucket_error ap_bucket_error;
@@ -763,6 +1108,8 @@ AP_DECLARE(void) ap_finalize_sub_req_protocol(request_rec *sub_r);
  * @param send_headers Whether to send&clear headers in r->headers_out
  */
 AP_DECLARE(void) ap_send_interim_response(request_rec *r, int send_headers);
+
+
 
 #ifdef __cplusplus
 }

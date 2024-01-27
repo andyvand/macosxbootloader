@@ -1,7 +1,7 @@
 #=-> macosxbootloader OS X Makefile <-=#
 
 ### Top level directory ###
-TOPDIR=$(PWD)
+TOPDIR=.
 PREBUILT=$(TOPDIR)/Prebuilt
 
 ### Target OS ###
@@ -18,10 +18,10 @@ endif
 INSTALL = install
 
 ### Change to "" for no code signing or to your Apple developer certificate ###
-#SIGNCERT = ""
-#PKGSIGNCERT = ""
-SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
-PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
+SIGNCERT = ""
+PKGSIGNCERT = ""
+# SIGNCERT = "Developer ID Application: Andy Vandijck (GSF3NR4NQ5)"
+# PKGSIGNCERT = "Developer ID Installer: Andy Vandijck (GSF3NR4NQ5)"
 
 ### Tools ###
 ifeq ("$(WINTOOLS)", "1")
@@ -56,7 +56,7 @@ NASMFLAGS=-f win64 -DAPPLE
 MTOC=mv -f
 endif
 
-CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -nostdinc -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -DGNU -U__declspec -D__declspec\(x\)= -D__APPLE__"
+CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -nostdinc -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I../../include -DGNU -U__declspec -D__declspec\(x\)= -D__APPLE__"
 CXXFLAGS = $(CFLAGS)
 
 ifeq ("$(ARCH)", "i386")
@@ -99,13 +99,14 @@ else
 DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG -fstandalone-debug
 endif
 
-CC=/usr/bin/clang
-CXX=/usr/bin/clang
+CC=../../Prebuilt/clang
+CXX=../../Prebuilt/clang
 LD=ld
 AR=ar
 STRIP = strip
 RANLIB=ranlib
-MTOC="$(PREBUILT)/mtoc" -subsystem UEFI_APPLICATION -align 0x20
+# MTOC="$(PREBUILT)/mtoc" -subsystem UEFI_APPLICATION -align 0x20
+MTOC="../../Prebuilt/mtoc" -subsystem UEFI_APPLICATION -align 0x20
 
 ### Architecture - Intel 32 bit / Intel 64 bit ###
 ifeq ("$(ARCH)", "i386")
@@ -121,12 +122,12 @@ ARCHFLAGS = -arch x86_64
 ARCHLDFLAGS =  -u _EfiMain -e _EfiMain
 NASMFLAGS = -f macho64 -DARCH64 -DAPPLEUSE -DARCH64COMP
 STRIP = strip
-ARCHCFLAGS = -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -msoft-float -D__x86_64__=1
+ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -fno-stack-protector -fno-builtin -fshort-wchar -mno-implicit-float -msoft-float -mms-bitfields -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang -D__x86_64__=1
 EXTRAOBJS=
 endif
 
-CFLAGS = "-Wall -Werror $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions -nostdinc $(ARCHCFLAGS) -fpie -std=gnu11 -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions" 
-CXXFLAGS = "-Wall -Werror $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions -nostdinc $(ARCHCFLAGS) -fpie -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I$(TOPDIR)/include -D_MSC_EXTENSIONS=1 -fno-exceptions -std=gnu++11"
+CFLAGS = "-Wall $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions -nostdinc $(ARCHCFLAGS) -std=gnu11 -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I../../include -fno-exceptions"
+CXXFLAGS = "-Wall $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions -nostdinc $(ARCHCFLAGS) -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I../../include -fno-exceptions -std=gnu++11"
 LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -image_base 0x240 -compatibility_version 1.0 -current_version 2.1 -flat_namespace -print_statistics -map boot.map -sectalign __TEXT __text 0x20  -sectalign __TEXT __eh_frame  0x20 -sectalign __TEXT __ustring 0x20  -sectalign __TEXT __const 0x20   -sectalign __TEXT __ustring 0x20 -sectalign __DATA __data 0x20  -sectalign __DATA __bss 0x20  -sectalign __DATA __common 0x20 -final_output boot.efi"
 
 ifeq ("$(ARCH)", "i386")
@@ -136,7 +137,7 @@ AESASMDEFS=-DASM_X86_V2=1 -D_ASM_X86_V2=1
 #AESASMDEFS=
 
 ### define ASM_X86_V1C for this object ###
-EXTRAAESOBJS=aes_x86_v1.o
+# EXTRAAESOBJS=aes_x86_v1.o
 
 ### define ASM_X86_V2 or ASM_X86_V2C for this object ###
 #EXTRAAESOBJS=aes_x86_v2.o
@@ -149,12 +150,12 @@ ASMCOMPFLAGS=
 NASMCOMPFLAGS=
 else
 ### define ASM_AMD64_C for this object ###
-EXTRAAESOBJS=aes_amd64.o
+# EXTRAAESOBJS=aes_amd64.o
 
 ### define no ASM_AMD64_C at all for this ###
-#EXTRAAESOBJS=
+EXTRAAESOBJS=
 
-ASMCOMPFLAGS="-DASM_AMD64_C=1 -D_DASM_AMD64_C=1"
+# ASMCOMPFLAGS="-DASM_AMD64_C=1 -D_DASM_AMD64_C=1"
 NASMCOMPFLAGS=-Daes_encrypt=_aes_encrypt -Daes_decrypt=_aes_decrypt
 #ASMCOMPFLAGS=
 endif
@@ -162,9 +163,9 @@ endif
 
 ifeq ("$(OBJCONV)", "1")
 ifeq ("$(ARCH)", "i386")
-MTOC=objconv -ed2022 -fwin32 -xs -nu
+MTOC="$(PREBUILT)/objconv" -ed2022 -fwin32 -xs -nu
 else
-MTOC=objconv -ed2022 -fwin64 -xs -nu
+MTOC="$(PREBUILT)/objconv" -ed2022 -fwin64 -xs -nu
 endif
 endif
 

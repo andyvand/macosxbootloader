@@ -8,7 +8,7 @@
 #include "StdAfx.h"
 #include "PanicDialog.h"
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
 #endif
 
@@ -33,9 +33,9 @@ typedef struct _PANIC_INFO_LOG
 	// reboot time
 	//
 	EFI_TIME																RebootTime[5];
-} GNUPACK PANIC_INFO_LOG;
+}PANIC_INFO_LOG;
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -52,11 +52,17 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 	BOOLEAN retValue														= FALSE;
 	UINT8* panicInfoBuffer													= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		panicInfoBuffer														= static_cast<UINT8*>(MmAllocatePool(totalInfoLength));
 		if(!panicInfoBuffer)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read all info
@@ -68,7 +74,11 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		{
 			BlpPanicInfoName[17]											= static_cast<CHAR16>(i < 10 ? L'0' + i : L'A' + i - 10);
 			if(EFI_ERROR(EfiRuntimeServices->GetVariable(BlpPanicInfoName, &AppleNVRAMVariableGuid, nullptr, &dataSize, readBuffer)))
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
 
 			leftLength														-= dataSize;
 			readBuffer														= Add2Ptr(readBuffer, dataSize, VOID*);
@@ -91,7 +101,7 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		//
 		PANIC_INFO_LOG panicInfoLog											= {0};
 		dataSize															= sizeof(panicInfoLog);
-		EFI_STATUS status													= EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &panicInfoLog);
+		EFI_STATUS status													= EfiRuntimeServices->GetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &panicInfoLog);
 		if(status == EFI_NOT_FOUND)
 		{
 			memset(&panicInfoLog, 0, sizeof(panicInfoLog));
@@ -99,13 +109,21 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 			panicInfoLog.RebootTime[0]										= nowEfiTime;
 			panicInfoLog.WriteIndex											= 0;
 			panicInfoLog.CheckSum											= checkSum;
-			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog);
+			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog);
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 		}
 		else if(EFI_ERROR(status) || panicInfoLog.Signature != 0x1234)
 		{
-			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
+			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 		}
 
 		//
@@ -131,25 +149,40 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		panicInfoLog.CheckSum												= checkSum;
 		panicInfoLog.WriteIndex												= (panicInfoLog.WriteIndex + 1) % ARRAYSIZE(panicInfoLog.RebootTime);
 		panicInfoLog.RebootTime[panicInfoLog.WriteIndex]					= nowEfiTime;
-		if(EFI_ERROR(EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog)))
-			try_leave(NOTHING);
+		if(EFI_ERROR(EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// check the same
 		//
-		if(oldCheckSum == checkSum)
-			try_leave(retValue = TRUE);
+        if(oldCheckSum == checkSum) {
+#if defined(_MSC_VER)
+            try_leave(retValue = TRUE);
+#else
+            retValue = TRUE;
+            return retValue;
+#endif
+        }
 
 		//
 		// count 180 seconds
 		//
-		if(!deltaTime || deltaTime >= 180)
-			try_leave(NOTHING);
+        if(!deltaTime || deltaTime >= 180) {
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
+        }
 
 		//
 		// clear old record
 		//
-		EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
+		EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, 0, nullptr);
 
 		//
 		// setup display
@@ -174,12 +207,16 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		CsPrintf(CHAR8_CONST_STRING("***************************************************************\n"));
 		EfiBootServices->Stall(30 * 1000 * 1000);
 		EfiRuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, nullptr);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(panicInfoBuffer)
 			MmFreePool(panicInfoBuffer);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return retValue;
 }
@@ -189,23 +226,33 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 //
 VOID BlShowPanicDialog(CHAR8** kernelCommandLine)
 {
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// read AAPL,PanicInfo0000
 		//
 		UINTN dataSize														= 0;
 		BlpPanicInfoName[17]												= L'0';
 		if(EfiRuntimeServices->GetVariable(BlpPanicInfoName, &AppleNVRAMVariableGuid, nullptr, &dataSize, nullptr) != EFI_BUFFER_TOO_SMALL || !dataSize)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// read Panic flags ?
 		//
 		UINT8 systemVolume													= 0;
 		dataSize															= sizeof(systemVolume);
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"SystemAudioVolume"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &systemVolume)) || !(systemVolume & 0x80))
+		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"SystemAudioVolume"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &systemVolume)) || !(systemVolume & 0x80))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// get all info length
@@ -230,7 +277,11 @@ VOID BlShowPanicDialog(CHAR8** kernelCommandLine)
 		// detect panic loop
 		//
 		if(!EFI_ERROR(status) && totalLength && BlpDetectPanicLoop(maxIndex, totalLength))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		CsPrintf(CHAR8_CONST_STRING("\n"));
 		CsPrintf(CHAR8_CONST_STRING("***************************************************************\n"));
@@ -298,9 +349,11 @@ VOID BlShowPanicDialog(CHAR8** kernelCommandLine)
 			*kernelCommandLine												= BlSetupKernelCommandLine(oldCommandLine, nullptr, nullptr);
 			MmFreePool(oldCommandLine);
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
+#endif
 }

@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
-
 //
 // define
 //
@@ -109,5 +106,3 @@ CHAR8 CONST* CmSerializeValueForKey(CHAR8 CONST* keyName, UINTN* valueLength);
 // free tag
 //
 VOID CmFreeTag(XML_TAG* theTag);
-
-#endif

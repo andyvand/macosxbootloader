@@ -10,35 +10,19 @@
 
 %include "Common.inc"
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z12ArchGetSegCsv
-%else
-PUBLIC_ROUTINE ?ArchGetSegCs@@YAIXZ
-%endif
+PUBLIC_ROUTINE ArchGetSegCs
 									mov					ax, cs
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z18ArchGetIdtRegisterP11_DESCRIPTOR
-%else
-PUBLIC_ROUTINE ?ArchGetIdtRegister@@YAXPEAU_DESCRIPTOR@@@Z
-%endif
+PUBLIC_ROUTINE ArchGetIdtRegister
 									sidt				[rcx + _KDESCRIPTOR.Limit]
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z18ArchSetIdtRegisterP11_DESCRIPTOR
-%else
-PUBLIC_ROUTINE ?ArchSetIdtRegister@@YAXPEAU_DESCRIPTOR@@@Z
-%endif
+PUBLIC_ROUTINE ArchSetIdtRegister
 									lidt				[rcx + _KDESCRIPTOR.Limit]
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z25MmTranslateVirtualAddressPvPy
-%else
-PUBLIC_ROUTINE ?MmTranslateVirtualAddress@@YAEPEAXPEA_K@Z
-%endif
+PUBLIC_ROUTINE MmTranslateVirtualAddress
 									mov					rax, rcx
 									mov					r11, 0x000ffffffffff000
 									mov					r9, 0x00007fffffffffff
@@ -121,11 +105,7 @@ PUBLIC_ROUTINE ?MmTranslateVirtualAddress@@YAEPEAXPEA_K@Z
 .finished:
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z9ArchCpuIdjPjS_S_S_
-%else
-PUBLIC_ROUTINE ?ArchCpuId@@YAXIPEAI000@Z
-%endif
+PUBLIC_ROUTINE ArchCpuId
 									push				rbx
 									mov					eax, ecx
 									mov					r10, rdx
@@ -138,11 +118,7 @@ PUBLIC_ROUTINE ?ArchCpuId@@YAXIPEAI000@Z
 									pop					rbx
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z18ArchHardwareRandomv
-%else
-PUBLIC_ROUTINE ?ArchHardwareRandom@@YA_KXZ
-%endif
+PUBLIC_ROUTINE ArchHardwareRandom
 									mov					edx, 0x0a
 
 .compute_rand:
@@ -158,11 +134,7 @@ PUBLIC_ROUTINE ?ArchHardwareRandom@@YA_KXZ
 									retn
 
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z14ArchGetCpuTickv
-%else
-PUBLIC_ROUTINE ?ArchGetCpuTick@@YA_KXZ
-%endif
+PUBLIC_ROUTINE ArchGetCpuTick
 									lfence
 									rdtsc
 									lfence
@@ -170,8 +142,8 @@ PUBLIC_ROUTINE ?ArchGetCpuTick@@YA_KXZ
 									or					rax, rdx
 									retn
 
-PUBLIC_ROUTINE __chkstk
+PUBLIC_ROUTINE _chkstk
 									retn
 
-PUBLIC_ROUTINE __C_specific_handler
+PUBLIC_ROUTINE _C_specific_handler
 									retn

@@ -26,12 +26,15 @@
 #include <dispatch/base.h> // for HeaderDoc
 #endif
 
+DISPATCH_ASSUME_NONNULL_BEGIN
+DISPATCH_ASSUME_ABI_SINGLE_BEGIN
+
 /*!
  * @typedef dispatch_group_t
  * @abstract
  * A group of blocks submitted to queues for asynchronous invocation.
  */
-DISPATCH_DECL(dispatch_group);
+DISPATCH_DECL_SWIFT(dispatch_group, DispatchGroup);
 
 __BEGIN_DECLS
 
@@ -49,9 +52,10 @@ __BEGIN_DECLS
  * @result
  * The newly created group, or NULL on failure.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_MALLOC DISPATCH_RETURNS_RETAINED DISPATCH_WARN_RESULT
 DISPATCH_NOTHROW
+DISPATCH_SWIFT_NAME(DispatchGroup.init())
 dispatch_group_t
 dispatch_group_create(void);
 
@@ -79,8 +83,9 @@ dispatch_group_create(void);
  * The block to perform asynchronously.
  */
 #ifdef __BLOCKS__
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 void
 dispatch_group_async(dispatch_group_t group,
 	dispatch_queue_t queue,
@@ -113,13 +118,14 @@ dispatch_group_async(dispatch_group_t group,
  * parameter passed to this function is the context provided to
  * dispatch_group_async_f().
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL1 DISPATCH_NONNULL2 DISPATCH_NONNULL4
 DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchQueue.async(self:group:qos:flags:execute:)")
 void
 dispatch_group_async_f(dispatch_group_t group,
 	dispatch_queue_t queue,
-	void *context,
+	void *_Nullable context,
 	dispatch_function_t work);
 
 /*!
@@ -132,8 +138,7 @@ dispatch_group_async_f(dispatch_group_t group,
  * @discussion
  * This function waits for the completion of the blocks associated with the
  * given dispatch group, and returns after all blocks have completed or when
- * the specified timeout has elapsed. When a timeout occurs, the group is
- * restored to its original state.
+ * the specified timeout has elapsed.
  *
  * This function will return immediately if there are no blocks associated
  * with the dispatch group (i.e. the group is empty).
@@ -157,9 +162,10 @@ dispatch_group_async_f(dispatch_group_t group,
  * Returns zero on success (all blocks associated with the group completed
  * within the specified timeout) or non-zero on error (i.e. timed out).
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
-long
+DISPATCH_REFINED_FOR_SWIFT
+intptr_t
 dispatch_group_wait(dispatch_group_t group, dispatch_time_t timeout);
 
 /*!
@@ -193,8 +199,9 @@ dispatch_group_wait(dispatch_group_t group, dispatch_time_t timeout);
  * The block to submit when the group completes.
  */
 #ifdef __BLOCKS__
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 void
 dispatch_group_notify(dispatch_group_t group,
 	dispatch_queue_t queue,
@@ -223,13 +230,14 @@ dispatch_group_notify(dispatch_group_t group,
  * parameter passed to this function is the context provided to
  * dispatch_group_notify_f().
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL1 DISPATCH_NONNULL2 DISPATCH_NONNULL4
 DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchGroup.notify(self:qos:flags:queue:execute:)")
 void
 dispatch_group_notify_f(dispatch_group_t group,
 	dispatch_queue_t queue,
-	void *context,
+	void *_Nullable context,
 	dispatch_function_t work);
 
 /*!
@@ -247,8 +255,9 @@ dispatch_group_notify_f(dispatch_group_t group,
  * The dispatch group to update.
  * The result of passing NULL in this parameter is undefined.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
+DISPATCH_SWIFT_NAME(DispatchGroup.enter(self:))
 void
 dispatch_group_enter(dispatch_group_t group);
 
@@ -260,17 +269,21 @@ dispatch_group_enter(dispatch_group_t group);
  *
  * @discussion
  * Calling this function indicates block has completed and left the dispatch
- * groupJ by a means other than dispatch_group_async().
+ * group by a means other than dispatch_group_async().
  *
  * @param group
  * The dispatch group to update.
  * The result of passing NULL in this parameter is undefined.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
+DISPATCH_SWIFT_NAME(DispatchGroup.leave(self:))
 void
 dispatch_group_leave(dispatch_group_t group);
 
 __END_DECLS
+
+DISPATCH_ASSUME_ABI_SINGLE_END
+DISPATCH_ASSUME_NONNULL_END
 
 #endif

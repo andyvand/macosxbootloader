@@ -46,9 +46,6 @@ extern "C" {
 #if defined( _MSC_VER ) && ( _MSC_VER >= 1300 )
 #  include <stddef.h>
 #  define ptrint_t intptr_t
-#elif defined( __APPLE__ )
-#  define intptr_t unsigned int
-#  define ptrint_t intptr_t
 #elif defined( __ECOS__ )
 #  define intptr_t unsigned int
 #  define ptrint_t intptr_t
@@ -164,12 +161,9 @@ extern "C" {
 #    else
 #      error Use of the DLL is only available on the Microsoft, Intel and GCC compilers
 #    endif
+#  elif defined( __WATCOMC__ )
 #    define VOID_RETURN  void __cdecl
 #    define INT_RETURN   int  __cdecl
-#  elif defined( __APPLE__ )
-#    define VOID_RETURN  const void
-#    define INT_RETURN const int
-#  elif defined( __WATCOMC__ )
 #  else
 #    define VOID_RETURN  void
 #    define INT_RETURN   int
@@ -195,23 +189,9 @@ extern "C" {
 								pointed to by 'x' ('n' is a power of 2)
 */
 
-#ifdef GNU
-#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(_WIN64)
-#ifdef WIN64
-#define EXTRACAST(a) (unsigned long long)(a)
-#else
-#define EXTRACAST(a) (unsigned long)(a)
-#endif
-#else
-#define EXTRACAST(a) (unsigned long)(a)
-#endif
-#else
-#define EXTRACAST(a) a
-#endif
-
-#define ALIGN_OFFSET(x,n)	(((ptrint_t)(EXTRACAST(x))) & ((n) - 1))
-#define ALIGN_FLOOR(x,n)	((uint_8t*)(x) - ( ((ptrint_t)(EXTRACAST(x))) & ((n) - 1)))
-#define ALIGN_CEIL(x,n)		((uint_8t*)(x) + (-((ptrint_t)(EXTRACAST(x))) & ((n) - 1)))
+#define ALIGN_OFFSET(x,n)	(((ptrint_t)(x)) & ((n) - 1))
+#define ALIGN_FLOOR(x,n)	((uint_8t*)(x) - ( ((ptrint_t)(x)) & ((n) - 1)))
+#define ALIGN_CEIL(x,n)		((uint_8t*)(x) + (-((ptrint_t)(x)) & ((n) - 1)))
 
 /*  These defines are used to declare buffers in a way that allows
     faster operations on longer variables to be used.  In all these

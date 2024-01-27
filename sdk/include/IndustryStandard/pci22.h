@@ -35,13 +35,7 @@ Revision History
 //
 #define PCI_VGA_PALETTE_SNOOP_DISABLED  0x20
 
-#ifdef _MSC_VER
-#pragma pack(1)
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
-#endif
-
+#pragma pack(push, 1)
 typedef struct {
   UINT16  VendorId;
   UINT16  DeviceId;
@@ -53,7 +47,7 @@ typedef struct {
   UINT8   LatencyTimer;
   UINT8   HeaderType;
   UINT8   BIST;
-} GNUPACK PCI_DEVICE_INDEPENDENT_REGION;
+} PCI_DEVICE_INDEPENDENT_REGION;
 
 typedef struct {
   UINT32  Bar[6];
@@ -68,12 +62,12 @@ typedef struct {
   UINT8   InterruptPin;
   UINT8   MinGnt;
   UINT8   MaxLat;
-} GNUPACK PCI_DEVICE_HEADER_TYPE_REGION;
+} PCI_DEVICE_HEADER_TYPE_REGION;
 
 typedef struct {
   PCI_DEVICE_INDEPENDENT_REGION Hdr;
   PCI_DEVICE_HEADER_TYPE_REGION Device;
-} GNUPACK PCI_TYPE00;
+} PCI_TYPE00;
 
 typedef struct {
   UINT32  Bar[2];
@@ -98,17 +92,17 @@ typedef struct {
   UINT8   InterruptLine;
   UINT8   InterruptPin;
   UINT16  BridgeControl;
-} GNUPACK PCI_BRIDGE_CONTROL_REGISTER;
+} PCI_BRIDGE_CONTROL_REGISTER;
 
 typedef struct {
   PCI_DEVICE_INDEPENDENT_REGION Hdr;
   PCI_BRIDGE_CONTROL_REGISTER   Bridge;
-} GNUPACK PCI_TYPE01;
+} PCI_TYPE01;
 
 typedef union {
   PCI_TYPE00  Device;
   PCI_TYPE01  Bridge;
-} GNUPACK PCI_TYPE_GENERIC;
+} PCI_TYPE_GENERIC;
 
 typedef struct {
   UINT32  CardBusSocketReg; // Cardus Socket/ExCA Base
@@ -131,7 +125,7 @@ typedef struct {
   UINT8   InterruptLine;        // Interrupt Line
   UINT8   InterruptPin;         // Interrupt Pin
   UINT16  BridgeControl;        // Bridge Control
-} GNUPACK PCI_CARDBUS_CONTROL_REGISTER;
+} PCI_CARDBUS_CONTROL_REGISTER;
 
 //
 // Definitions of PCI class bytes and manipulation macros.
@@ -349,11 +343,9 @@ typedef struct {
   UINT32  Bus : 8;
   UINT32  Reserved : 7;
   UINT32  Enable : 1;
-} GNUPACK PCI_CONFIG_ACCESS_CF8;
+} PCI_CONFIG_ACCESS_CF8;
 
-#ifdef _MSC_VER
 #pragma pack()
-#endif
 
 #define PCI_EXPANSION_ROM_HEADER_SIGNATURE              0xaa55
 #define PCI_DATA_STRUCTURE_SIGNATURE                    EFI_SIGNATURE_32 ('P', 'C', 'I', 'R')
@@ -404,15 +396,12 @@ typedef struct {
 #define EFI_PCI_CAPABILITY_PTR                0x34
 #define EFI_PCI_CARDBUS_BRIDGE_CAPABILITY_PTR 0x14
 
-#ifdef _MSC_VER
 #pragma pack(1)
-#endif
-
 typedef struct {
   UINT16  Signature;    // 0xaa55
   UINT8   Reserved[0x16];
   UINT16  PcirOffset;
-} GNUPACK PCI_EXPANSION_ROM_HEADER;
+} PCI_EXPANSION_ROM_HEADER;
 
 typedef struct {
   UINT16  Signature;    // 0xaa55
@@ -420,7 +409,7 @@ typedef struct {
   UINT8   InitEntryPoint[3];
   UINT8   Reserved[0x12];
   UINT16  PcirOffset;
-} GNUPACK EFI_LEGACY_EXPANSION_ROM_HEADER;
+} EFI_LEGACY_EXPANSION_ROM_HEADER;
 
 typedef struct {
   UINT32  Signature;    // "PCIR"
@@ -435,7 +424,7 @@ typedef struct {
   UINT8   CodeType;
   UINT8   Indicator;
   UINT16  Reserved1;
-} GNUPACK PCI_DATA_STRUCTURE;
+} PCI_DATA_STRUCTURE;
 
 //
 // PCI Capability List IDs and records
@@ -451,7 +440,7 @@ typedef struct {
 typedef struct {
   UINT8 CapabilityID;
   UINT8 NextItemPtr;
-} GNUPACK EFI_PCI_CAPABILITY_HDR;
+} EFI_PCI_CAPABILITY_HDR;
 
 //
 // Capability EFI_PCI_CAPABILITY_ID_PMI
@@ -462,7 +451,7 @@ typedef struct {
   UINT16                  PMCSR;
   UINT8                   BridgeExtention;
   UINT8                   Data;
-} GNUPACK EFI_PCI_CAPABILITY_PMI;
+} EFI_PCI_CAPABILITY_PMI;
 
 //
 // Capability EFI_PCI_CAPABILITY_ID_AGP
@@ -473,7 +462,7 @@ typedef struct {
   UINT8                   Reserved;
   UINT32                  Status;
   UINT32                  Command;
-} GNUPACK EFI_PCI_CAPABILITY_AGP;
+} EFI_PCI_CAPABILITY_AGP;
 
 //
 // Capability EFI_PCI_CAPABILITY_ID_VPD
@@ -482,7 +471,7 @@ typedef struct {
   EFI_PCI_CAPABILITY_HDR  Hdr;
   UINT16                  AddrReg;
   UINT32                  DataReg;
-} GNUPACK EFI_PCI_CAPABILITY_VPD;
+} EFI_PCI_CAPABILITY_VPD;
 
 //
 // Capability EFI_PCI_CAPABILITY_ID_SLOTID
@@ -491,7 +480,7 @@ typedef struct {
   EFI_PCI_CAPABILITY_HDR  Hdr;
   UINT8                   ExpnsSlotReg;
   UINT8                   ChassisNo;
-} GNUPACK EFI_PCI_CAPABILITY_SLOTID;
+} EFI_PCI_CAPABILITY_SLOTID;
 
 //
 // Capability EFI_PCI_CAPABILITY_ID_MSI
@@ -501,7 +490,7 @@ typedef struct {
   UINT16                  MsgCtrlReg;
   UINT32                  MsgAddrReg;
   UINT16                  MsgDataReg;
-} GNUPACK EFI_PCI_CAPABILITY_MSI32;
+} EFI_PCI_CAPABILITY_MSI32;
 
 typedef struct {
   EFI_PCI_CAPABILITY_HDR  Hdr;
@@ -509,7 +498,7 @@ typedef struct {
   UINT32                  MsgAddrRegLsdw;
   UINT32                  MsgAddrRegMsdw;
   UINT16                  MsgDataReg;
-} GNUPACK EFI_PCI_CAPABILITY_MSI64;
+} EFI_PCI_CAPABILITY_MSI64;
 
 //
 // Capability EFI_PCI_CAPABILITY_ID_HOTPLUG
@@ -519,7 +508,7 @@ typedef struct {
   //
   // not finished - fields need to go here
   //
-} GNUPACK EFI_PCI_CAPABILITY_HOTPLUG;
+} EFI_PCI_CAPABILITY_HOTPLUG;
 
 //
 // Capability EFI_PCI_CAPABILITY_ID_PCIX
@@ -528,7 +517,7 @@ typedef struct {
   EFI_PCI_CAPABILITY_HDR  Hdr;
   UINT16                  CommandReg;
   UINT32                  StatusReg;
-} GNUPACK EFI_PCI_CAPABILITY_PCIX;
+} EFI_PCI_CAPABILITY_PCIX;
 
 typedef struct {
   EFI_PCI_CAPABILITY_HDR  Hdr;
@@ -536,7 +525,7 @@ typedef struct {
   UINT32                  StatusReg;
   UINT32                  SplitTransCtrlRegUp;
   UINT32                  SplitTransCtrlRegDn;
-} GNUPACK EFI_PCI_CAPABILITY_PCIX_BRDG;
+} EFI_PCI_CAPABILITY_PCIX_BRDG;
 
 #define DEVICE_ID_NOCARE    0xFFFF
 
@@ -555,9 +544,7 @@ typedef struct {
 #define PCI_BAR_IDX5        0x05
 #define PCI_BAR_ALL         0xFF
 
-#ifdef _MSC_VER
-#pragma pack()
-#endif
+#pragma pack(pop)
 
 //
 // NOTE: The following header files are included here for

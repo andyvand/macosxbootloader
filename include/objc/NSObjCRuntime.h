@@ -8,7 +8,7 @@
 #include <TargetConditionals.h>
 #include <objc/objc.h>
 
-#if __LP64__ || (TARGET_OS_EMBEDDED && !TARGET_OS_IPHONE) || TARGET_OS_WIN32 || NS_BUILD_32_LIKE_64
+#if __LP64__ || NS_BUILD_32_LIKE_64
 typedef long NSInteger;
 typedef unsigned long NSUInteger;
 #else
@@ -21,5 +21,13 @@ typedef unsigned int NSUInteger;
 #define NSUIntegerMax   ULONG_MAX
 
 #define NSINTEGER_DEFINED 1
+
+#ifndef NS_DESIGNATED_INITIALIZER
+#if __has_attribute(objc_designated_initializer)
+#define NS_DESIGNATED_INITIALIZER __attribute__((objc_designated_initializer))
+#else
+#define NS_DESIGNATED_INITIALIZER
+#endif
+#endif
 
 #endif

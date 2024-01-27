@@ -5,8 +5,6 @@
 
 #include <sys/cdefs.h>
 
-__BEGIN_DECLS
-
 #if !defined(__has_include)
 #define __has_include(x) 0
 #endif // !defined(__has_include)
@@ -15,22 +13,27 @@ __BEGIN_DECLS
 #define __has_attribute(x) 0
 #endif // !defined(__has_attribute)
 
+#if !defined(__has_feature)
+#define __has_feature(x) 0
+#endif // !defined(__has_feature)
+
+#if !defined(__has_extension)
+#define __has_extension(x) 0
+#endif // !defined(__has_extension)
+
 #if __has_include(<xpc/availability.h>)
 #include <xpc/availability.h>
 #else // __has_include(<xpc/availability.h>)
 #include <Availability.h>
-#define __XPC_IOS_SIMULATOR_AVAILABLE_STARTING(version)
 #endif // __has_include(<xpc/availability.h>)
 
-#if XPC_SERVICE_MAIN_IN_LIBXPC
-#define XPC_HOSTING_OLD_MAIN 1
-#else // XPC_SERVICE_MAIN_IN_LIBXPC
-#define XPC_HOSTING_OLD_MAIN 0
-#endif // XPC_SERVICE_MAIN_IN_LIBXPC
+#include <os/availability.h>
 
 #ifndef __XPC_INDIRECT__
 #error "Please #include <xpc/xpc.h> instead of this file directly."
 #endif // __XPC_INDIRECT__ 
+
+__BEGIN_DECLS
 
 #pragma mark Attribute Shims
 #ifdef __GNUC__
@@ -61,6 +64,12 @@ __BEGIN_DECLS
 #define XPC_NOINLINE __attribute__((noinline))
 #define XPC_NOIMPL __attribute__((unavailable))
 
+#if __has_attribute(noescape)
+#define XPC_NOESCAPE __attribute__((__noescape__))
+#else
+#define XPC_NOESCAPE
+#endif
+
 #if __has_extension(attribute_unavailable_with_message)
 #define XPC_UNAVAILABLE(m) __attribute__((unavailable(m)))
 #else // __has_extension(attribute_unavailable_with_message)
@@ -76,7 +85,17 @@ __BEGIN_DECLS
 #define XPC_DEPRECATED(m) __attribute__((deprecated(m)))
 #else // __clang__
 #define XPC_DEPRECATED(m) __attribute__((deprecated))
-#endif // __clang 
+#endif // __clang
+#ifndef XPC_TESTEXPORT
+#define XPC_TESTEXPORT XPC_NOEXPORT
+#endif // XPC_TESTEXPORT
+
+#if defined(__XPC_TEST__) && __XPC_TEST__
+#define XPC_TESTSTATIC
+#define XPC_TESTEXTERN extern
+#else // defined(__XPC_TEST__) && __XPC_TEST__
+#define XPC_TESTSTATIC static
+#endif // defined(__XPC_TEST__) && __XPC_TEST__
 
 #if __has_feature(objc_arc)
 #define XPC_GIVES_REFERENCE __strong
@@ -89,7 +108,7 @@ __BEGIN_DECLS
 #else // __has_feature(objc_arc)
 #define XPC_GIVES_REFERENCE
 #define XPC_UNRETAINED
-#define XPC_BRIDGE(xo)
+#define XPC_BRIDGE(xo) (xo)
 #define XPC_BRIDGEREF_BEGIN(xo) (xo)
 #define XPC_BRIDGEREF_BEGIN_WITH_REF(xo) (xo)
 #define XPC_BRIDGEREF_MIDDLE(xo) (xo)
@@ -158,7 +177,70 @@ __BEGIN_DECLS
 #define XPC_DEPRECATED
 /*! @parseOnly */
 #define XPC_UNAVAILABLE(m)
-#endif // __GNUC__ 
+/*! @parseOnly */
+#define XPC_NOESCAPE
+#endif // __GNUC__
+
+#if __has_feature(assume_nonnull)
+#define XPC_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
+#define XPC_ASSUME_NONNULL_END   _Pragma("clang assume_nonnull end")
+#else
+#define XPC_ASSUME_NONNULL_BEGIN
+#define XPC_ASSUME_NONNULL_END
+#endif
+
+#if __has_feature(nullability_on_arrays)
+#define XPC_NONNULL_ARRAY _Nonnull
+#else
+#define XPC_NONNULL_ARRAY
+#endif
+
+#if defined(__has_ptrcheck) && __has_ptrcheck
+#define XPC_PTR_ASSUMES_SINGLE __ptrcheck_abi_assume_single()
+#define XPC_SINGLE __single
+#define XPC_UNSAFE_INDEXABLE __unsafe_indexable
+#define XPC_CSTRING XPC_UNSAFE_INDEXABLE
+#define XPC_SIZEDBY(N) __sized_by(N)
+#define XPC_COUNTEDBY(N) __counted_by(N)
+#define XPC_UNSAFE_FORGE_SIZED_BY(_type, _ptr, _size) \
+		__unsafe_forge_bidi_indexable(_type, _ptr, _size)
+#define XPC_UNSAFE_FORGE_SINGLE(_type, _ptr) \
+		__unsafe_forge_single(_type, _ptr)
+#else // defined(__has_ptrcheck) ** __has_ptrcheck
+#define XPC_PTR_ASSUMES_SINGLE
+#define XPC_SINGLE
+#define XPC_UNSAFE_INDEXABLE
+#define XPC_CSTRING
+#define XPC_SIZEDBY(N)
+#define XPC_COUNTEDBY(N)
+#define XPC_UNSAFE_FORGE_SIZED_BY(_type, _ptr, _size) ((_type)(_ptr))
+#define XPC_UNSAFE_FORGE_SINGLE(_type, _ptr) ((_type)(_ptr))
+#endif // defined(__has_ptrcheck) ** __has_ptrcheck
+
+#ifdef OS_CLOSED_OPTIONS
+#define XPC_FLAGS_ENUM(_name, _type, ...) \
+		OS_CLOSED_OPTIONS(_name, _type, __VA_ARGS__)
+#else // OS_CLOSED_ENUM
+#define XPC_FLAGS_ENUM(_name, _type, ...) \
+		OS_ENUM(_name, _type, __VA_ARGS__)
+#endif // OS_CLOSED_ENUM
+
+#ifdef OS_CLOSED_ENUM
+#define XPC_ENUM(_name, _type, ...) \
+		OS_CLOSED_ENUM(_name, _type, __VA_ARGS__)
+#else // OS_CLOSED_ENUM
+#define XPC_ENUM(_name, _type, ...) \
+		OS_ENUM(_name, _type, __VA_ARGS__)
+#endif // OS_CLOSED_ENUM
+
+#if __has_attribute(swift_name)
+# define XPC_SWIFT_NAME(_name) __attribute__((swift_name(_name)))
+#else
+# define XPC_SWIFT_NAME(_name) // __has_attribute(swift_name)
+#endif
+
+#define XPC_SWIFT_UNAVAILABLE(msg) __swift_unavailable(msg)
+#define XPC_SWIFT_NOEXPORT XPC_SWIFT_UNAVAILABLE("Unavailable in Swift from the XPC C Module")
 
 __END_DECLS
 

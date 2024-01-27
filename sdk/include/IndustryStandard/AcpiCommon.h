@@ -37,12 +37,7 @@ typedef struct {
 //
 // Common ACPI description table header.  This structure prefaces most ACPI tables.
 //
-#ifdef _MSC_VER
 #pragma pack(1)
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
-#endif
 
 typedef struct {
   UINT32  Signature;
@@ -54,12 +49,9 @@ typedef struct {
   UINT32  OemRevision;
   UINT32  CreatorId;
   UINT32  CreatorRevision;
-} GNUPACK EFI_ACPI_DESCRIPTION_HEADER;
+} EFI_ACPI_DESCRIPTION_HEADER;
 
-#ifdef _MSC_VER
 #pragma pack()
-#endif
-
 //
 // Define for Pci Host Bridge Resource Allocation
 //
@@ -73,9 +65,7 @@ typedef struct {
 //
 // Make sure structures match spec
 //
-#ifdef _MSC_VER
 #pragma pack(1)
-#endif
 
 typedef struct {
   UINT8   Desc;
@@ -88,12 +78,12 @@ typedef struct {
   UINT64  AddrRangeMax;
   UINT64  AddrTranslationOffset;
   UINT64  AddrLen;
-} GNUPACK EFI_ACPI_ADDRESS_SPACE_DESCRIPTOR;
+} EFI_ACPI_ADDRESS_SPACE_DESCRIPTOR;
 
 typedef struct {
   UINT8 Desc;
   UINT8 Checksum;
-} GNUPACK EFI_ACPI_END_TAG_DESCRIPTOR;
+} EFI_ACPI_END_TAG_DESCRIPTOR;
 
 //
 // General use definitions
@@ -103,8 +93,6 @@ typedef struct {
 #define EFI_ACPI_RESERVED_DWORD 0x00000000
 #define EFI_ACPI_RESERVED_QWORD 0x0000000000000000
 
-#ifdef _MSC_VER
 #pragma pack()
-#endif
 
 #endif

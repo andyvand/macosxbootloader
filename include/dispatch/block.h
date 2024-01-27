@@ -32,6 +32,9 @@
  * @group Dispatch block objects
  */
 
+DISPATCH_ASSUME_NONNULL_BEGIN
+DISPATCH_ASSUME_ABI_SINGLE_BEGIN
+
 __BEGIN_DECLS
 
 /*!
@@ -46,13 +49,14 @@ __BEGIN_DECLS
  *
  * @const DISPATCH_BLOCK_DETACHED
  * Flag indicating that a dispatch block object should execute disassociated
- * from current execution context attributes such as QOS class, os_activity_t
- * and properties of the current IPC request (if any). If invoked directly, the
- * block object will remove these attributes from the calling thread for the
- * duration of the block body (before applying attributes assigned to the block
- * object, if any). If submitted to a queue, the block object will be executed
- * with the attributes of the queue (or any attributes specifically assigned to
- * the block object).
+ * from current execution context attributes such as os_activity_t
+ * and properties of the current IPC request (if any). With regard to QoS class,
+ * the behavior is the same as for DISPATCH_BLOCK_NO_QOS. If invoked directly,
+ * the block object will remove the other attributes from the calling thread for
+ * the duration of the block body (before applying attributes assigned to the
+ * block object, if any). If submitted to a queue, the block object will be
+ * executed with the attributes of the queue (or any attributes specifically
+ * assigned to the block object).
  *
  * @const DISPATCH_BLOCK_ASSIGN_CURRENT
  * Flag indicating that a dispatch block object should be assigned the execution
@@ -97,19 +101,26 @@ __BEGIN_DECLS
  * for synchronous execution or when the dispatch block object is invoked
  * directly.
  */
-DISPATCH_ENUM(dispatch_block_flags, unsigned long,
+DISPATCH_REFINED_FOR_SWIFT
+DISPATCH_OPTIONS(dispatch_block_flags, unsigned long,
 	DISPATCH_BLOCK_BARRIER
-			DISPATCH_ENUM_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x1,
+			DISPATCH_ENUM_API_AVAILABLE(macos(10.10), ios(8.0))
+			DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItemFlags.barrier") = 0x1,
 	DISPATCH_BLOCK_DETACHED
-			DISPATCH_ENUM_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x2,
+			DISPATCH_ENUM_API_AVAILABLE(macos(10.10), ios(8.0))
+			DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItemFlags.detached") = 0x2,
 	DISPATCH_BLOCK_ASSIGN_CURRENT
-			DISPATCH_ENUM_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x4,
+			DISPATCH_ENUM_API_AVAILABLE(macos(10.10), ios(8.0))
+			DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItemFlags.assignCurrentContext") = 0x4,
 	DISPATCH_BLOCK_NO_QOS_CLASS
-			DISPATCH_ENUM_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x8,
+			DISPATCH_ENUM_API_AVAILABLE(macos(10.10), ios(8.0))
+			DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItemFlags.noQoS") = 0x8,
 	DISPATCH_BLOCK_INHERIT_QOS_CLASS
-			DISPATCH_ENUM_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x10,
+			DISPATCH_ENUM_API_AVAILABLE(macos(10.10), ios(8.0))
+			DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItemFlags.inheritQoS") = 0x10,
 	DISPATCH_BLOCK_ENFORCE_QOS_CLASS
-			DISPATCH_ENUM_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x20,
+			DISPATCH_ENUM_API_AVAILABLE(macos(10.10), ios(8.0))
+			DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItemFlags.enforceQoS") = 0x20,
 );
 
 /*!
@@ -162,9 +173,10 @@ DISPATCH_ENUM(dispatch_block_flags, unsigned long,
  * When not building with Objective-C ARC, must be released with a -[release]
  * message or the Block_release() function.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+API_AVAILABLE(macos(10.10), ios(8.0))
 DISPATCH_EXPORT DISPATCH_NONNULL2 DISPATCH_RETURNS_RETAINED_BLOCK
 DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItem()")
 dispatch_block_t
 dispatch_block_create(dispatch_block_flags_t flags, dispatch_block_t block);
 
@@ -234,9 +246,10 @@ dispatch_block_create(dispatch_block_flags_t flags, dispatch_block_t block);
  * When not building with Objective-C ARC, must be released with a -[release]
  * message or the Block_release() function.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+API_AVAILABLE(macos(10.10), ios(8.0))
 DISPATCH_EXPORT DISPATCH_NONNULL4 DISPATCH_RETURNS_RETAINED_BLOCK
 DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItem()")
 dispatch_block_t
 dispatch_block_create_with_qos_class(dispatch_block_flags_t flags,
 		dispatch_qos_class_t qos_class, int relative_priority,
@@ -267,10 +280,12 @@ dispatch_block_create_with_qos_class(dispatch_block_flags_t flags,
  * @param block
  * The block to create the temporary block object from.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+API_AVAILABLE(macos(10.10), ios(8.0))
 DISPATCH_EXPORT DISPATCH_NONNULL2 DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItem.perform()")
 void
-dispatch_block_perform(dispatch_block_flags_t flags, dispatch_block_t block);
+dispatch_block_perform(dispatch_block_flags_t flags,
+		DISPATCH_NOESCAPE dispatch_block_t block);
 
 /*!
  * @function dispatch_block_wait
@@ -288,7 +303,7 @@ dispatch_block_perform(dispatch_block_flags_t flags, dispatch_block_t block);
  * dispatch block object may either be waited on once and executed once,
  * or it may be executed any number of times. The behavior of any other
  * combination is undefined. Submission to a dispatch queue counts as an
- * execution, even if cancelation (dispatch_block_cancel) means the block's
+ * execution, even if cancellation (dispatch_block_cancel) means the block's
  * code never runs.
  *
  * The result of calling this function from multiple threads simultaneously
@@ -317,9 +332,10 @@ dispatch_block_perform(dispatch_block_flags_t flags, dispatch_block_t block);
  * Returns zero on success (the dispatch block object completed within the
  * specified timeout) or non-zero on error (i.e. timed out).
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+API_AVAILABLE(macos(10.10), ios(8.0))
 DISPATCH_EXPORT DISPATCH_NONNULL1 DISPATCH_NOTHROW
-long
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItem.wait(timeout:)")
+intptr_t
 dispatch_block_wait(dispatch_block_t block, dispatch_time_t timeout);
 
 /*!
@@ -358,8 +374,9 @@ dispatch_block_wait(dispatch_block_t block, dispatch_time_t timeout);
  * @param notification_block
  * The notification block to submit when the observed block object completes.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+API_AVAILABLE(macos(10.10), ios(8.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItem.notify(queue:execute:)")
 void
 dispatch_block_notify(dispatch_block_t block, dispatch_queue_t queue,
 		dispatch_block_t notification_block);
@@ -390,8 +407,9 @@ dispatch_block_notify(dispatch_block_t block, dispatch_queue_t queue,
  * The result of passing NULL or a block object not returned by one of the
  * dispatch_block_create* functions is undefined.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+API_AVAILABLE(macos(10.10), ios(8.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItem.cancel()")
 void
 dispatch_block_cancel(dispatch_block_t block);
 
@@ -409,13 +427,17 @@ dispatch_block_cancel(dispatch_block_t block);
  * @result
  * Non-zero if canceled and zero if not canceled.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+API_AVAILABLE(macos(10.10), ios(8.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_WARN_RESULT DISPATCH_PURE
 DISPATCH_NOTHROW
-long
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchWorkItem.isCancelled")
+intptr_t
 dispatch_block_testcancel(dispatch_block_t block);
 
 __END_DECLS
+
+DISPATCH_ASSUME_ABI_SINGLE_END
+DISPATCH_ASSUME_NONNULL_END
 
 #endif // __BLOCKS__
 

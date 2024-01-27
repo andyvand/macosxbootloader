@@ -5,21 +5,7 @@
 //	purpose:	64bits thunk
 //********************************************************************
 
-#include "stdafx.h"
-
-#include "../stdafx.h"
-
-extern UINT8* ArchThunk64BufferStart;
-extern UINT8* ArchThunk64BufferEnd;
-
-#ifdef _MSC_VER
-extern "C"
-{
-	void _local_unwind2(void)
-	{
-	}
-}
-#endif
+#include "../StdAfx.h"
 
 //
 // 64 bits configuration table
@@ -97,60 +83,48 @@ STATIC VOID EFIAPI ArchpVirtualAddressChanged(EFI_EVENT theEvent, VOID* theConte
 //
 // setup thunk code
 //
-VOID ArchSetupThunkCode0(UINT64 thunkOffset, MACH_O_LOADED_INFO* loadedInfo)
+extern "C" VOID ArchSetupThunkCode0(UINT64 thunkOffset, MACH_O_LOADED_INFO* loadedInfo)
 {
-	UINT8 i = 0;
+	UINT8 i																	= 0;
 
-#ifdef DEBUG
 	for (i = 0; i < 5; i++)
 	{
 		CsPrintf(CHAR8_CONST_STRING("PIKE:ArchSetupThunkCode0(0x%llx)!\n"), loadedInfo->IdlePML4VirtualAddress);
 	}
-#endif
 
 	if(loadedInfo)
 	{
 		ArchpKernelIdlePML4													= MachFindSymbolVirtualAddressByName(loadedInfo, CHAR8_CONST_STRING("_IdlePML4")); //0x8c0ac8 + thunkOffset;
 
-#ifdef DEBUG
 		for (i = 0; i < 5; i++)
 		{
 			CsPrintf(CHAR8_CONST_STRING("PIKE: ArchSetupThunkCode0 - 0x%llx!\n"), ArchpKernelIdlePML4);
 		}
-#endif
-
-		// ArchpKernelIdlePML4 = loadedInfo->IdlePML4VirtualAddress;
-
-#ifdef DEBUG
+		
+		// ArchpKernelIdlePML4												= loadedInfo->IdlePML4VirtualAddress;
 		for (i = 0; i < 5; i++)
 		{
- 			CsPrintf(CHAR8_CONST_STRING("PIKE: ArchSetupThunkCode01 - 0x%llx!\n"), loadedInfo->IdlePML4VirtualAddress);
- 		}
-#endif
+			CsPrintf(CHAR8_CONST_STRING("PIKE: ArchSetupThunkCode01 - 0x%llx!\n"), loadedInfo->IdlePML4VirtualAddress);
+		}
 
-		EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"IdlePML4"), &AppleNVRAMVariableGuid, EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS, sizeof(UINT64), &ArchpKernelIdlePML4);
-
-
+		EfiRuntimeServices->SetVariable(CHAR16_STRING(L"IdlePML4"), &AppleNVRAMVariableGuid, EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS, sizeof(UINT64), &ArchpKernelIdlePML4);
 	}
 	else
 	{
-		UINTN dataSize														= sizeof(UINT64);
-
-#ifdef DEBUG
 		for (i = 0; i < 5; i++)
 		{
 			CsPrintf(CHAR8_CONST_STRING("PIKE: EfiRuntimeServices->GetVariable(_IdlePML4)!\n"));
 		}
-#endif
 
-		EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"IdlePML4"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &ArchpKernelIdlePML4);
+		UINTN dataSize														= sizeof(UINT64);
+		EfiRuntimeServices->GetVariable(CHAR16_STRING(L"IdlePML4"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &ArchpKernelIdlePML4);
 	}
 }
 
 //
 // setup thunk code
 //
-VOID ArchSetupThunkCode1(UINT64* efiSystemTablePhysicalAddress, UINT64 thunkOffset)
+extern "C" VOID ArchSetupThunkCode1(UINT64* efiSystemTablePhysicalAddress, UINT64 thunkOffset)
 {
 	//
 	// setup pointers
@@ -252,11 +226,13 @@ VOID ArchSetupThunkCode1(UINT64* efiSystemTablePhysicalAddress, UINT64 thunkOffs
 //
 // init phase 1
 //
-EFI_STATUS ArchInitialize1()
+extern "C" EFI_STATUS ArchInitialize1()
 {
 	//
 	// allocate thunk code pages
 	//
+	extern UINT8* ArchThunk64BufferStart;
+	extern UINT8* ArchThunk64BufferEnd;
 	UINTN thunkCodeSize														= ArchConvertPointerToAddress(&ArchThunk64BufferEnd) - ArchConvertPointerToAddress(&ArchThunk64BufferStart);
 	UINT64 physicalAddress													= 4 * 1024 * 1024 * 1024ULL - 1;
 	ArchpThunkCodeStart														= MmAllocatePages(AllocateMaxAddress, EfiRuntimeServicesCode, EFI_SIZE_TO_PAGES(thunkCodeSize), &physicalAddress);

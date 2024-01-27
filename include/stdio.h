@@ -61,96 +61,9 @@
 #ifndef	_STDIO_H_
 #define	_STDIO_H_
 
-#include <sys/cdefs.h>
-#include <Availability.h>
+#include <_stdio.h>
 
-#include <_types.h>
-
-/* DO NOT REMOVE THIS COMMENT: fixincludes needs to see:
- * __gnuc_va_list and include <stdarg.h> */
-#include <sys/_types/_va_list.h>
-#include <sys/_types/_size_t.h>
-#include <sys/_types/_null.h>
-
-#include <sys/stdio.h>
-
-typedef __darwin_off_t		fpos_t;
-
-#define	_FSTDIO			/* Define for new stdio with functions. */
-
-/*
- * NB: to fit things in six character monocase externals, the stdio
- * code uses the prefix `__s' for stdio objects, typically followed
- * by a three-character attempt at a mnemonic.
- */
-
-/* stdio buffers */
-struct __sbuf {
-	unsigned char	*_base;
-	int		_size;
-};
-
-/* hold a buncha junk that would grow the ABI */
-struct __sFILEX;
-
-/*
- * stdio state variables.
- *
- * The following always hold:
- *
- *	if (_flags&(__SLBF|__SWR)) == (__SLBF|__SWR),
- *		_lbfsize is -_bf._size, else _lbfsize is 0
- *	if _flags&__SRD, _w is 0
- *	if _flags&__SWR, _r is 0
- *
- * This ensures that the getc and putc macros (or inline functions) never
- * try to write or read from a file that is in `read' or `write' mode.
- * (Moreover, they can, and do, automatically switch from read mode to
- * write mode, and back, on "r+" and "w+" files.)
- *
- * _lbfsize is used only to make the inline line-buffered output stream
- * code as compact as possible.
- *
- * _ub, _up, and _ur are used when ungetc() pushes back more characters
- * than fit in the current _bf, or when ungetc() pushes back a character
- * that does not match the previous one in _bf.  When this happens,
- * _ub._base becomes non-nil (i.e., a stream has ungetc() data iff
- * _ub._base!=NULL) and _up and _ur save the current values of _p and _r.
- *
- * NB: see WARNING above before changing the layout of this structure!
- */
-typedef	struct __sFILE {
-	unsigned char *_p;	/* current position in (some) buffer */
-	int	_r;		/* read space left for getc() */
-	int	_w;		/* write space left for putc() */
-	short	_flags;		/* flags, below; this FILE is free if 0 */
-	short	_file;		/* fileno, if Unix descriptor, else -1 */
-	struct	__sbuf _bf;	/* the buffer (at least 1 byte, if !NULL) */
-	int	_lbfsize;	/* 0 or -_bf._size, for inline putc */
-
-	/* operations */
-	void	*_cookie;	/* cookie passed to io functions */
-	int	(*_close)(void *);
-	int	(*_read) (void *, char *, int);
-	fpos_t	(*_seek) (void *, fpos_t, int);
-	int	(*_write)(void *, const char *, int);
-
-	/* separate buffer for long sequences of ungetc() */
-	struct	__sbuf _ub;	/* ungetc buffer */
-	struct __sFILEX *_extra; /* additions to FILE to not break ABI */
-	int	_ur;		/* saved _r when _r is counting ungetc data */
-
-	/* tricks to meet minimum requirements even when malloc() fails */
-	unsigned char _ubuf[3];	/* guarantee an ungetc() buffer */
-	unsigned char _nbuf[1];	/* guarantee a getc() buffer */
-
-	/* separate buffer for fgetln() when line crosses buffer boundary */
-	struct	__sbuf _lb;	/* buffer for fgetln() */
-
-	/* Unix stdio files get aligned to block boundaries on fseek() */
-	int	_blksize;	/* stat.st_blksize (may be != _bf._size) */
-	fpos_t	_offset;	/* current lseek offset (see WARNING) */
-} FILE;
+#include <sys/_types/_seek_set.h>
 
 __BEGIN_DECLS
 extern FILE *__stdinp;
@@ -203,16 +116,6 @@ __END_DECLS
 #define	L_tmpnam	1024	/* XXX must be == PATH_MAX */
 #define	TMP_MAX		308915776
 
-#ifndef SEEK_SET
-#define	SEEK_SET	0	/* set file offset to offset */
-#endif
-#ifndef SEEK_CUR
-#define	SEEK_CUR	1	/* set file offset to current plus offset */
-#endif
-#ifndef SEEK_END
-#define	SEEK_END	2	/* set file offset to EOF plus offset */
-#endif
-
 #define	stdin	__stdinp
 #define	stdout	__stdoutp
 #define	stderr	__stderrp
@@ -237,46 +140,64 @@ int	 fgetc(FILE *);
 int	 fgetpos(FILE * __restrict, fpos_t *);
 char	*fgets(char * __restrict, int, FILE *);
 #if defined(_DARWIN_UNLIMITED_STREAMS) || defined(_DARWIN_C_SOURCE)
-FILE	*fopen(const char * __restrict, const char * __restrict) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_3_2, __DARWIN_EXTSN(fopen));
+FILE	*fopen(const char * __restrict __filename, const char * __restrict __mode) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_3_2, __DARWIN_EXTSN(fopen));
 #else /* !_DARWIN_UNLIMITED_STREAMS && !_DARWIN_C_SOURCE */
-FILE	*fopen(const char * __restrict, const char * __restrict) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_2_0, __DARWIN_ALIAS(fopen));
+FILE	*fopen(const char * __restrict __filename, const char * __restrict __mode) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_2_0, __DARWIN_ALIAS(fopen));
 #endif /* (DARWIN_UNLIMITED_STREAMS || _DARWIN_C_SOURCE) */
 int	 fprintf(FILE * __restrict, const char * __restrict, ...) __printflike(2, 3);
 int	 fputc(int, FILE *);
 int	 fputs(const char * __restrict, FILE * __restrict) __DARWIN_ALIAS(fputs);
-size_t	 fread(void * __restrict, size_t, size_t, FILE * __restrict);
+size_t	 fread(void * __restrict __ptr, size_t __size, size_t __nitems, FILE * __restrict __stream);
 FILE	*freopen(const char * __restrict, const char * __restrict,
                  FILE * __restrict) __DARWIN_ALIAS(freopen);
 int	 fscanf(FILE * __restrict, const char * __restrict, ...) __scanflike(2, 3);
 int	 fseek(FILE *, long, int);
 int	 fsetpos(FILE *, const fpos_t *);
 long	 ftell(FILE *);
-size_t	 fwrite(const void * __restrict, size_t, size_t, FILE * __restrict) __DARWIN_ALIAS(fwrite);
+size_t	 fwrite(const void * __restrict __ptr, size_t __size, size_t __nitems, FILE * __restrict __stream) __DARWIN_ALIAS(fwrite);
 int	 getc(FILE *);
 int	 getchar(void);
+
+#if !defined(_POSIX_C_SOURCE)
+__deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of gets(3), it is highly recommended that you use fgets(3) instead.")
+#endif
 char	*gets(char *);
-void	 perror(const char *);
+
+void	 perror(const char *) __cold;
 int	 printf(const char * __restrict, ...) __printflike(1, 2);
 int	 putc(int, FILE *);
 int	 putchar(int);
 int	 puts(const char *);
 int	 remove(const char *);
-int	 rename (const char *, const char *);
+int	 rename (const char *__old, const char *__new);
 void	 rewind(FILE *);
 int	 scanf(const char * __restrict, ...) __scanflike(1, 2);
 void	 setbuf(FILE * __restrict, char * __restrict);
 int	 setvbuf(FILE * __restrict, char * __restrict, int, size_t);
+
+__swift_unavailable("Use snprintf instead.")
+#if !defined(_POSIX_C_SOURCE)
+__deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead.")
+#endif
 int	 sprintf(char * __restrict, const char * __restrict, ...) __printflike(2, 3);
+
 int	 sscanf(const char * __restrict, const char * __restrict, ...) __scanflike(2, 3);
 FILE	*tmpfile(void);
 
+__swift_unavailable("Use mkstemp(3) instead.")
 #if !defined(_POSIX_C_SOURCE)
 __deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of tmpnam(3), it is highly recommended that you use mkstemp(3) instead.")
 #endif
 char	*tmpnam(char *);
+
 int	 ungetc(int, FILE *);
 int	 vfprintf(FILE * __restrict, const char * __restrict, va_list) __printflike(2, 0);
 int	 vprintf(const char * __restrict, va_list) __printflike(1, 0);
+
+__swift_unavailable("Use vsnprintf instead.")
+#if !defined(_POSIX_C_SOURCE)
+__deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use vsnprintf(3) instead.")
+#endif
 int	 vsprintf(char * __restrict, const char * __restrict, va_list) __printflike(2, 0);
 __END_DECLS
 
@@ -289,12 +210,9 @@ __END_DECLS
 #if __DARWIN_C_LEVEL >= 198808L
 #define	L_ctermid	1024	/* size for ctermid(); PATH_MAX */
 
+#include <_ctermid.h>
+
 __BEGIN_DECLS
-#ifndef __CTERMID_DEFINED
-/* Multiply defined in stdio.h and unistd.h by SUS */
-#define __CTERMID_DEFINED 1
-char	*ctermid(char *);
-#endif
 
 #if defined(_DARWIN_UNLIMITED_STREAMS) || defined(_DARWIN_C_SOURCE)
 FILE	*fdopen(int, const char *) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_3_2, __DARWIN_EXTSN(fdopen));
@@ -312,17 +230,14 @@ __END_DECLS
 
 #if __DARWIN_C_LEVEL >= 199209L
 __BEGIN_DECLS
-int	 pclose(FILE *);
+int	 pclose(FILE *) __swift_unavailable("Use posix_spawn APIs or NSTask instead. (On iOS, process spawning is unavailable.)");
 #if defined(_DARWIN_UNLIMITED_STREAMS) || defined(_DARWIN_C_SOURCE)
-FILE	*popen(const char *, const char *) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_3_2, __DARWIN_EXTSN(popen));
+FILE	*popen(const char *, const char *) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_3_2, __DARWIN_EXTSN(popen)) __swift_unavailable("Use posix_spawn APIs or NSTask instead. (On iOS, process spawning is unavailable.)");
 #else /* !_DARWIN_UNLIMITED_STREAMS && !_DARWIN_C_SOURCE */
-FILE	*popen(const char *, const char *) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_2_0, __DARWIN_ALIAS(popen));
+FILE	*popen(const char *, const char *) __DARWIN_ALIAS_STARTING(__MAC_10_6, __IPHONE_2_0, __DARWIN_ALIAS(popen)) __swift_unavailable("Use posix_spawn APIs or NSTask instead. (On iOS, process spawning is unavailable.)");
 #endif /* (DARWIN_UNLIMITED_STREAMS || _DARWIN_C_SOURCE) */
 __END_DECLS
 #endif /* __DARWIN_C_LEVEL >= 199209L */
-
-
-
 
 /* Additional functionality provided by:
  * POSIX.1c-1995,
@@ -385,10 +300,11 @@ int	 getw(FILE *);
 int	 putw(int, FILE *);
 #endif
 
+__swift_unavailable("Use mkstemp(3) instead.")
 #if !defined(_POSIX_C_SOURCE)
 __deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of tempnam(3), it is highly recommended that you use mkstemp(3) instead.")
 #endif
-char	*tempnam(const char *, const char *) __DARWIN_ALIAS(tempnam);
+char	*tempnam(const char *__dir, const char *__prefix) __DARWIN_ALIAS(tempnam);
 __END_DECLS
 
 #ifndef lint
@@ -411,18 +327,18 @@ __END_DECLS
 #include <sys/_types/_off_t.h>
 
 __BEGIN_DECLS
-int	 fseeko(FILE *, off_t, int);
-off_t	 ftello(FILE *);
+int	 fseeko(FILE * __stream, off_t __offset, int __whence);
+off_t	 ftello(FILE * __stream);
 __END_DECLS
 #endif /* __DARWIN_C_LEVEL >= 200112L */
 
 #if __DARWIN_C_LEVEL >= 200112L || defined(_C99_SOURCE) || defined(__cplusplus)
 __BEGIN_DECLS
-int	 snprintf(char * __restrict, size_t, const char * __restrict, ...) __printflike(3, 4);
-int	 vfscanf(FILE * __restrict, const char * __restrict, va_list) __scanflike(2, 0);
-int	 vscanf(const char * __restrict, va_list) __scanflike(1, 0);
-int	 vsnprintf(char * __restrict, size_t, const char * __restrict, va_list) __printflike(3, 0);
-int	 vsscanf(const char * __restrict, const char * __restrict, va_list) __scanflike(2, 0);
+int	 snprintf(char * __restrict __str, size_t __size, const char * __restrict __format, ...) __printflike(3, 4);
+int	 vfscanf(FILE * __restrict __stream, const char * __restrict __format, va_list) __scanflike(2, 0);
+int	 vscanf(const char * __restrict __format, va_list) __scanflike(1, 0);
+int	 vsnprintf(char * __restrict __str, size_t __size, const char * __restrict __format, va_list) __printflike(3, 0);
+int	 vsscanf(const char * __restrict __str, const char * __restrict __format, va_list) __scanflike(2, 0);
 __END_DECLS
 #endif /* __DARWIN_C_LEVEL >= 200112L || defined(_C99_SOURCE) || defined(__cplusplus) */
 
@@ -438,8 +354,10 @@ __END_DECLS
 __BEGIN_DECLS
 int	dprintf(int, const char * __restrict, ...) __printflike(2, 3) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
 int	vdprintf(int, const char * __restrict, va_list) __printflike(2, 0) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
-ssize_t getdelim(char ** __restrict, size_t * __restrict, int, FILE * __restrict) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
-ssize_t getline(char ** __restrict, size_t * __restrict, FILE * __restrict) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
+ssize_t getdelim(char ** __restrict __linep, size_t * __restrict __linecapp, int __delimiter, FILE * __restrict __stream) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
+ssize_t getline(char ** __restrict __linep, size_t * __restrict __linecapp, FILE * __restrict __stream) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
+FILE *fmemopen(void * __restrict __buf, size_t __size, const char * __restrict __mode) __API_AVAILABLE(macos(10.13), ios(11.0), tvos(11.0), watchos(4.0));
+FILE *open_memstream(char **__bufp, size_t *__sizep) __API_AVAILABLE(macos(10.13), ios(11.0), tvos(11.0), watchos(4.0));
 __END_DECLS
 #endif /* __DARWIN_C_LEVEL >= 200809L */
 
@@ -455,22 +373,21 @@ extern __const char *__const sys_errlist[];
 int	 asprintf(char ** __restrict, const char * __restrict, ...) __printflike(2, 3);
 char	*ctermid_r(char *);
 char	*fgetln(FILE *, size_t *);
-__const char *fmtcheck(const char *, const char *);
+__const char *fmtcheck(const char *, const char *) __attribute__((format_arg(2)));
 int	 fpurge(FILE *);
 void	 setbuffer(FILE *, char *, int);
 int	 setlinebuf(FILE *);
 int	 vasprintf(char ** __restrict, const char * __restrict, va_list) __printflike(2, 0);
-FILE	*zopen(const char *, const char *, int);
 
 
 /*
  * Stdio function-access interface.
  */
 FILE	*funopen(const void *,
-                 int (*)(void *, char *, int),
-                 int (*)(void *, const char *, int),
-                 fpos_t (*)(void *, fpos_t, int),
-                 int (*)(void *));
+                 int (* _Nullable)(void *, char *, int),
+                 int (* _Nullable)(void *, const char *, int),
+                 fpos_t (* _Nullable)(void *, fpos_t, int),
+                 int (* _Nullable)(void *));
 __END_DECLS
 #define	fropen(cookie, fn) funopen(cookie, fn, 0, 0, 0)
 #define	fwopen(cookie, fn) funopen(cookie, 0, fn, 0, 0)

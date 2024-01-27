@@ -5,10 +5,12 @@
 //	purpose:	arch define
 //********************************************************************
 
-#pragma once
+#ifndef __ARCHDEFINE_H__
+#define __ARCHDEFINE_H__
 
-#ifndef _ARCHDEFINE_H_
-#define _ARCHDEFINE_H_
+#if defined(_MSC_VER)
+#pragma once
+#endif /* _MSC_VER */
 
 #define KDP_BREAKPOINT_TYPE													UINT8
 #define KDP_BREAKPOINT_VALUE												0xcc
@@ -21,13 +23,8 @@
 #define CONTEXT_DEBUG_REGISTERS												(CONTEXT_X64 | 0x10)
 #define CONTEXT_FULL														(CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_FLOATING_POINT)
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include "pshpack1.h"
-#define GNUPACK
-#else
-#include "../StdAfx.h"
-#define GNUPACK __attribute__((packed))
-#define nullptr 0
 #endif
 
 //
@@ -49,7 +46,7 @@ typedef struct _DESCRIPTOR
 	// base
 	//
 	UINT64																	Base;
-}  GNUPACK KDESCRIPTOR;
+}KDESCRIPTOR;
 
 //
 // idt entry
@@ -85,7 +82,7 @@ typedef struct _KIDTENTRY
 	// reserved
 	//
 	UINT32																	Reserved;
-} GNUPACK KIDTENTRY;
+}KIDTENTRY;
 
 //
 // 128bits
@@ -101,7 +98,7 @@ typedef struct _M128A
 	// high
 	//
 	INT64																	High;
-} GNUPACK M128A;
+}M128A;
 
 //
 // format of data for 32-bit fxsave/fxrstor instructions.
@@ -187,100 +184,7 @@ typedef struct _XMM_SAVE_AREA32
 	// reserved
 	//
 	UINT8																	Reserved4[96];
-} GNUPACK XMM_SAVE_AREA32;
-
-typedef 		struct _XMM
-{
-    //
-    // header
-    //
-    M128A															Header[2];
-    
-    //
-    // legacy
-    //
-    M128A															Legacy[8];
-    
-    //
-    // xmm0
-    //
-    M128A															Xmm0;
-    
-    //
-    // xmm1
-    //
-    M128A															Xmm1;
-    
-    //
-    // xmm2
-    //
-    M128A															Xmm2;
-    
-    //
-    // xmm3
-    //
-    M128A															Xmm3;
-    
-    //
-    // xmm4
-    //
-    M128A															Xmm4;
-    
-    //
-    // xmm5
-    //
-    M128A															Xmm5;
-    
-    //
-    // xmm6
-    //
-    M128A															Xmm6;
-    
-    //
-    // xmm7
-    //
-    M128A															Xmm7;
-    
-    //
-    // xmm8
-    //
-    M128A															Xmm8;
-    
-    //
-    // xmm9
-    //
-    M128A															Xmm9;
-    
-    //
-    // xmm10
-    //
-    M128A															Xmm10;
-    
-    //
-    // xmm11
-    //
-    M128A															Xmm11;
-    
-    //
-    // xmm12
-    //
-    M128A															Xmm12;
-    
-    //
-    // xmm13
-    //
-    M128A															Xmm13;
-    
-    //
-    // xmm14
-    //
-    M128A															Xmm14;
-    
-    //
-    // xmm15
-    //
-    M128A															Xmm15;
-} GNUPACK XMM;
+}XMM_SAVE_AREA32;
 
 typedef struct _CONTEXT
 {
@@ -477,7 +381,7 @@ typedef struct _CONTEXT
 	//
 	// Floating point state offset = 0x100
 	//
-	union
+	union XMM
 	{
 		//
 		// float point state
@@ -487,7 +391,98 @@ typedef struct _CONTEXT
 		//
 		// xmm
 		//
-		XMM Xmm;
+		struct _XMM
+		{
+			//
+			// header
+			//
+			M128A															Header[2];
+
+			//
+			// legacy
+			//
+			M128A															Legacy[8];
+
+			//
+			// xmm0
+			//
+			M128A															Xmm0;
+
+			//
+			// xmm1
+			//
+			M128A															Xmm1;
+
+			//
+			// xmm2
+			//
+			M128A															Xmm2;
+
+			//
+			// xmm3
+			//
+			M128A															Xmm3;
+
+			//
+			// xmm4
+			//
+			M128A															Xmm4;
+
+			//
+			// xmm5
+			//
+			M128A															Xmm5;
+
+			//
+			// xmm6
+			//
+			M128A															Xmm6;
+
+			//
+			// xmm7
+			//
+			M128A															Xmm7;
+
+			//
+			// xmm8
+			//
+			M128A															Xmm8;
+
+			//
+			// xmm9
+			//
+			M128A															Xmm9;
+
+			//
+			// xmm10
+			//
+			M128A															Xmm10;
+
+			//
+			// xmm11
+			//
+			M128A															Xmm11;
+
+			//
+			// xmm12
+			//
+			M128A															Xmm12;
+
+			//
+			// xmm13
+			//
+			M128A															Xmm13;
+
+			//
+			// xmm14
+			//
+			M128A															Xmm14;
+
+			//
+			// xmm15
+			//
+			M128A															Xmm15;
+		}Xmm;
 	};
 
 	//
@@ -524,7 +519,7 @@ typedef struct _CONTEXT
 	// last exception from
 	//
 	UINT64																	LastExceptionFromRip;
-} GNUPACK CONTEXT;
+}CONTEXT;
 
 //
 // special registers. size = 0xe0
@@ -665,7 +660,7 @@ typedef struct _KSPECIAL_REGISTERS
 	// syscall mask
 	//
 	UINT64																	MsrSyscallMask;
-} GNUPACK KSPECIAL_REGISTERS;
+}KSPECIAL_REGISTERS;
 
 //
 // processor state
@@ -686,7 +681,7 @@ typedef struct _KPROCESSOR_STATE
 	// context frame. offset = 0xe0
 	//
 	CONTEXT																	ContextFrame;
-} GNUPACK KPROCESSOR_STATE;
+}KPROCESSOR_STATE;
 
 //
 // processor control block (PRCB)
@@ -772,48 +767,7 @@ typedef struct _KPRCB
 	// reserved
 	//
 	UINT8																	Reserved3[0x3530];
-} GNUPACK KPRCB;
-
-typedef struct _LAST_BRANCH
-{
-    //
-    // debug control
-    //
-    UINT64															DebugControl;
-    
-    //
-    // last branch to rip
-    //
-    UINT64															LastBranchToRip;
-    
-    //
-    // last branch from rip
-    //
-    UINT64															LastBranchFromRip;
-    
-    //
-    // last exception to rip
-    //
-    UINT64															LastExceptionToRip;
-    
-    //
-    // last exception from rip
-    //
-    UINT64															LastExceptionFromRip;
-} GNUPACK LAST_BRANCH;
-
-typedef struct _LAST_BRANCH_CONTROL
-{
-    //
-    // control
-    //
-    UINT64															LastBranchControl;
-    
-    //
-    // msr
-    //
-    UINT64															LastBranchMsr;
-} GNUPACK LAST_BRANCH_CONTROL;
+}KPRCB;
 
 //
 // trap frame
@@ -999,10 +953,48 @@ typedef struct _KTRAP_FRAME
 	//
 	UINT64																	Dr7;
 
-	union
+	union BRANCH
 	{
-		LAST_BRANCH BranchInfo;
-		LAST_BRANCH_CONTROL BranchControl;
+		struct _LAST_BRANCH
+		{
+			//
+			// debug control
+			//
+			UINT64															DebugControl;
+
+			//
+			// last branch to rip
+			//
+			UINT64															LastBranchToRip;
+
+			//
+			// last branch from rip
+			//
+			UINT64															LastBranchFromRip;
+
+			//
+			// last exception to rip
+			//
+			UINT64															LastExceptionToRip;
+
+			//
+			// last exception from rip
+			//
+			UINT64															LastExceptionFromRip;
+		}BranchInfo;
+
+		struct _LAST_BRANCH_CONTROL
+		{
+			//
+			// control
+			//
+			UINT64															LastBranchControl;
+
+			//
+			// msr
+			//
+			UINT64															LastBranchMsr;
+		}BranchControl;
 	};
 
 	//
@@ -1117,7 +1109,7 @@ typedef struct _KTRAP_FRAME
 	// patch
 	//
 	UINT32																	CodePatchCycle;
-} GNUPACK KTRAP_FRAME;
+}KTRAP_FRAME;
 
 //
 // exception frame
@@ -1268,7 +1260,7 @@ typedef struct _KEXCEPTION_FRAME
 	// r15
 	//
 	UINT64																	R15;
-} GNUPACK KEXCEPTION_FRAME;
+}KEXCEPTION_FRAME;
 
 //
 // pcr
@@ -1404,7 +1396,7 @@ typedef struct _KPCR
 	// prcb
 	//
 	KPRCB																	Prcb;
-} GNUPACK KPCR;
+}KPCR;
 
 //
 // control sets for supported architectures
@@ -1430,9 +1422,9 @@ typedef struct _X64_DBGKD_CONTROL_SET
 	// symbol end
 	//
 	UINT64																	CurrentSymbolEnd;
-} GNUPACK DBGKD_CONTROL_SET;
+}DBGKD_CONTROL_SET;
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include "poppack.h"
 #endif
 
@@ -1492,6 +1484,11 @@ typedef struct _X64_DBGKD_CONTROL_REPORT
 	UINT16																	SegFs;
 }DBGKD_CONTROL_REPORT;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 //
 // get cs
 //
@@ -1522,4 +1519,8 @@ VOID BOOTAPI ArchSetIdtRegister(KDESCRIPTOR* idtr);
 //
 VOID BOOTAPI ArchSetIdtEntry(UINT64 base, UINT32 index, UINT32 segCs, VOID* offset, UINT32 access);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* __ARCHDEFINE_H__ */

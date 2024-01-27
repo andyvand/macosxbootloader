@@ -5,17 +5,19 @@
 //	purpose:	private
 //********************************************************************
 
-#pragma once
+#ifndef __BOOTDEBUGGERPRIVATE_H__
+#define __BOOTDEBUGGERPRIVATE_H__
 
-#ifndef _BOOTDEBUGGERPRIVATE_H_
-#define _BOOTDEBUGGERPRIVATE_H_
+#if defined(_MSC_VER)
+#pragma once
+#endif
 
 //
 // arch define
 //
-#if defined(_M_AMD64) || defined(_AMD64_) || defined(__x86_64__)
+#if defined(__x86_64__)
 #include "x64/ArchDefine.h"
-#else
+#elif defined(__i386__)
 #include "x86/ArchDefine.h"
 #endif
 
@@ -306,15 +308,15 @@ typedef struct _EXCEPTION_RECORD64
 
 typedef struct _SECTION_CHECKSUM
 {
-    //
-    // section pointer
-    //
-    VOID*															SectionPointer;
-    
-    //
-    // checksum
-    //
-    UINT32															CheckSum;
+	//
+	// section pointer
+	//
+	VOID*																	SectionPointer;
+	
+	//
+	// checksum
+	//
+	UINT32																	CheckSum;
 }SECTION_CHECKSUM;
 
 //
@@ -1485,6 +1487,10 @@ typedef struct _BREAKPOINT_ENTRY
 
 }BREAKPOINT_ENTRY;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //
 // report exception state change
 //
@@ -1578,17 +1584,17 @@ VOID BOOTAPI DbgService(UINTN serviceType, UINTN info1, UINTN info2, UINTN info3
 //
 // debug service2
 //
-VOID BOOTAPI DbgService(VOID* info1, VOID* info2, UINTN serviceType);
+VOID BOOTAPI DbgService2(VOID* info1, VOID* info2, UINTN serviceType);
 
 //
 // load symbols
 //
-VOID DbgLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId);
+VOID DbgLoadImageSymbols2(STRING* fileName, VOID* imageBase, UINTN processId);
 
 //
 // unload symbols
 //
-VOID DbgUnLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId);
+VOID DbgUnLoadImageSymbols2(STRING* fileName, VOID* imageBase, UINTN processId);
 
 //
 // load symbols
@@ -1612,4 +1618,8 @@ extern UINT32																BdPacketIdExpected;
 extern UINT32																BdNumberRetries;
 extern UINT32																BdRetryCount;
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* __BOOTDEBUGGERPRIVATE_H__ */

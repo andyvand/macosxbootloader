@@ -1,363 +1,145 @@
 /*
- * Copyright (c) 2013-2014 Apple Inc. All rights reserved.
- *
- * @APPLE_LICENSE_HEADER_START@
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
- * 
- * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
- * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
- * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
- * 
- * @APPLE_LICENSE_HEADER_END@
+ * Copyright (c) 2013-2016 Apple Inc. All rights reserved.
  */
 
-#ifndef os_trace_h
-#define os_trace_h
+#ifndef __OS_TRACE_H__
+#define __OS_TRACE_H__
 
-#include <inttypes.h>
-#include <os/base.h>
-#include <sys/types.h>
-#include <stdbool.h>
+#include <os/trace_base.h>
 #if __has_include(<xpc/xpc.h>)
 #include <xpc/xpc.h>
-#else 
-typedef void *xpc_object_t;
+typedef xpc_object_t os_trace_payload_object_t;
+#else
+typedef void *os_trace_payload_object_t;
 #endif
 
 #if !__GNUC__
 #error "must be GNU C compatible"
 #endif
 
-extern void *__dso_handle;
+__BEGIN_DECLS
 
-OS_ALWAYS_INLINE __attribute__((format(printf,1,2)))
-static inline void _os_trace_verify_printf(const char *msg, ...) { (void) msg; }
+/* We need at least clang 7.3 or later due to bugs in os_log_format parsing */
+#if __has_builtin(__builtin_os_log_format) && (__clang_major__ > 7 || (__clang_major__ == 7 && __clang_minor__ >= 3))
 
-#if !defined OS_COUNT_ARGS
-#define OS_COUNT_ARGS(...) OS_COUNT_ARGS1(,##__VA_ARGS__,_8,_7,_6,_5,_4,_3,_2,_1,_0)
-#define OS_COUNT_ARGS1(z,a,b,c,d,e,f,g,h,cnt,...) cnt
+OS_ALWAYS_INLINE __attribute__((format(os_trace, 1, 2)))
+static inline void
+_os_trace_verify_printf(const char *msg, ...)
+{
+#pragma unused(msg)
+}
+
+#if __has_attribute(uninitialized)
+#define OS_TRACE_UNINITIALIZED __attribute__((uninitialized))
+#else
+#define OS_TRACE_UNINITIALIZED
 #endif
 
-#define _os_trace_0(_m, _t) __extension__({ \
-	_os_trace_verify_printf(_m); \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, NULL, 0, NULL); \
-	asm(""); /* avoid tailcall */ \
-})
+/* Previous OSes must go through older style...
+ *
+ * Format:
+ *      Items: [ ]
+ *      Item sizes: [
+ *          8 bits * count
+ *      ]
+ *      Item count: 8 bits
+ */
 
-#define _os_trace_1(_m, _t, _1) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	_os_trace_verify_printf(_m, _c1); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-	} _buf = { \
-		._f1 = _c1, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), NULL); \
-	asm(""); /* avoid tailcall */ \
+#define OS_TRACE_CALL(_t, _p, _f, ...) __extension__({ \
+    if (os_trace_type_enabled(_t)) { \
+        _os_trace_verify_printf(_f, ##__VA_ARGS__); \
+        OS_LOG_STRING(TRACE, __f, _f); \
+        uint32_t __size = (uint32_t)__builtin_os_log_format_buffer_size(_f, ##__VA_ARGS__); \
+        OS_TRACE_UNINITIALIZED uint8_t _buf[__size]; \
+        __builtin_os_log_format(_buf, _f, ##__VA_ARGS__); \
+        uint32_t tz = 0; \
+        OS_TRACE_UNINITIALIZED uint8_t tb[__size]; \
+        uint8_t *buff = _buf; \
+        uint8_t *p = ++buff; \
+        uint8_t count = *p++; \
+        uint8_t trailer[count + 1]; \
+        trailer[count] = count; \
+        for (uint8_t ii = 0; ii < count; ii++) { \
+            uint8_t desc = *p++; \
+            uint8_t size = *p++; \
+            uint8_t *value = p; \
+            p += size; \
+            if ((desc >> 4) || (desc & 0x1)) { \
+                size = 0;\
+            }\
+            if (size) {\
+                memcpy(&tb[tz], value, size);\
+                tz += size;\
+            }\
+            trailer[ii] = size;\
+        }\
+        memcpy(&tb[tz], trailer, sizeof(trailer));\
+        tz += sizeof(trailer);\
+        _os_trace_with_buffer(&__dso_handle, __f, _t, tb, tz, _p);\
+    } \
 })
+#else
+#define OS_TRACE_CALL(...)
+#endif
 
-#define _os_trace_2(_m, _t, _1, _2) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	_os_trace_verify_printf(_m, _c1, _c2); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), NULL); \
-	asm(""); /* avoid tailcall */ \
-})
+// macros to re-order arguments so we can call log function
+#define _os_trace_with_payload_1(_t, _f, _p) OS_TRACE_CALL(_t, _p, _f)
+#define _os_trace_with_payload_2(_t, _f, _1, _p) OS_TRACE_CALL(_t, _p, _f, _1)
+#define _os_trace_with_payload_3(_t, _f, _1, _2, _p) OS_TRACE_CALL(_t, _p, _f, _1, _2)
+#define _os_trace_with_payload_4(_t, _f, _1, _2, _3, _p) OS_TRACE_CALL(_t, _p, _f, _1, _2, _3)
+#define _os_trace_with_payload_5(_t, _f, _1, _2, _3, _4, _p) OS_TRACE_CALL(_t, _p, _f, _1, _2, _3, _4)
+#define _os_trace_with_payload_6(_t, _f, _1, _2, _3, _4, _5, _p) OS_TRACE_CALL(_t, _p, _f, _1, _2, _3, _4, _5)
+#define _os_trace_with_payload_7(_t, _f, _1, _2, _3, _4, _5, _6, _p) OS_TRACE_CALL(_t, _p, _f, _1, _2, _3, _4, _5, _6)
+#define _os_trace_with_payload_8(_t, _f, _1, _2, _3, _4, _5, _6, _7, _p) OS_TRACE_CALL(_t, _p, _f, _1, _2, _3, _4, _5, _6, _7)
 
-#define _os_trace_3(_m, _t, _1, _2, _3) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), NULL); \
-	asm(""); /* avoid tailcall */ \
-})
+#define _os_trace_call_n(_t, _f, ...) OS_TRACE_CALL(_t, NULL, _f, ##__VA_ARGS__)
 
-#define _os_trace_4(_m, _t, _1, _2, _3, _4) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), NULL); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_5(_m, _t, _1, _2, _3, _4, _5) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	const typeof(_5) _c5 = _5; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4, _c5); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-		typeof(_c5) _f5; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-		._f5 = _c5, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), NULL); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_6(_m, _t, _1, _2, _3, _4, _5, _6) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	const typeof(_5) _c5 = _5; \
-	const typeof(_6) _c6 = _6; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4, _c5, _c6); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-		typeof(_c5) _f5; \
-		typeof(_c6) _f6; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-		._f5 = _c5, \
-		._f6 = _c6, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), NULL); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_7(_m, _t, _1, _2, _3, _4, _5, _6, _7) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	const typeof(_5) _c5 = _5; \
-	const typeof(_6) _c6 = _6; \
-	const typeof(_7) _c7 = _7; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4, _c5, _c6, _c7); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-		typeof(_c5) _f5; \
-		typeof(_c6) _f6; \
-		typeof(_c7) _f7; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-		._f5 = _c5, \
-		._f6 = _c6, \
-		._f7 = _c7, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), NULL); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_1(_m, _t, _payload) __extension__({ \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, NULL, 0, _payload); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_2(_m, _t, _1, _payload) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	_os_trace_verify_printf(_m, _c1); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-	} _buf = { \
-		._f1 = _c1, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), _payload); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_3(_m, _t, _1, _2, _payload) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	_os_trace_verify_printf(_m, _c1, _c2); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), _payload); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_4(_m, _t, _1, _2, _3, _payload) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), _payload); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_5(_m, _t, _1, _2, _3, _4, _payload) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), _payload); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_6(_m, _t, _1, _2, _3, _4, _5, _payload) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	const typeof(_4) _c5 = _5; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4, _c5); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-		typeof(_c5) _f5; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-		._f5 = _c5, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), _payload); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_7(_m, _t, _1, _2, _3, _4, _5, _6, _payload) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	const typeof(_5) _c5 = _5; \
-	const typeof(_6) _c6 = _6; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4, _c5, _c6); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-		typeof(_c5) _f5; \
-		typeof(_c6) _f6; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-		._f5 = _c5, \
-		._f6 = _c6, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), _payload); \
-	asm(""); /* avoid tailcall */ \
-})
-
-#define _os_trace_with_payload_8(_m, _t, _1, _2, _3, _4, _5, _6, _7, _payload) __extension__({ \
-	const typeof(_1) _c1 = _1; \
-	const typeof(_2) _c2 = _2; \
-	const typeof(_3) _c3 = _3; \
-	const typeof(_4) _c4 = _4; \
-	const typeof(_5) _c5 = _5; \
-	const typeof(_6) _c6 = _6; \
-	const typeof(_7) _c7 = _7; \
-	_os_trace_verify_printf(_m, _c1, _c2, _c3, _c4, _c5, _c6, _c7); \
-	const struct __attribute__((packed)) { \
-		typeof(_c1) _f1; \
-		typeof(_c2) _f2; \
-		typeof(_c3) _f3; \
-		typeof(_c4) _f4; \
-		typeof(_c5) _f5; \
-		typeof(_c6) _f6; \
-		typeof(_c7) _f7; \
-	} _buf = { \
-		._f1 = _c1, \
-		._f2 = _c2, \
-		._f3 = _c3, \
-		._f4 = _c4, \
-		._f5 = _c5, \
-		._f6 = _c6, \
-		._f7 = _c7, \
-	}; \
-	_os_trace_with_buffer(&__dso_handle, _m, _t, &_buf, sizeof(_buf), _payload); \
-	asm(""); /* avoid tailcall */ \
-})
+/*!
+ *
+ * @abstract
+ * Hashtags in trace messages
+ *
+ * @discussion
+ * Developers are encouraged to include hashtags in log messages, regardless of
+ * what API you use.
+ * A hashtag is composed of a hash (#) symbol, followed by at least three
+ * non-whitespace characters, terminated by whitespace or the end of the
+ * message. Hashtags may not begin with a number.
+ *
+ * Below is the list of predefined tags:
+ *   #System     - Message in the context of a system process.
+ *   #User       - Message in the context of a user process.
+ *   #Developer  - Message in the context of software development. For example,
+ *                 deprecated APIs and debugging messages.
+ *   #Attention  - Message that should be investigated by a system
+ *                 administrator, because it may be a sign of a larger issue.
+ *                 For example, errors from a hard drive controller that
+ *                 typically occur when the drive is about to fail.
+ *   #Critical   - Message in the context of a critical event or failure.
+ *   #Error      - Message that is a noncritical error.
+ *   #Comment    - Message that is a comment.
+ *   #Marker     - Message that marks a change to divide the messages around it
+ *                 into those before and those after the change.
+ *   #Clue       - Message containing extra key/value pairs with additional
+ *                 information to help reconstruct the context.
+ *   #Security   - Message related to security concerns.
+ *   #Filesystem - Message describing a file system related event.
+ *   #Network    - Message describing a network-related event.
+ *   #Hardware   - Message describing a hardware-related event.
+ *   #CPU        - Message describing CPU related event, e.g., initiating heavy
+ *                 work load
+ *   #State      - Message describing state changed, e.g., global state,
+ *                 preference, etc.
+ *   #Graphics   - Message describing significant graphics event
+ *   #Disk       - Message describing disk activity
+ *
+ */
 
 #pragma mark - Other defines
 
 /*!
  * @define OS_TRACE_TYPE_RELEASE
- * Trace messages to be recorded on a typical user install.  These should be
+ * Trace messages to be captured on a typical user install.  These should be
  * limited to things which improve diagnosis of a failure/crash/hang. Trace
  * buffers are generally smaller on a production system.
  */
@@ -365,10 +147,17 @@ static inline void _os_trace_verify_printf(const char *msg, ...) { (void) msg; }
 
 /*!
  * @define OS_TRACE_TYPE_DEBUG
- * Trace messages to be recorded while debugger or other development tool is
- * attached to the originator.  This is transported interprocess.
+ * Trace messages to be captured while debugger or other development tool is
+ * attached to the originator.
  */
 #define OS_TRACE_TYPE_DEBUG (1u << 1)
+
+/*!
+ * @define OS_TRACE_TYPE_INFO
+ * Trace messages that are captured when a debugger is attached, system or
+ * Application mode has been increased to include additional information.
+ */
+#define OS_TRACE_TYPE_INFO (1u << 2)
 
 /*!
  * @define OS_TRACE_TYPE_ERROR
@@ -384,18 +173,25 @@ static inline void _os_trace_verify_printf(const char *msg, ...) { (void) msg; }
  */
 #define OS_TRACE_TYPE_FAULT ((1u << 7) | (1u << 6) | (1u << 0))
 
-__BEGIN_DECLS
-
 /*!
  * @typedef os_trace_payload_t
- * A block that populates an xpc_object_t of type XPC_TYPE_DICTIONARY to represent
- * complex data. This block will only be invoked under conditions where tools
- * have attached to the process. The payload can be used to send arbitrary data 
- * via the trace call. Tools may use the data to validate state for integration 
- * tests or provide other introspection services. No assumptions are made about 
- * the format or structure of the data.
+ *
+ * @abstract
+ * A block that populates an xpc_object_t of type XPC_TYPE_DICTIONARY to
+ * represent complex data.
+ *
+ * @discussion
+ * This block will only be invoked under conditions where tools have attached to
+ * the process. The payload can be used to send arbitrary data via the trace
+ * call. Tools may use the data to validate state for integration tests or
+ * provide other introspection services. No assumptions are made about the
+ * format or structure of the data.
  */
-typedef void (^os_trace_payload_t)(xpc_object_t xdict);
+#ifdef __BLOCKS__
+typedef void (^os_trace_payload_t)(os_trace_payload_object_t xdict);
+#else
+typedef void *os_trace_payload_t;
+#endif // __BLOCKS__
 
 #pragma mark - function declarations
 
@@ -403,102 +199,189 @@ typedef void (^os_trace_payload_t)(xpc_object_t xdict);
  * @function os_trace
  *
  * @abstract
- * Insert a trace message into a ring-buffer for later decoding.
+ * Always inserts a trace message into a buffer pool for later decoding.
  *
  * @discussion
  * Trace message that will be recorded on a typical user install. These should
  * be limited to things which help diagnose a failure during postmortem
  * analysis. Trace buffers are generally smaller on a production system.
  *
- * @param logmsg
+ * @param format
  * A printf-style format string to generate a human-readable log message when
  * the trace line is decoded.  Only scalar types are supported, attempts
  * to pass arbitrary strings will store a pointer that is unresolvable and
  * will generate an error during decode.
  *
- *		os_trace("network event: %ld, last seen: %ld, avg: %g", event_id, last_seen, avg);
+ * <code>
+ *     os_trace("network event: %ld, last seen: %ld, avg: %g",
+ *             event_id, last_seen, avg);
+ * </code>
  */
-#define os_trace(logmsg, ...) do { \
-	__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-	__attribute__((section("__TEXT,__os_trace"))) static const char _m[] = logmsg; \
-	OS_CONCAT(_os_trace,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_RELEASE, ##__VA_ARGS__); \
-} while (0)
+#define os_trace(format, ...) OS_TRACE_CALL(OS_TRACE_TYPE_RELEASE, NULL, format, ##__VA_ARGS__)
 
+#if OS_LOG_TARGET_HAS_10_12_FEATURES
 /*!
- * @function os_trace_debug
+ * @function os_trace_info
  *
  * @abstract
- * Insert a trace message into a ring-buffer for later decoding.
+ * Optionally inserts a trace message containing additional information into a
+ * buffer pool for later decoding.
  *
  * @discussion
- * Trace message to be recorded while debugger or other development tool is
- * attached to the originator.  This is transported interprocess to help
- * diagnose the entire call chain including external helpers.
+ * Trace messages that will be captured when additional information is needed
+ * and are not captured by default.  They will only be captured if the
+ * system/process/activity mode has been increased or if a Development tool has
+ * been attached to the process.
  *
- * @param logmsg
+ * @param format
  * A printf-style format string that represents a human-readable message when
  * the trace line is decoded.  Only scalar types are supported, attempts
  * to pass arbitrary strings will store a pointer that is unresolvable and
  * will generate an error during decode.
  *
- *		os_trace_debug("network interface status %ld", status);
+ * <code>
+ *      os_trace_info("network interface status %ld", status);
+ * </code>
  */
-#define os_trace_debug(logmsg, ...) do { \
-	__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-	__attribute__((section("__TEXT,__os_trace_debug"))) static const char _m[] = logmsg; \
-	OS_CONCAT(_os_trace,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_DEBUG, ##__VA_ARGS__); \
-} while (0)
+#define os_trace_info(format, ...) \
+        OS_TRACE_CALL(OS_TRACE_TYPE_INFO, NULL, format, ##__VA_ARGS__)
+
+#endif
+
+/*!
+ * @function os_trace_debug
+ *
+ * @abstract
+ * Insert debug trace message into a buffer pool for later decoding.
+ *
+ * @discussion
+ * Debug trace message to be recorded while debugger or other development tool
+ * is attached to the originator.  This is transported interprocess to help
+ * diagnose the entire call chain including external helpers.
+ *
+ * @param format
+ * A printf-style format string that represents a human-readable message when
+ * the trace line is decoded.  Only scalar types are supported, attempts
+ * to pass arbitrary strings will store a pointer that is unresolvable and
+ * will generate an error during decode.
+ *
+ * <code>
+ *     os_trace_debug("network interface status %ld", status);
+ * </code>
+ */
+#define os_trace_debug(format, ...) \
+        OS_TRACE_CALL(OS_TRACE_TYPE_DEBUG, NULL, format, ##__VA_ARGS__)
+
+/*!
+ * @function os_trace_info_enabled
+ *
+ * @abstract
+ * Avoid unnecessary work for a trace point by checking if additional
+ * information is enabled.
+ *
+ * @discussion
+ * Avoid unnecessary work for a trace point by checking if additional
+ * information is enabled. Generally trace points should not involve expensive
+ * operations, but some circumstances warrant it.  Use this function to avoid
+ * doing the work unless debug level trace messages are requested.
+ *
+ * <code>
+ *     if (os_trace_info_enabled()) {
+ *         os_trace_info("value = %d, average = %d",
+ *                 [[dict objectForKey: @"myKey"] intValue],
+ *                 (int)[self getAverage:dict]);
+ *     }
+ * </code>
+ *
+ * @result
+ * Returns true if info types are enabled.
+ */
+API_DEPRECATED_WITH_REPLACEMENT("os_log_info_enabled",
+        macos(10.12,10.13), ios(10.0,11.0), watchos(3.0,4.0), tvos(10.0,11.0))
+OS_EXPORT OS_NOTHROW OS_WARN_RESULT
+bool
+os_trace_info_enabled(void);
 
 /*!
  * @function os_trace_debug_enabled
  *
  * @abstract
- * Avoid unnecessary work for a trace point by checking if debug level is enabled.
+ * Avoid unnecessary work for a trace point by checking if debug level is
+ * enabled.
  *
  * @discussion
- * Avoid unnecessary work for a trace point by checking if debug level is enabled.
- * Generally trace points should not involve expensive operations, but some
- * circumstances warrant it.  Use this function to avoid doing the work unless
- * debug level trace messages are requested.
+ * Avoid unnecessary work for a trace point by checking if debug level is
+ * enabled.  Generally trace points should not involve expensive operations, but
+ * some circumstances warrant it.  Use this function to avoid doing the work
+ * unless debug level trace messages are requested.
  *
- *	if (os_trace_debug_enabled()) {
- *		os_trace_debug("value = %d, average = %d",
- *				[[dict objectForKey: @"myKey"] intValue],
- *				(int) [self getAverage: dict]);
- *	}
+ * <code>
+ *     if (os_trace_debug_enabled()) {
+ *         os_trace_debug("value = %d, average = %d",
+ *                 [[dict objectForKey: @"myKey"] intValue],
+ *                 (int)[self getAverage:dict]);
+ *     }
+ * </code>
  *
  * @result
  * Returns true if debug mode is enabled.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0)
+API_DEPRECATED_WITH_REPLACEMENT("os_log_debug_enabled",
+        macos(10.10,10.13), ios(8.0,11.0), watchos(2.0,4.0), tvos(8.0,11.0))
 OS_EXPORT OS_NOTHROW OS_WARN_RESULT
 bool
 os_trace_debug_enabled(void);
 
 /*!
+ * @function os_trace_type_enabled
+ *
+ * @abstract
+ * Avoid unnecessary work for a trace point by checking a specific type
+ *
+ * @discussion
+ * Avoid unnecessary work for a trace point by checking a specific type
+ *
+ * @result
+ * Returns true if type is enabled.
+ */
+API_DEPRECATED_WITH_REPLACEMENT("os_log_type_enabled",
+        macos(10.10,10.13), ios(8.0,11.0), watchos(2.0,4.0), tvos(8.0,11.0))
+OS_NOTHROW OS_WARN_RESULT OS_ALWAYS_INLINE
+static inline bool
+os_trace_type_enabled(uint8_t type)
+{
+    switch (type) {
+    case OS_TRACE_TYPE_INFO:
+        return os_trace_info_enabled();
+    case OS_TRACE_TYPE_DEBUG:
+        return os_trace_debug_enabled();
+    }
+    return true;
+}
+
+/*!
  * @function os_trace_error
  *
  * @abstract
- * Trace the message as an error and force a collection of the trace buffer as a
- * failure may be imminent.
+ * Trace the message as an error and force a collection of the trace buffer as
+ * a failure may be imminent.
  *
  * @discussion
- * Trace the message as an error and force a collection of the trace buffer as a
- * failure may be imminent.
+ * Trace the message as an error and force a collection of the trace buffer as
+ * a failure may be imminent.
  *
- * @param logmsg
+ * @param format
  * A printf-style format string to generate a human-readable log message when
- * the trace line is decoded.  Only scalar types are supported, attempts
- * to pass arbitrary strings will store a pointer that is unresolvable and
- * will generate an error during decode.
+ * the trace line is decoded.  Only scalar types are supported, attempts to pass
+ * arbitrary strings will store a pointer that is unresolvable and will generate
+ * an error during decode.
  *
- *		os_trace_error("socket %d connection timeout %ld", fd, secs);
+ * <code>
+ *     os_trace_error("socket %d connection timeout %ld", fd, secs);
+ * </code>
  */
-#define os_trace_error(logmsg, ...) do { \
-	__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-	__attribute__((section("__TEXT,__os_trace"))) static const char _m[] = logmsg; \
-	OS_CONCAT(_os_trace,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_ERROR, ##__VA_ARGS__); \
-} while (0)
+#define os_trace_error(format, ...) \
+        OS_TRACE_CALL(OS_TRACE_TYPE_ERROR, NULL, format, ##__VA_ARGS__)
 
 /*!
  * @function os_trace_fault
@@ -511,20 +394,20 @@ os_trace_debug_enabled(void);
  * Trace the message as a fault which forces a collection of the trace buffer
  * and diagnostic of the activity.
  *
- * @param logmsg
+ * @param format
  * A printf-style format string to generate a human-readable log message when
  * the trace line is decoded.  Only scalar types are supported, attempts
  * to pass arbitrary strings will store a pointer that is unresolvable and
  * will generate an error during decode.
  *
- *		os_trace_fault("failed to lookup uid %d - aborting", uid);
+ * <code>
+ *     os_trace_fault("failed to lookup uid %d - aborting", uid);
+ * </code>
  */
-#define os_trace_fault(logmsg, ...) do { \
-	__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-	__attribute__((section("__TEXT,__os_trace"))) static const char _m[] = logmsg; \
-	OS_CONCAT(_os_trace,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_FAULT, ##__VA_ARGS__); \
-} while (0)
+#define os_trace_fault(format, ...) \
+        OS_TRACE_CALL(OS_TRACE_TYPE_FAULT, NULL, format, ##__VA_ARGS__)
 
+#ifdef __BLOCKS__
 #if __has_include(<xpc/xpc.h>)
 /*!
  * @function os_trace_with_payload
@@ -547,38 +430,49 @@ os_trace_debug_enabled(void);
  *
  * The final parameter must be a block of type os_trace_payload_t.
  *
- *   os_trace_with_payload("network event %ld", event, ^(xpc_object_t xdict) {
+ * <code>
+ *     os_trace_with_payload("network event %ld", event, ^(xpc_object_t xdict) {
  *
- *		// validate the network interface and address where what was expected
- *		xpc_dictionary_set_string(xdict, "network", ifp->ifa_name);
- *		xpc_dictionary_set_string(xdict, "ip_address", _get_address(ifp));
- *   });
+ *         // validate the network interface and address where what was expected
+ *         xpc_dictionary_set_string(xdict, "network", ifp->ifa_name);
+ *         xpc_dictionary_set_string(xdict, "ip_address", _get_address(ifp));
+ *     });
+ * </code>
  */
-#define os_trace_with_payload(logmsg, ...) do { \
-	__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-	__attribute__((section("__TEXT,__os_trace"))) static const char _m[] = logmsg; \
-	OS_CONCAT(_os_trace_with_payload,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_RELEASE, ##__VA_ARGS__); \
-} while (0)
+#define os_trace_with_payload(format, ...) \
+    OS_CONCAT(_os_trace_with_payload, OS_COUNT_ARGS(__VA_ARGS__))(\
+            OS_TRACE_TYPE_RELEASE, format, ##__VA_ARGS__)
 
-#define os_trace_debug_with_payload(logmsg, ...) do { \
-__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-__attribute__((section("__TEXT,__os_trace"))) static const char _m[] = logmsg; \
-OS_CONCAT(_os_trace_with_payload,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_DEBUG, ##__VA_ARGS__); \
-} while (0)
+#if OS_LOG_TARGET_HAS_10_12_FEATURES
 
-#define os_trace_error_with_payload(logmsg, ...) do { \
-__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-__attribute__((section("__TEXT,__os_trace"))) static const char _m[] = logmsg; \
-OS_CONCAT(_os_trace_with_payload,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_ERROR, ##__VA_ARGS__); \
-} while (0)
+#define os_trace_info_with_payload(format, ...) \
+    OS_CONCAT(_os_trace_with_payload, OS_COUNT_ARGS(__VA_ARGS__))(\
+            OS_TRACE_TYPE_INFO, format, ##__VA_ARGS__)
 
-#define os_trace_fault_with_payload(logmsg, ...) do { \
-	__attribute__((unused)) char _verify_const_msg[__builtin_constant_p(logmsg) ? 1 : -1]; \
-	__attribute__((section("__TEXT,__os_trace"))) static const char _m[] = logmsg; \
-	OS_CONCAT(_os_trace_with_payload,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_FAULT, ##__VA_ARGS__); \
-} while (0)
+#else
+
+API_DEPRECATED_WITH_REPLACEMENT("os_log_info",
+        macos(10.12,10.13), ios(10.0,11.0), watchos(3.0,4.0), tvos(10.0,11.0))
+OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED
+void
+os_trace_info_with_payload(const char *format, ...);
+
+#endif // !OS_LOG_TARGET_HAS_10_12_FEATURES
+
+#define os_trace_debug_with_payload(format, ...) \
+    OS_CONCAT(_os_trace_with_payload, OS_COUNT_ARGS(__VA_ARGS__))(\
+            OS_TRACE_TYPE_DEBUG, format, ##__VA_ARGS__)
+
+#define os_trace_error_with_payload(format, ...) \
+    OS_CONCAT(_os_trace_with_payload, OS_COUNT_ARGS(__VA_ARGS__))(\
+            OS_TRACE_TYPE_ERROR, format, ##__VA_ARGS__)
+
+#define os_trace_fault_with_payload(format, ...) \
+    OS_CONCAT(_os_trace_with_payload, OS_COUNT_ARGS(__VA_ARGS__))(\
+            OS_TRACE_TYPE_FAULT, format, ##__VA_ARGS__)
 
 #endif // __has_include(<xpc/xpc.h>)
+#endif // __BLOCKS__
 
 /*!
  * @function _os_trace_with_buffer
@@ -586,11 +480,13 @@ OS_CONCAT(_os_trace_with_payload,OS_COUNT_ARGS(__VA_ARGS__))(_m, OS_TRACE_TYPE_E
  * @abstract
  * Internal function to support pre-encoded buffer.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_8_0)
-OS_EXPORT OS_NOTHROW
+API_DEPRECATED("use one of the following calls instead: os_log_info, os_log_debug, os_log_error, os_log_fault",
+        macos(10.10,10.13), ios(8.0,11.0), watchos(2.0,4.0), tvos(8.0,11.0))
+OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED
 void
-_os_trace_with_buffer(void *dso, const char *message, uint8_t type, const void *buffer, size_t buffer_size, os_trace_payload_t payload);
+_os_trace_with_buffer(void *dso, const char *message, uint8_t type,
+        const void *buffer, size_t buffer_size, os_trace_payload_t payload);
 
 __END_DECLS
 
-#endif
+#endif // !__OS_TRACE_H__

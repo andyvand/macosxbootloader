@@ -1,24 +1,5 @@
 /*
- * Copyright (c) 2009-2013 Apple Inc. All rights reserved.
- *
- * @APPLE_LICENSE_HEADER_START@
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
- * 
- * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
- * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
- * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
- * 
- * @APPLE_LICENSE_HEADER_END@
+ * Copyright (c) 2009-2017 Apple Inc. All rights reserved.
  */
 
 #if !defined(__ODTYPES__)
@@ -47,6 +28,10 @@ typedef union {
 } od_object_t __attribute__((transparent_union));
 #endif // !__od_object_t__
 
+#if __OBJC__ && !defined(__OD_USE_OBJC__)
+#define __OD_USE_OBJC__ 1
+#endif
+
 #define OD_EXPORT extern __attribute__((visibility("default")))
 #define OD_NOEXPORT __attribute__((visibility("hidden")))
 
@@ -61,7 +46,7 @@ typedef union {
 #ifndef OD_RETURNS_RETAINED
 #define OD_RETURNS_RETAINED         OS_OBJECT_RETURNS_RETAINED
 #endif // !OD_RETURNS_RETAINED
-#if __OBJC__ && defined(__has_attribute) && __has_attribute(ns_returns_not_retained)
+#if __OD_USE_OBJC__ && defined(__has_attribute) && __has_attribute(ns_returns_not_retained)
 #define OD_RETURNS_NOT_RETAINED __attribute__((__ns_returns_not_retained__))
 #else
 #define OD_RETURNS_NOT_RETAINED     /**/
@@ -73,7 +58,8 @@ typedef union {
 
 #define OD_CFRELEASE_NULL(a)        do { if ((a) != NULL) { CFRelease(a); (a) = NULL; } } while (0)
 #define OD_RELEASE_NULL(a)          do { od_release(a); a = NULL; } while (0)
-#define OD_FREE_NULL(a)             do { free(a); (a) = NULL; } while (0)
+#define OD_FREE(a)                  __extension__({ if (a) free(a); })
+#define OD_FREE_NULL(a)             __extension__({ if (a) { free(a); (a) = NULL; } })
 #define OD_ZERO_FREE_NULL(a)        do { if ((a) != NULL) { memset((a), 0, malloc_size(a)); free(a); (a) = NULL; } } while (0)
 #define OD_DISPATCH_RETAIN_SAFE(a)  do { if ((a) != NULL) { dispatch_retain(a); } } while (0)
 #define OD_DISPATCH_RELEASE_NULL(a) do { if ((a) != NULL) { dispatch_release(a); (a) = NULL; } } while (0)
@@ -178,67 +164,28 @@ typedef uint32_t eODConnectionCreateFlags; // temporary to prevent breakage
 typedef uint32_t eODQueryMatchType;
 typedef long eODCallbackResponse;
 
-#define AUTH_METHOD(a,b) eODAuthType##b = a##l,
-#define AUTH_METHOD_DEPRECATED(a,b) AUTH_METHOD(a,b)
-#define AUTH_METHOD_MAP_DEPRECATED(a,b) eODAuthType##a = eODAuthType##b,
-
-#define SUPPORTED_METHOD_LIST                           \
-    AUTH_METHOD(0, Unknown)                             \
-    AUTH_METHOD(1, APOP)                                \
-    AUTH_METHOD(2, CRAM_MD5)                            \
-    AUTH_METHOD(3, DIGEST_MD5)                          \
-    AUTH_METHOD(4, MPPEMasterKeys)                      \
-    AUTH_METHOD(5, MSCHAP2)                             \
-    AUTH_METHOD(6, NTLMv2)                              \
-    AUTH_METHOD(7, NTLMv2WithSessionKey)                \
-    AUTH_METHOD(8, SMB_LM_Key)                          \
-    AUTH_METHOD(9, SMB_NT_Key)                          \
-    AUTH_METHOD(10, SMB_NT_WithUserSessionKey)          \
-    AUTH_METHOD(11, WithAuthorizationRef)               \
-    AUTH_METHOD(12, PPS)                                \
-    AUTH_METHOD(13, SetCertificateHash)                 \
-    AUTH_METHOD(14, RetainCredential)                   \
-    AUTH_METHOD(15, GSSAPI)                             \
-    /* temporarily here */                              \
-    AUTH_METHOD(56, SetGlobalPolicy)                    \
-    AUTH_METHOD(60, SetPolicyAsCurrent)                 \
-    AUTH_METHOD(70, GetGlobalPolicy)                    \
-    AUTH_METHOD(72, GetPolicy)                          \
-
-#define DEPRECATED_METHOD_LIST                                  \
-    AUTH_METHOD_DEPRECATED(50, ClearText)                       \
-    AUTH_METHOD_DEPRECATED(51, ChangePassword)                  \
-    AUTH_METHOD_DEPRECATED(52, SetPassword)                     \
-    AUTH_METHOD_DEPRECATED(53, SetPasswordAsCurrent)            \
-    AUTH_METHOD_DEPRECATED(54, Crypt)                           \
-    AUTH_METHOD_DEPRECATED(55, 2WayRandomChangePasswd)          \
-    AUTH_METHOD_DEPRECATED(57, SetLMHash)                       \
-    AUTH_METHOD_DEPRECATED(58, SetNTHash)                       \
-    AUTH_METHOD_DEPRECATED(59, SetPolicy)                       \
-    AUTH_METHOD_DEPRECATED(61, SetUserData)                     \
-    AUTH_METHOD_DEPRECATED(62, SetUserName)                     \
-    AUTH_METHOD_DEPRECATED(63, SetWorkstationPassword)          \
-    AUTH_METHOD_DEPRECATED(64, NewUser)                         \
-    AUTH_METHOD_DEPRECATED(65, NewUserWithPolicy)               \
-    AUTH_METHOD_DEPRECATED(66, ReadSecureHash)                  \
-    AUTH_METHOD_DEPRECATED(67, WriteSecureHash)                 \
-    AUTH_METHOD_DEPRECATED(68, DeleteUser)                      \
-    AUTH_METHOD_DEPRECATED(69, GetEffectivePolicy)              \
-    AUTH_METHOD_DEPRECATED(71, GetKerberosPrincipal)            \
-    AUTH_METHOD_DEPRECATED(73, GetUserData)                     \
-    AUTH_METHOD_DEPRECATED(74, GetUserName)                     \
-    AUTH_METHOD_DEPRECATED(75, NodeNativeClearTextOK)           \
-    AUTH_METHOD_DEPRECATED(76, NodeNativeNoClearText)           \
-    AUTH_METHOD_DEPRECATED(77, NTLMv2UserSessionKey)            \
-    AUTH_METHOD_DEPRECATED(78, SMB_NT_UserSessionKey)           \
-    AUTH_METHOD_DEPRECATED(79, 2WayRandom)                      \
-    AUTH_METHOD_DEPRECATED(80, KerberosTickets)                 \
-    AUTH_METHOD_DEPRECATED(81, SMBWorkstationCredentialSessionKey) \
-    AUTH_METHOD_MAP_DEPRECATED(ChangePasswd, ChangePassword)       \
-    AUTH_METHOD_MAP_DEPRECATED(SMBNTv2UserSessionKey, NTLMv2UserSessionKey)  \
-
 enum {
-    SUPPORTED_METHOD_LIST
+    eODAuthTypeUnknown                            = 0l,
+    eODAuthTypeAPOP                               = 1l,
+    eODAuthTypeCRAM_MD5                           = 2l,
+    eODAuthTypeDIGEST_MD5                         = 3l,
+    eODAuthTypeMPPEPrimaryKeys                    = 4l,
+    eODAuthTypeMPPEMasterKeys API_DEPRECATED_WITH_REPLACEMENT("eODAuthTypeMPPEPrimaryKeys", macos(10.7, 10.7)) = eODAuthTypeMPPEPrimaryKeys,
+    eODAuthTypeMSCHAP2                            = 5l,
+    eODAuthTypeNTLMv2                             = 6l,
+    eODAuthTypeNTLMv2WithSessionKey               = 7l,
+    eODAuthTypeSMB_LM_Key                         = 8l,
+    eODAuthTypeSMB_NT_Key                         = 9l,
+    eODAuthTypeSMB_NT_WithUserSessionKey          = 10l,
+    eODAuthTypeWithAuthorizationRef               = 11l,
+    eODAuthTypePPS                                = 12l,
+    eODAuthTypeSetCertificateHash                 = 13l,
+    eODAuthTypeRetainCredential                   = 14l,
+    eODAuthTypeGSSAPI                             = 15l,
+    eODAuthTypeSetGlobalPolicy                    = 56l,
+    eODAuthTypeSetPolicyAsCurrent                 = 60l,
+    eODAuthTypeGetGlobalPolicy                    = 70l,
+    eODAuthTypeGetPolicy                          = 72l,
 };
 
 typedef long eODAuthType;
@@ -330,7 +277,7 @@ odm_configuration_loaded(od_module_t module, od_moduleconfig_t moduleconfig, od_
                 eODAuthInfoAuthTypes are the authentication types supported by this module (kODAuthenticationTypeDIGEST_MD5, etc.)
                 eODAuthInfoMechanisms are what authority tags this module handles "PasswordServer", "Kerberos", "Basic", etc.
  */
-OD_NOTHROW OD_WARN_RESULT CF_RETURNS_RETAINED
+OS_NOTHROW OS_WARN_RESULT CF_RETURNS_RETAINED
 CFTypeRef
 odm_copy_auth_information(od_module_t module, od_moduleconfig_t moduleconfig, long info);
 
@@ -353,6 +300,7 @@ odm_copy_auth_information(od_module_t module, od_moduleconfig_t moduleconfig, lo
                                                                  od_moduleconfig_t moduleconfig, CFTypeRef payload)
 ODM_CALLBACK_DECL(RecordCopyPasswordPolicy);
 ODM_CALLBACK_DECL(RecordVerifyPassword);
+ODM_CALLBACK_DECL(RecordVerifyPasswordWithOptions);
 ODM_CALLBACK_DECL(RecordVerifyPasswordExtended);
 ODM_CALLBACK_DECL(RecordChangePassword);
 ODM_CALLBACK_DECL(NodeVerifyCredentialsExtended);
@@ -363,7 +311,9 @@ ODM_CALLBACK_DECL(NodeCopySupportedRecordTypes);
 ODM_CALLBACK_DECL(NodeCopySupportedAttributes);
 ODM_CALLBACK_DECL(NodeSetCredentials);
 ODM_CALLBACK_DECL(NodeSetCredentialsExtended);
+ODM_CALLBACK_DECL(NodeSetCredentialsWithSecureToken);
 ODM_CALLBACK_DECL(NodeCreateRecord);
+ODM_CALLBACK_DECL(NodeReplaceUserRecord);
 ODM_CALLBACK_DECL(NodeCustomCall);
 ODM_CALLBACK_DECL(NodeCustomFunction);
 ODM_CALLBACK_DECL(QueryCreateWithNode);
@@ -393,6 +343,7 @@ ODM_CALLBACK_DECL(RecordWillPasswordExpire);
 ODM_CALLBACK_DECL(RecordWillAuthenticationsExpire);
 ODM_CALLBACK_DECL(RecordSecondsUntilPasswordExpires);
 ODM_CALLBACK_DECL(RecordSecondsUntilAuthenticationsExpire);
+ODM_CALLBACK_DECL(RecordCopyPasswordContentSummary);
 ODM_CALLBACK_DECL(NodeAddAccountPolicy);
 ODM_CALLBACK_DECL(NodeRemoveAccountPolicy);
 ODM_CALLBACK_DECL(NodeSetAccountPolicies);

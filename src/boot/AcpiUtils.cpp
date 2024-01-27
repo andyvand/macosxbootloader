@@ -5,7 +5,7 @@
 //	purpose:	acpi utils
 //********************************************************************
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 //
 // global
@@ -125,18 +125,18 @@ VOID AcpiDetectNVSMemory()
 	//
 	UINT32 firmwareFeatures													= 0;
 	UINTN dataLength														= sizeof(firmwareFeatures);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"FirmwareFeatures"), &AppleFirmwareVariableGuid, 0, &dataLength, &firmwareFeatures)))
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"FirmwareFeatures"), &AppleFirmwareVariableGuid, 0, &dataLength, &firmwareFeatures)))
 	{
 		UINT32 firmwareFeaturesMask											= 0;
 		dataLength															= sizeof(firmwareFeaturesMask);
-		if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"FirmwareFeaturesMask"), &AppleFirmwareVariableGuid, 0, &dataLength, &firmwareFeaturesMask)))
+		if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"FirmwareFeaturesMask"), &AppleFirmwareVariableGuid, 0, &dataLength, &firmwareFeaturesMask)))
 		{
 			firmwareFeatures												&= firmwareFeaturesMask;
 			if(!(firmwareFeatures & 0x80000000))
 			{
 				VOID* acpiGlobalVariable									= nullptr;
 				dataLength													= sizeof(acpiGlobalVariable);
-				if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"AcpiGlobalVariable"), &AppleAcpiVariableGuid, 0, &dataLength, &acpiGlobalVariable)))
+				if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"AcpiGlobalVariable"), &AppleAcpiVariableGuid, 0, &dataLength, &acpiGlobalVariable)))
 				{
 					if(acpiGlobalVariable)
 						AcpipNVSMemoryAddress								= *Add2Ptr(acpiGlobalVariable, 0x18, UINT64*);

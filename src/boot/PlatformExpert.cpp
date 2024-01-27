@@ -5,7 +5,7 @@
 //	purpose:	platform expert
 //********************************************************************
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 //
 // global
@@ -68,10 +68,16 @@ EFI_STATUS PeInitialize()
 //
 CHAR8 CONST* PeGetModelName()
 {
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		if(PepModelName[0])
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return (CHAR8 CONST *)NULL;
+#endif
 
 		DEVICE_TREE_NODE* platformNode										= DevTreeFindNode(CHAR8_CONST_STRING("/efi/platform"), FALSE);
 
@@ -115,12 +121,16 @@ CHAR8 CONST* PeGetModelName()
 				}
 			}
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(!PepModelName[0])
-			strcpy(PepModelName, CHAR8_CONST_STRING("ACPI"));
+			strncpy(PepModelName, CHAR8_CONST_STRING("ACPI"), sizeof(PepModelName));
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return PepModelName;
 }
@@ -133,14 +143,22 @@ EFI_STATUS PeSetupDeviceTree()
 	EFI_STATUS status														= EFI_SUCCESS;
 	VOID* deviceProperties													= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// Get chosen node.
 		//
 		DEVICE_TREE_NODE* chosenNode										= DevTreeFindNode(CHAR8_CONST_STRING("/chosen"), TRUE);
-		if(!chosenNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!chosenNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// Get machine signature.
@@ -153,8 +171,14 @@ EFI_STATUS PeSetupDeviceTree()
 		// Get /efi/configuration-table node.
 		//
 		DEVICE_TREE_NODE* configTableNode									= DevTreeFindNode(CHAR8_CONST_STRING("/efi/configuration-table"), TRUE);
-		if(!configTableNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!configTableNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// Add tables.
@@ -176,8 +200,14 @@ EFI_STATUS PeSetupDeviceTree()
 			//
 			DEVICE_TREE_NODE* theNode										= DevTreeAddChild(configTableNode, nodeName);
 
-			if(!theNode)
-				try_leave(status = EFI_OUT_OF_RESOURCES);
+            if(!theNode) {
+#if defined(_MSC_VER)
+                try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+                status = EFI_OUT_OF_RESOURCES;
+                return status;
+#endif
+            }
 
 			//
 			// Add GUID.
@@ -274,6 +304,13 @@ EFI_STATUS PeSetupDeviceTree()
 #endif
 								memcpy((CHAR8 *)boardId, (CHAR8 *)MACBOOKPRO_31, 12);
 							}
+							else if (memcmp((CHAR8 *)boardId, (CHAR8 *)"Mac-F223BEC8", 12) == 0) // Xserve1,1
+							{
+#if DEBUG_BOARD_ID_CSPRINTF
+								CsPrintf(CHAR8_CONST_STRING("PIKE: SMBIOS board-id: %s replaced with: %s\n"), (CHAR8 *)boardId, (CHAR8 *)MACPRO_31);
+#endif
+								memcpy((CHAR8 *)boardId, (CHAR8 *)MACPRO_31, 12);
+							}
 
 							//
 							// Do we still need this?
@@ -335,8 +372,14 @@ EFI_STATUS PeSetupDeviceTree()
 		//
 		DEVICE_TREE_NODE* runtimeServicesNode								= DevTreeFindNode(CHAR8_CONST_STRING("/efi/runtime-services"), TRUE);
 
-		if(!runtimeServicesNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!runtimeServicesNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// add table
@@ -409,12 +452,16 @@ EFI_STATUS PeSetupDeviceTree()
 		DEVICE_TREE_NODE* kernelCompatibilityNode							= DevTreeFindNode(CHAR8_CONST_STRING("/efi/kernel-compatibility"), TRUE);
 		if(kernelCompatibilityNode)
 			DevTreeAddProperty(kernelCompatibilityNode, CHAR8_CONST_STRING("x86_64"), &compatibilityFlags, sizeof(compatibilityFlags), TRUE);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(deviceProperties)
 			MmFreePool(deviceProperties);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }

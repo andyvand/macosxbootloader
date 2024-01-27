@@ -5,13 +5,12 @@
 //	purpose:	process option
 //********************************************************************
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 //
 // global
 //
 STATIC UINT32 BlpBootMode													= BOOT_MODE_NORMAL | BOOT_MODE_SKIP_BOARD_ID_CHECK;
-//STATIC UINT32 BlpForceCpuArchType											= CPU_ARCH_NONE;
 STATIC BOOLEAN BlpPasswordUIEfiRun											= FALSE;
 
 //
@@ -48,12 +47,12 @@ STATIC BOOLEAN BlpIsTemporaryBoot()
 	UINT32 attribute														= 0;
 	UINT32 value															= 0;
 	UINTN dataSize															= sizeof(value);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"PickerEntryReason"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE))
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"PickerEntryReason"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE))
 		return TRUE;
 
 	attribute																= 0;
 	dataSize																= sizeof(value);
-	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"BootCurrent"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE) && !value)
+	if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"BootCurrent"), &AppleFirmwareVariableGuid, &attribute, &dataSize, &value)) && !(attribute & EFI_VARIABLE_NON_VOLATILE) && !value)
 		return TRUE;
 
 	return FALSE;
@@ -67,11 +66,16 @@ STATIC EFI_STATUS BlpRunPasswordUIEfi()
 	EFI_STATUS status														= EFI_SUCCESS;
 	UINTN handleCount														= 0;
 	EFI_HANDLE* handleArray													= nullptr;
-
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		if(!BlTestBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE) || BlpIsTemporaryBoot() || BlpPasswordUIEfiRun)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		CsConnectDevice(TRUE, FALSE);
 		EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiFirmwareVolumeProtocolGuid, nullptr, &handleCount, &handleArray);
@@ -107,19 +111,29 @@ STATIC EFI_STATUS BlpRunPasswordUIEfi()
 				EFI_HANDLE imageHandle										= nullptr;
 				if(!EFI_ERROR(EfiBootServices->LoadImage(FALSE, EfiImageHandle, fileDevPath, nullptr, 0, &imageHandle)))
 				{
-					if(!EFI_ERROR(EfiBootServices->StartImage(imageHandle, nullptr, nullptr)))
-						try_leave(BlpPasswordUIEfiRun = TRUE);
+                    if(!EFI_ERROR(EfiBootServices->StartImage(imageHandle, nullptr, nullptr))) {
+#if defined(_MSC_VER)
+                        try_leave(BlpPasswordUIEfiRun = TRUE);
+#else
+                        BlpPasswordUIEfiRun = TRUE;
+                        return 0;
+#endif
+                    }
 				}
 			}
 			break;
 		}
 		BlSetBootMode(0, BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(handleArray)
 			MmFreePool(handleArray);
-	}
+#if defined(_MSC_VER)
+    }
+#endif
 
 	return status;
 }
@@ -132,27 +146,41 @@ STATIC EFI_STATUS BlpReadKernelFlags(EFI_DEVICE_PATH_PROTOCOL* bootFilePath, CHA
 	EFI_STATUS status														= EFI_SUCCESS;
 	CHAR8* fileBuffer														= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// read config file
 		//
 		if(EFI_ERROR(status	= IoReadWholeFile(bootFilePath, fileName, &fileBuffer, nullptr, TRUE)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// parse file
 		//
 		if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, nullptr)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		*kernelFlags														= CmGetStringValueForKey(nullptr, CHAR8_CONST_STRING("Kernel Flags"), nullptr);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(fileBuffer)
 			MmFreePool(fileBuffer);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }
@@ -166,8 +194,10 @@ STATIC CHAR8 CONST* BlpLoadConfigFile(CHAR8 CONST* bootOptions, EFI_DEVICE_PATH_
 	EFI_DEVICE_PATH_PROTOCOL* bootPlistDevPath								= nullptr;
 	CHAR8* bootPlistPathName												= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// try com.apple.Boot.plist in current directory
 		//
@@ -176,7 +206,11 @@ STATIC CHAR8 CONST* BlpLoadConfigFile(CHAR8 CONST* bootOptions, EFI_DEVICE_PATH_
 		{
 			bootPlistPathName												= DevPathExtractFilePathName(bootPlistDevPath, TRUE);
 			if(bootPlistPathName && !EFI_ERROR(BlpReadKernelFlags(bootFilePath, bootPlistPathName, &retValue)))
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return (const unsigned char *)NULL;
+#endif
 		}
 
 		//
@@ -205,19 +239,22 @@ STATIC CHAR8 CONST* BlpLoadConfigFile(CHAR8 CONST* bootOptions, EFI_DEVICE_PATH_
 		fileName[length + valueLength]										= 0;
 		strcat(fileName, CHAR8_CONST_STRING(".plist"));
 		BlpReadKernelFlags(bootFilePath, fileName, &retValue);
-	}
+#if defined(_MSC_VER)
+    }
 	__finally
 	{
+#endif
 		if(bootPlistPathName)
 			MmFreePool(bootPlistPathName);
 		if(bootPlistDevPath)
 			MmFreePool(bootPlistDevPath);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return retValue;
 }
 
-#ifndef MINORVERSION
 //
 // read device path variable
 //
@@ -226,30 +263,52 @@ STATIC EFI_DEVICE_PATH_PROTOCOL* BlpReadDevicePathVariable(CHAR16 CONST* variabl
 	EFI_DEVICE_PATH_PROTOCOL* devicePath									= nullptr;
 	EFI_DEVICE_PATH_PROTOCOL* retValue										= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		UINTN variableLength												= 0;
 		if(EfiRuntimeServices->GetVariable(const_cast<CHAR16*>(variableName), &AppleNVRAMVariableGuid, nullptr, &variableLength, nullptr) != EFI_BUFFER_TOO_SMALL)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
+#endif
 
 		devicePath															= static_cast<EFI_DEVICE_PATH_PROTOCOL*>(MmAllocatePool(variableLength));
 		if(!devicePath)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
+#endif
 
 		if(EFI_ERROR(EfiRuntimeServices->GetVariable(const_cast<CHAR16*>(variableName), &AppleNVRAMVariableGuid, nullptr, &variableLength, devicePath)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
+#endif
 
 		if(macAddressNode != DevPathHasMacAddressNode(devicePath))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
+#endif
 
 		retValue															= devicePath;
 		devicePath															= nullptr;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(devicePath)
 			MmFreePool(devicePath);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return retValue;
 }
@@ -264,7 +323,6 @@ STATIC VOID BlpSetupPathFromVariable(EFI_DEVICE_PATH_PROTOCOL** filePath, CHAR8*
 	if(devicePath && pathName)
 		*pathName															= DevPathExtractFilePathName(devicePath, FALSE);
 }
-#endif
 
 //
 // setup path from command line
@@ -398,8 +456,10 @@ EFI_STATUS BlDetectHotKey()
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// locate firmware password protocol
 		//
@@ -416,14 +476,22 @@ EFI_STATUS BlDetectHotKey()
 		// skip hiber
 		//
 		if(BlTestBootMode(BOOT_MODE_HIBER_FROM_FV))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// locate key press protocol
 		//
 		APPLE_KEY_STATE_PROTOCOL* keyStateProtocol							= nullptr;
 		if(EFI_ERROR(status = EfiBootServices->LocateProtocol(&AppleKeyStateProtocolGuid, 0, reinterpret_cast<VOID**>(&keyStateProtocol))))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// read state
@@ -432,7 +500,11 @@ EFI_STATUS BlDetectHotKey()
 		CHAR16 pressedKeys[32]												= {0};
 		UINTN statesCount													= ARRAYSIZE(pressedKeys);
 		if(EFI_ERROR(status = keyStateProtocol->ReadKeyState(keyStateProtocol, &modifyFlags, &statesCount, pressedKeys)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// check keys
@@ -487,8 +559,14 @@ EFI_STATUS BlDetectHotKey()
 		//
 		// run PasswordUI.efi
 		//
-		if(BlTestBootMode(BOOT_MODE_FIRMWARE_PASSWORD))
-			try_leave(BlpRunPasswordUIEfi());
+        if(BlTestBootMode(BOOT_MODE_FIRMWARE_PASSWORD)) {
+#if defined(_MSC_VER)
+            try_leave(BlpRunPasswordUIEfi());
+#else
+            BlpRunPasswordUIEfi();
+            return 0;
+#endif
+        }
 
 		//
 		// SHIFT
@@ -497,7 +575,11 @@ EFI_STATUS BlDetectHotKey()
 		{
 			BlSetBootMode(BOOT_MODE_SAFE, 0);
 			LdrSetupASLR(FALSE, 0);
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 		}
 
 		if(pressedCommand)
@@ -519,10 +601,12 @@ EFI_STATUS BlDetectHotKey()
 			if(pressedC && pressedMinus)
 				BlSetBootMode(BOOT_MODE_SKIP_BOARD_ID_CHECK, 0);
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 	}
+#endif
 
 	return status;
 }
@@ -530,7 +614,7 @@ EFI_STATUS BlDetectHotKey()
 //
 // process option
 //
-EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandLine, EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DEVICE_PATH_PROTOCOL* bootFilePath, BOOLEAN* kernelCache)
+EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandLine, EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DEVICE_PATH_PROTOCOL* bootFilePath)
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 	CHAR8* bootArgsVariable													= nullptr;
@@ -544,15 +628,23 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 	EFI_DEVICE_PATH_PROTOCOL* ramDiskFilePath								= nullptr;
 	BOOLEAN kernelCacheOverride												= FALSE;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// extract kernel name and build boot options
 		//
 		bootCommandLine														= BlpExtractOptions(bootCommandLine);
 		bootOptions															= static_cast<CHAR8*>(MmAllocatePool(strlen(bootCommandLine) + 1));
-		if(!bootOptions)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!bootOptions) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 		strcpy(bootOptions, bootCommandLine);
 
 		//
@@ -576,7 +668,7 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 			UINT8 dataBuffer[10]											= {0};
 			UINTN dataSize													= sizeof(dataBuffer);
 			UINT32 attribute												= 0;
-			status															= EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"recovery-boot-mode"), &AppleNVRAMVariableGuid, &attribute, &dataSize, dataBuffer);
+			status															= EfiRuntimeServices->GetVariable(CHAR16_STRING(L"recovery-boot-mode"), &AppleNVRAMVariableGuid, &attribute, &dataSize, dataBuffer);
 			if(!EFI_ERROR(status) || status == EFI_BUFFER_TOO_SMALL)
 				BlSetBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE, 0);
 
@@ -590,12 +682,12 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		{
 			UINTN dataSize													= 0;
 			UINT32 attribute												= 0;
-			if(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, nullptr) == EFI_BUFFER_TOO_SMALL)
+			if(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, nullptr) == EFI_BUFFER_TOO_SMALL)
 			{
 				bootArgsVariable											= static_cast<CHAR8*>(MmAllocatePool(dataSize + sizeof(CHAR8)));
 				if(bootArgsVariable)
 				{
-					if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, bootArgsVariable)))
+					if(!EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-args"), &AppleNVRAMVariableGuid, &attribute, &dataSize, bootArgsVariable)))
 						bootArgsVariable[dataSize]							= 0;
 					else
 						MmFreePool(bootArgsVariable), bootArgsVariable = nullptr;
@@ -603,7 +695,6 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 			}
 		}
 
-#ifndef MINORVERSION
 		//
 		// load kernel cache device path
 		//
@@ -620,10 +711,7 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		// setup default kernel cache name
 		//
 		if(BlTestBootMode(BOOT_MODE_NET) && !kernelCacheFilePath && !kernelFilePath)
-#else
-        if(BlTestBootMode(BOOT_MODE_NET))
-#endif
-        {
+		{
 			kernelCachePathName												= BlAllocateString(CHAR8_CONST_STRING("x86_64\\kernelcache"));
 			kernelCacheFilePath												= DevPathAppendLastComponent(bootFilePath, kernelCachePathName, TRUE);
 		}
@@ -678,21 +766,12 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-x"), &valueLength, FALSE))
 			BlSetBootMode(BOOT_MODE_SAFE, 0);
 
-        //
-        // kernel cache
-        //
-        if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-f"), &valueLength, FALSE))
-            kernelCache[0] = FALSE;
-        else
-            kernelCache[0] = TRUE;
-
 		//
 		// single user mode
 		//
 		if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-s"), &valueLength, FALSE))
 			BlSetBootMode(BOOT_MODE_SINGLE_USER | BOOT_MODE_VERBOSE, 0);
 
-#ifndef MINORVERSION
 		//
 		// compact check
 		//
@@ -710,7 +789,6 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		//
 		if(CmGetStringValueForKeyAndCommandLine(*kernelCommandLine, CHAR8_CONST_STRING("-debug"), &valueLength, FALSE))
 			BlSetBootMode(BOOT_MODE_DEBUG, 0);
-#endif
 
 		//
 		// disable ASLR for safe mode
@@ -747,15 +825,19 @@ EFI_STATUS BlProcessOptions(CHAR8 CONST* bootCommandLine, CHAR8** kernelCommandL
 		LdrSetupKernelCachePath(kernelCacheFilePath, kernelCachePathName, kernelCacheOverride);
 		LdrSetupKernelPath(kernelFilePath, kernelPathName);
 		LdrSetupRamDiskPath(ramDiskFilePath, ramDiskPathName);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(bootOptions)
 			MmFreePool(bootOptions);
 
 		if(bootArgsVariable)
 			MmFreePool(bootArgsVariable);
-	}
+#if defined(_MSC_VER)
+    }
+#endif
 
 	return status;
 }

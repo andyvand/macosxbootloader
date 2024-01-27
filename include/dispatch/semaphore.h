@@ -26,13 +26,16 @@
 #include <dispatch/base.h> // for HeaderDoc
 #endif
 
+DISPATCH_ASSUME_NONNULL_BEGIN
+DISPATCH_ASSUME_ABI_SINGLE_BEGIN
+
 /*!
  * @typedef dispatch_semaphore_t
  *
  * @abstract
  * A counting semaphore.
  */
-DISPATCH_DECL(dispatch_semaphore);
+DISPATCH_DECL_SWIFT(dispatch_semaphore, DispatchSemaphore);
 
 __BEGIN_DECLS
 
@@ -44,7 +47,7 @@ __BEGIN_DECLS
  *
  * @discussion
  * Passing zero for the value is useful for when two threads need to reconcile
- * the completion of a particular event. Passing a value greather than zero is
+ * the completion of a particular event. Passing a value greater than zero is
  * useful for managing a finite pool of resources, where the pool size is equal
  * to the value.
  *
@@ -55,11 +58,12 @@ __BEGIN_DECLS
  * @result
  * The newly created semaphore, or NULL on failure.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_MALLOC DISPATCH_RETURNS_RETAINED DISPATCH_WARN_RESULT
 DISPATCH_NOTHROW
+DISPATCH_SWIFT_NAME(DispatchSemaphore.init(value:))
 dispatch_semaphore_t
-dispatch_semaphore_create(long value);
+dispatch_semaphore_create(intptr_t value);
 
 /*!
  * @function dispatch_semaphore_wait
@@ -69,7 +73,9 @@ dispatch_semaphore_create(long value);
  *
  * @discussion
  * Decrement the counting semaphore. If the resulting value is less than zero,
- * this function waits for a signal to occur before returning.
+ * this function waits for a signal to occur before returning. If the timeout is
+ * reached without a signal being received, the semaphore is re-incremented
+ * before the function returns.
  *
  * @param dsema
  * The semaphore. The result of passing NULL in this parameter is undefined.
@@ -81,9 +87,10 @@ dispatch_semaphore_create(long value);
  * @result
  * Returns zero on success, or non-zero if the timeout occurred.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
-long
+DISPATCH_REFINED_FOR_SWIFT
+intptr_t
 dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout);
 
 /*!
@@ -103,11 +110,15 @@ dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout);
  * This function returns non-zero if a thread is woken. Otherwise, zero is
  * returned.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
+API_AVAILABLE(macos(10.6), ios(4.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
-long
+DISPATCH_REFINED_FOR_SWIFT
+intptr_t
 dispatch_semaphore_signal(dispatch_semaphore_t dsema);
 
 __END_DECLS
+
+DISPATCH_ASSUME_ABI_SINGLE_END
+DISPATCH_ASSUME_NONNULL_END
 
 #endif /* __DISPATCH_SEMAPHORE__ */

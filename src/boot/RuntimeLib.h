@@ -7,14 +7,6 @@
 
 #pragma once
 
-#ifndef _RUNTIMELIB_H_
-#define _RUNTIMELIB_H_
-
-#ifdef __APPLE__
-#undef BOOTAPI
-#define BOOTAPI
-#endif
-
 //
 // define
 //
@@ -26,8 +18,7 @@ extern "C"
 	// allocate from stack
 	//
 	VOID* BOOTAPI _alloca(UINTN bufferLength);
-
-#if defined( _MSC_VER )
+#if defined(_MSC_VER)
 	#pragma intrinsic(_alloca)
 #endif
 
@@ -121,5 +112,3 @@ extern "C"
 	//
 	CHAR8* strlwr(CHAR8* stringBuffer);
 }
-
-#endif

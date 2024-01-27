@@ -6,10 +6,11 @@
 //********************************************************************
 
 #include "StdAfx.h"
+
 #include "../rijndael/aes.h"
 #include "../rijndael/aesxts.h"
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
 #endif
 
@@ -79,7 +80,7 @@ typedef struct _CORE_STORAGE_VOLUME_HEADER
 	// 0xc0
 	//
 	UINT8																	OffsetC0[0x200 - 0xc0];
-} GNUPACK CORE_STORAGE_VOLUME_HEADER;
+}CORE_STORAGE_VOLUME_HEADER;
 
 //
 // key sign data
@@ -110,7 +111,7 @@ typedef struct _KEY_SIGN_DATA
 	// sign part3
 	//
 	UINT8																	SignPart3[0x20];
-} GNUPACK KEY_SIGN_DATA;
+}KEY_SIGN_DATA;
 
 //
 // key wrapped data
@@ -136,7 +137,7 @@ typedef struct _KEY_WRAPPED_DATA
 	// sign
 	//
 	KEY_SIGN_DATA															SignData;
-} GNUPACK KEY_WRAPPED_DATA;
+}KEY_WRAPPED_DATA;
 
 //
 // key unwrapped data
@@ -157,7 +158,7 @@ typedef struct _KEY_UNWRAPPED_DATA
 	// data buffer
 	//
 	UINT8																	DataBuffer[0x80];
-} GNUPACK KEY_UNWRAPPED_DATA;
+}KEY_UNWRAPPED_DATA;
 
 //
 // passphase wrapped data
@@ -208,7 +209,7 @@ typedef struct _PASSPHASE_WRAPPED_DATA
 	// sign
 	//
 	KEY_SIGN_DATA															SignData;
-} GNUPACK PASSPHASE_WRAPPED_DATA;
+}PASSPHASE_WRAPPED_DATA;
 
 //
 // passphase unwrapped data
@@ -224,7 +225,7 @@ typedef struct _PASSPHASE_UNWRAPPED_DATA
 	// key
 	//
 	UINT8																	DataBuffer[0x80];
-} GNUPACK PASSPHASE_UNWRAPPED_DATA;
+}PASSPHASE_UNWRAPPED_DATA;
 
 //
 // key store data
@@ -260,9 +261,9 @@ typedef struct _KEY_STORE_DATA_HEADER
 	// data length
 	//
 	UINT32																	DataLength;
-} GNUPACK KEY_STORE_DATA_HEADER;
+}KEY_STORE_DATA_HEADER;
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -293,12 +294,7 @@ STATIC CHAR8 CONST* FvpLoginUnlockIdent										= nullptr;
 STATIC CHAR8 CONST* FvpUserPassword											= nullptr;
 STATIC CHAR8 CONST* FvpKeyEncryptingKeyIdent								= nullptr;
 STATIC UINTN FvpVolumeKeyKEKLength											= 0;
-
-#if defined(_MSC_VER)
 STATIC UINT8 FvpVolumeKeyKEK[0x80]											= {0};
-#else
-STATIC UINT8 FvpVolumeKeyKEK[0x80];
-#endif
 
 STATIC UINTN FvpVolumeKeyCount												= 0;
 STATIC VOLUME_KEY_INFO* FvpVolumeKeyList									= nullptr;
@@ -361,13 +357,21 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 	CHAR8* fileBuffer														= nullptr;
 	UINTN fileSize															= 0;
 
-	__try
+#if defined(_MSC_VER)
+    __try
 	{
+#endif
 		//
 		// skip netboot
 		//
-		if(IoBootingFromNet())
-			try_leave(status = EFI_NOT_FOUND);
+        if(IoBootingFromNet()) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// read EncryptedRoot.plist.wipekey
@@ -375,62 +379,79 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		if(EFI_ERROR(status = IoReadWholeFile(nullptr, CHAR8_CONST_STRING("System\\Library\\Caches\\com.apple.corestorage\\EncryptedRoot.plist.wipekey"), &fileBuffer, &fileSize, TRUE)))
 		{
 			if(EFI_ERROR(status = IoReadWholeFile(nullptr, CHAR8_CONST_STRING("EncryptedRoot.plist.wipekey"), &fileBuffer, &fileSize, TRUE)))
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return -1;
+#endif
 		}
 
 		//
 		// check file size
 		//
-		if(!fileSize)
-			try_leave(status = EFI_NOT_FOUND);
+        if(!fileSize) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// open core storage block io protocol
 		//
 		EFI_BLOCK_IO_PROTOCOL* blockIoProtocol								= nullptr;
 		if(EFI_ERROR(status = EfiBootServices->HandleProtocol(coreStoragePartitionHandle, &EfiBlockIoProtocolGuid, reinterpret_cast<VOID**>(&blockIoProtocol))))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// open disk io protocol
 		//
 		EFI_DISK_IO_PROTOCOL* diskIoProtocol								= nullptr;
 		if(EFI_ERROR(status = EfiBootServices->HandleProtocol(coreStoragePartitionHandle, &EfiDiskIoProtocolGuid, reinterpret_cast<VOID**>(&diskIoProtocol))))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// read volume header
 		//
-#ifdef _MSC_VER
 		CORE_STORAGE_VOLUME_HEADER localHeader								= {0};
-#else
-		CORE_STORAGE_VOLUME_HEADER localHeader;
-#endif
-
 		UINT64 offset														= blockIoProtocol->Media->LastBlock * blockIoProtocol->Media->BlockSize;
 		if(EFI_ERROR(status = diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, offset, sizeof(localHeader), &localHeader)))
 		{
 			if(EFI_ERROR(status = diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, 0, sizeof(localHeader), &localHeader)))
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
 		}
 
 		//
 		// check volume header
 		//
-		if(!FvpValidateVolumeHeader(&localHeader) || localHeader.CryptoMethod != 2)
-			try_leave(status = EFI_VOLUME_CORRUPTED);
+        if(!FvpValidateVolumeHeader(&localHeader) || localHeader.CryptoMethod != 2) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_VOLUME_CORRUPTED);
+#else
+            status = EFI_VOLUME_CORRUPTED;
+            return status;
+#endif
+        }
 
 		//
 		// decrypt with aes-xts
 		//
-#ifdef _MSC_VER
 		symmetric_xts xtsContext											= {{{{0}}}};
 		UINT8 initVector[0x10]												= {0};
-#else
-		symmetric_xts xtsContext;
-		UINT8 initVector[0x10];
-#endif
-
 		xts_start(0, initVector, localHeader.EncryptedRootKey1, localHeader.KeyLength, initVector, 0x10, 0, 0, &xtsContext);
 		xts_decrypt(fileBuffer, static_cast<unsigned long>(fileSize), fileBuffer, initVector, &xtsContext);
 		xts_done(&xtsContext);
@@ -439,35 +460,62 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		// load as plist
 		//
 		if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, &FvpEncryptedRootPlistTag)))
-			try_leave(NOTHING);
-		
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
 		//
 		// get wrapped volume key list
 		//
 		FvpWrappedVolumeKeysListTag											= CmGetTagValueForKey(FvpEncryptedRootPlistTag, CHAR8_CONST_STRING("WrappedVolumeKeys"));
-		if(!FvpWrappedVolumeKeysListTag || FvpWrappedVolumeKeysListTag->Type != XML_TAG_ARRAY)
-			try_leave(status = EFI_VOLUME_CORRUPTED);
+        if(!FvpWrappedVolumeKeysListTag || FvpWrappedVolumeKeysListTag->Type != XML_TAG_ARRAY) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_VOLUME_CORRUPTED);
+#else
+            status = EFI_VOLUME_CORRUPTED;
+            return status;
+#endif
+        }
 
 		//
 		// get wrapped volume key count
 		//
 		FvpWrappedVolumeKeyCount											= CmGetListTagElementsCount(FvpWrappedVolumeKeysListTag);
-		if(!FvpWrappedVolumeKeyCount)
-			try_leave(status = EFI_VOLUME_CORRUPTED);
+        if(!FvpWrappedVolumeKeyCount) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_VOLUME_CORRUPTED);
+#else
+            status = EFI_VOLUME_CORRUPTED;
+            return status;
+#endif
+        }
 
 		//
 		// get user list
 		//
 		XML_TAG* cryptoUserListTag											= CmGetTagValueForKey(FvpEncryptedRootPlistTag, CHAR8_CONST_STRING("CryptoUsers"));
 		if(!cryptoUserListTag || cryptoUserListTag->Type != XML_TAG_ARRAY)
+#if defined(_MSC_VER)
 			try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
 
 		//
 		// check count
 		//
 		UINTN count															= CmGetListTagElementsCount(cryptoUserListTag);
-		if(!count)
-			try_leave(status = EFI_NOT_FOUND);
+        if(!count) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// get panel user count
@@ -496,12 +544,16 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 			else if(userTypeTag->IntegerValue == 0x10010005)
 				FvpRecoveryKeyUserDictTag									= cryptoUserDictTag;
 		}
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(fileBuffer)
 			MmFreePool(fileBuffer);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }
@@ -518,12 +570,7 @@ STATIC BOOLEAN FvpAESUnwrap(VOID CONST* kekBuffer, UINTN kekLength, UINT64 initV
 	UINT8* R																= static_cast<UINT8*>(plaintext);
 	memcpy(R, Add2Ptr(ciphertext, sizeof(A), VOID CONST*), sizeof(UINT64) * n);
 
-#ifdef _MSC_VER
 	aes_decrypt_ctx aesContext												= {{0}};
-#else
-	aes_decrypt_ctx aesContext;
-#endif
-
 	aes_decrypt_key(static_cast<UINT8 CONST*>(kekBuffer), static_cast<INT32>(kekLength), &aesContext);
 	
 	for(INT32 j = 5; j >= 0; j --)
@@ -631,12 +678,7 @@ STATIC EFI_STATUS FvpDecryptVolumeKEKWithMasterKeyUser()
 //
 STATIC VOID FvpHMACSHA256(VOID CONST* messageBuffer, UINTN messageLength, VOID CONST* keyBuffer, UINTN keyLength, UINT8* resultBuffer)
 {
-#ifdef _MSC_VER
 	SHA256_CONTEXT sha256Context											= {{0}};
-#else
-	SHA256_CONTEXT sha256Context;
-#endif
-
 	UINT8 kPad[0x40]														= {0};
 	UINT8 tk[0x20]															= {0};
 	if(keyLength > sizeof(kPad))
@@ -861,7 +903,7 @@ STATIC VOID FvpReadInput(CHAR8** inputBuffer, UINTN* inputLength, UINTN maxLengt
 
 		if(inputKey.UnicodeChar == CHAR_CARRIAGE_RETURN)
 		{
-			EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING((VOID *)L"\r\n"));
+			EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING(L"\r\n"));
 			break;
 		}
 		else if(inputKey.UnicodeChar == CHAR_BACKSPACE)
@@ -882,7 +924,7 @@ STATIC VOID FvpReadInput(CHAR8** inputBuffer, UINTN* inputLength, UINTN maxLengt
 						curRow												-= 1;
 				}
 				EfiSystemTable->ConOut->SetCursorPosition(EfiSystemTable->ConOut, curColumn, curRow);
-				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING((VOID *)L" "));
+				EfiSystemTable->ConOut->OutputString(EfiSystemTable->ConOut, CHAR16_STRING(L" "));
 				EfiSystemTable->ConOut->SetCursorPosition(EfiSystemTable->ConOut, curColumn, curRow);
 			}
 		}

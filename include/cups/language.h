@@ -1,18 +1,10 @@
 /*
- * "$Id: language.h 11093 2013-07-03 20:48:42Z msweet $"
+ * Multi-language support for CUPS.
  *
- *   Multi-language support for CUPS.
+ * Copyright 2007-2011 by Apple Inc.
+ * Copyright 1997-2006 by Easy Software Products.
  *
- *   Copyright 2007-2011 by Apple Inc.
- *   Copyright 1997-2006 by Easy Software Products.
- *
- *   These coded instructions, statements, and computer programs are the
- *   property of Apple Inc. and are protected by Federal copyright
- *   law.  Distribution and use rights are outlined in the file "LICENSE.txt"
- *   which should have been included with this file.  If this file is
- *   file is missing or damaged, see the license at "http://www.cups.org/".
- *
- *   This file is subject to the Apple OS-Developed Software exception.
+ * Licensed under Apache License v2.0.  See the file "LICENSE" for more information.
  */
 
 #ifndef _CUPS_LANGUAGE_H_
@@ -34,7 +26,7 @@ extern "C" {
  * Types...
  */
 
-typedef enum cups_encoding_e		/**** Language Encodings ****/
+typedef enum cups_encoding_e		/**** Language Encodings @exclude all@ ****/
 {
   CUPS_AUTO_ENCODING = -1,		/* Auto-detect the encoding @private@ */
   CUPS_US_ASCII,			/* US ASCII */
@@ -98,18 +90,14 @@ typedef struct cups_lang_s		/**** Language Cache Structure ****/
  * Prototypes...
  */
 
-extern cups_lang_t	*cupsLangDefault(void);
-extern const char	*cupsLangEncoding(cups_lang_t *lang);
-extern void		cupsLangFlush(void);
-extern void		cupsLangFree(cups_lang_t *lang);
-extern cups_lang_t	*cupsLangGet(const char *language);
+extern cups_lang_t	*cupsLangDefault(void) _CUPS_PUBLIC;
+extern const char	*cupsLangEncoding(cups_lang_t *lang) _CUPS_PUBLIC;
+extern void		cupsLangFlush(void) _CUPS_PUBLIC;
+extern void		cupsLangFree(cups_lang_t *lang) _CUPS_PUBLIC;
+extern cups_lang_t	*cupsLangGet(const char *language) _CUPS_PUBLIC;
 
 #  ifdef __cplusplus
 }
 #  endif /* __cplusplus */
 
 #endif /* !_CUPS_LANGUAGE_H_ */
-
-/*
- * End of "$Id: language.h 11093 2013-07-03 20:48:42Z msweet $".
- */

@@ -1,33 +1,11 @@
 //********************************************************************
 //	created:	4:11:2009   10:03
-//	filename: 	stdafx.h
+//	filename: 	StdAfx.h
 //	author:		tiamo
 //	purpose:	stdafx
 //********************************************************************
 
-#ifndef __STDAFX_H__
-#define __STDAFX_H__ 1
-
-#ifdef __APPLE__
-#define __leave
-#define __try if (1)
-#define __except(x) if (0 && (x))
-#define __finally if (1)
-#define GNUPACK __attribute__((packed))
-
-#ifndef nullptr
-#define nullptr 0
-#endif
-
-
-#ifndef _INT8_T
-#define _INT8_T 1
-#endif
-#else
-#define GNUPACK __attribute__((packed))
-#endif
-
-#include "../../sdk/include/EfiTypes.h"
+#pragma once
 
 #define DEBUG_LDRP_CALL_CSPRINTF											0
 #define DEBUG_NVRAM_CALL_CSPRINTF											0
@@ -75,17 +53,11 @@
 
 
 #define NOTHING
-
-#ifndef _MSC_VER
 #define BOOTAPI																__cdecl
-#else
-#define BOOTAPI
-#endif
-
-#define CHAR8_CONST_STRING(S)												static_cast<CHAR8 CONST*>(static_cast<VOID CONST*>(S))
-#define CHAR16_CONST_STRING(S)												static_cast<CHAR16 CONST*>(static_cast<VOID CONST*>(S))
-#define CHAR8_STRING(S)														static_cast<CHAR8*>(static_cast<VOID*>(S))
-#define CHAR16_STRING(S)													static_cast<CHAR16*>(static_cast<VOID*>(S))
+#define CHAR8_CONST_STRING(S)												(CHAR8 CONST*)(S)
+#define CHAR16_CONST_STRING(S)												(CHAR16 CONST*)(S)
+#define CHAR8_STRING(S)														(CHAR8*)(S)
+#define CHAR16_STRING(S)													(CHAR16*)(S)
 #define try_leave(S)														do{S;__leave;}while(0)
 #define ARRAYSIZE(A)														(sizeof((A)) / sizeof((A)[0]))
 #define ArchConvertAddressToPointer(P,T)									((T)((UINTN)(P)))
@@ -94,7 +66,7 @@
 #define LdrStaticVirtualToPhysical(V)										((V) & (1 * 1024 * 1024 * 1024 - 1))
 #define Add2Ptr(P, O, T)													ArchConvertAddressToPointer(ArchConvertPointerToAddress(P) + (O), T)
 #define PAGE_ALIGN(A)														((A) & ~EFI_PAGE_MASK)
-#define BYTE_OFFSET(A)														((UINT32)(A) & EFI_PAGE_MASK)
+#define BYTE_OFFSET(A)														((UINT32)((UINT64)(A) & 0xFFFFFFFF) & EFI_PAGE_MASK)
 
 #define SWAP32(V)															((((UINT32)(V) & 0xff) << 24) | (((UINT32)(V) & 0xff00) << 8) | (((UINT32)(V) & 0xff0000) >> 8) |  (((UINT32)(V) & 0xff000000) >> 24))
 #define SWAP_BE32_TO_HOST													SWAP32
@@ -170,5 +142,3 @@
 #include "MemoryMap.h"
 #include "PanicDialog.h"
 #include "FileVault.h"
-
-#endif

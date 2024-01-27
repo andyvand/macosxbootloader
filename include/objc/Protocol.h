@@ -34,47 +34,15 @@
 #include <objc/runtime.h>
 
 
-#elif __OBJC2__
+#else
 
 #include <objc/NSObject.h>
 
 // All methods of class Protocol are unavailable. 
 // Use the functions in objc/runtime.h instead.
 
-__OSX_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0)
+OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0)
 @interface Protocol : NSObject
-@end
-
-
-#else
-
-#include <objc/Object.h>
-
-__OSX_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0)
-@interface Protocol : Object
-{
-@private
-    char *protocol_name OBJC2_UNAVAILABLE;
-    struct objc_protocol_list *protocol_list OBJC2_UNAVAILABLE;
-    struct objc_method_description_list *instance_methods OBJC2_UNAVAILABLE;
-    struct objc_method_description_list *class_methods OBJC2_UNAVAILABLE;
-}
-
-/* Obtaining attributes intrinsic to the protocol */
-
-- (const char *)name OBJC2_UNAVAILABLE;
-
-/* Testing protocol conformance */
-
-- (BOOL) conformsTo: (Protocol *)aProtocolObject OBJC2_UNAVAILABLE;
-
-/* Looking up information specific to a protocol */
-
-- (struct objc_method_description *) descriptionForInstanceMethod:(SEL)aSel
-    __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0,__MAC_10_5, __IPHONE_2_0,__IPHONE_2_0);
-- (struct objc_method_description *) descriptionForClassMethod:(SEL)aSel 
-    __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0,__MAC_10_5, __IPHONE_2_0,__IPHONE_2_0);
-
 @end
 
 #endif

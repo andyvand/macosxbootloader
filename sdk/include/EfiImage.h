@@ -271,9 +271,9 @@ typedef struct {
 // type name EFI_IMAGE_OPTIONAL_HEADER is appropriate to the build.  Same for
 // EFI_IMAGE_NT_HEADERS.  These definitions MUST be used by ALL EFI code.
 //
-#if defined(_M_AMD64) || defined(_AMD64_) || defined(__x86_64__)
+#if defined(__x86_64__)
 #include "x64/EfiPeOptionalHeader.h"
-#else
+#elif defined(__i386__)
 #include "x86/EfiPeOptionalHeader.h"
 #endif
 

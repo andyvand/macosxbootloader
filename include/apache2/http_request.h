@@ -185,6 +185,8 @@ AP_DECLARE(void) ap_internal_fast_redirect(request_rec *sub_req, request_rec *r)
  * is required for the current request
  * @param r The current request
  * @return 1 if authentication is required, 0 otherwise
+ * @bug Behavior changed in 2.4.x refactoring, API no longer usable
+ * @deprecated @see ap_some_authn_required()
  */
 AP_DECLARE(int) ap_some_auth_required(request_rec *r);
 
@@ -216,7 +218,7 @@ AP_DECLARE(void) ap_clear_auth_internal(void);
  * Determine whether access control hooks will be run for all internal
  * requests with URIs distinct from that of the initial request, or only
  * those for which different configurations apply than those which applied
- * to the initial request.  To accomodate legacy external modules which
+ * to the initial request.  To accommodate legacy external modules which
  * may expect access control hooks to be run for all internal requests
  * with distinct URIs, this is the default behaviour unless all access
  * control hooks and authentication and authorization providers are
@@ -313,7 +315,7 @@ AP_DECLARE(void) ap_allow_standard_methods(request_rec *r, int reset, ...);
  * the response to the client
  * @param r The current request
  */
-void ap_process_request(request_rec *r);
+AP_DECLARE(void) ap_process_request(request_rec *r);
 
 /* For post-processing after a handler has finished with a request.
  * (Commonly used after it was suspended)
@@ -330,10 +332,25 @@ void ap_process_async_request(request_rec *r);
 
 /**
  * Kill the current request
- * @param type Why the request is dieing
+ * @param type Why the request is dying
  * @param r The current request
  */
 AP_DECLARE(void) ap_die(int type, request_rec *r);
+
+/**
+ * Check whether a connection is still established and has data available,
+ * optionally consuming blank lines ([CR]LF).
+ * @param c The current connection
+ * @param bb The brigade to filter
+ * @param max_blank_lines Max number of blank lines to consume, or zero
+ *                        to consider them as data (single read).
+ * @return APR_SUCCESS: connection established with data available,
+ *         APR_EAGAIN: connection established and empty,
+ *         APR_NOTFOUND: too much blank lines,
+ *         APR_E*: connection/general error.
+ */
+AP_DECLARE(apr_status_t) ap_check_pipeline(conn_rec *c, apr_bucket_brigade *bb,
+                                           unsigned int max_blank_lines);
 
 /* Hooks */
 
@@ -344,6 +361,18 @@ AP_DECLARE(void) ap_die(int type, request_rec *r);
  * @ingroup hooks
  */
 AP_DECLARE_HOOK(int,create_request,(request_rec *r))
+
+/**
+ * This hook allow modules an opportunity to translate the URI into an
+ * actual filename, before URL decoding happens.
+ * @param r The current request
+ * @return DECLINED to let other modules handle the pre-translation,
+ *         OK if it was handled and no other module should process it,
+ *         DONE if no further transformation should happen on the URI,
+ *         HTTP_... in case of error.
+ * @ingroup hooks
+ */
+AP_DECLARE_HOOK(int,pre_translate_name,(request_rec *r))
 
 /**
  * This hook allow modules an opportunity to translate the URI into an
@@ -426,7 +455,7 @@ AP_DECLARE_HOOK(int,access_checker,(request_rec *r))
  * This hook should be registered with ap_hook_check_access_ex().
  *
  * @param r the current request
- * @return OK (allow acces), DECLINED (let later modules decide),
+ * @return OK (allow access), DECLINED (let later modules decide),
  *         or HTTP_... (deny access)
  * @ingroup hooks
  * @see ap_hook_check_access_ex
@@ -532,16 +561,28 @@ AP_DECLARE_HOOK(void,insert_filter,(request_rec *r))
  * This hook allows modules to affect the request immediately after the
  * per-directory configuration for the request has been generated.
  * @param r The current request
- * @return OK (allow acces), DECLINED (let later modules decide),
+ * @return OK (allow access), DECLINED (let later modules decide),
  *         or HTTP_... (deny access)
  * @ingroup hooks
  */
 AP_DECLARE_HOOK(int,post_perdir_config,(request_rec *r))
 
 /**
+ * This hook allows a module to force authn to be required when
+ * processing a request.
+ * This hook should be registered with ap_hook_force_authn().
+ * @param r The current request
+ * @return OK (force authn), DECLINED (let later modules decide)
+ * @ingroup hooks
+ */
+AP_DECLARE_HOOK(int,force_authn,(request_rec *r))
+
+/**
  * This hook allows modules to handle/emulate the apr_stat() calls
  * needed for directory walk.
+ * @param finfo where to put the stat data
  * @param r The current request
+ * @param wanted APR_FINFO_* flags to pass to apr_stat()
  * @return apr_status_t or AP_DECLINED (let later modules decide)
  * @ingroup hooks
  */
@@ -560,7 +601,7 @@ AP_DECLARE_DATA extern const apr_bucket_type_t ap_bucket_type_eor;
  * @param e The bucket to inspect
  * @return true or false
  */
-#define AP_BUCKET_IS_EOR(e)         (e->type == &ap_bucket_type_eor)
+#define AP_BUCKET_IS_EOR(e)         ((e)->type == &ap_bucket_type_eor)
 
 /**
  * Make the bucket passed in an End Of REQUEST (EOR) bucket
@@ -581,6 +622,17 @@ AP_DECLARE(apr_bucket *) ap_bucket_eor_make(apr_bucket *b, request_rec *r);
  */
 AP_DECLARE(apr_bucket *) ap_bucket_eor_create(apr_bucket_alloc_t *list,
                                               request_rec *r);
+
+/**
+ * Can be used within any handler to determine if any authentication
+ * is required for the current request.  Note that if used with an
+ * access_checker hook, an access_checker_ex hook or an authz provider; the
+ * caller should take steps to avoid a loop since this function is
+ * implemented by calling these hooks.
+ * @param r The current request
+ * @return TRUE if authentication is required, FALSE otherwise
+ */
+AP_DECLARE(int) ap_some_authn_required(request_rec *r);
 
 #ifdef __cplusplus
 }

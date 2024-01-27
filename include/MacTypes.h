@@ -212,7 +212,7 @@ typedef ShortFixed *                    ShortFixedPtr;
     Note: These are fixed size floating point types, useful when writing a floating
           point value to disk.  If your compiler does not support a particular size 
           float, a struct is used instead.
-          Use of of the NCEG types (e.g. double_t) or an ANSI C type (e.g. double) if
+          Use one of the NCEG types (e.g. double_t) or an ANSI C type (e.g. double) if
           you want a floating point representation that is natural for any given
           compiler, but might be a different size on different compilers.
 
@@ -319,8 +319,8 @@ typedef unsigned char                   Boolean;
         UniversalProcHandle     Pointer to a UniversalProcPtr
         
 *********************************************************************************/
-typedef CALLBACK_API_C( long , ProcPtr )();
-typedef CALLBACK_API( void , Register68kProcPtr )();
+typedef CALLBACK_API_C( long , ProcPtr )(void);
+typedef CALLBACK_API( void , Register68kProcPtr )(void);
 #if TARGET_RT_MAC_CFM
 /*  The RoutineDescriptor structure is defined in MixedMode.h */
 typedef struct RoutineDescriptor *UniversalProcPtr;
@@ -500,7 +500,7 @@ typedef ConstStr63Param                 ConstStrFileNameParam;
 #ifdef __cplusplus
 inline unsigned char StrLength(ConstStr255Param string) { return (*string); }
 #else
-#define StrLength(string) (*(unsigned char *)(string))
+#define StrLength(string) (*(const unsigned char *)(string))
 #endif  /* defined(__cplusplus) */
 
 #if OLDROUTINENAMES

@@ -28,6 +28,8 @@
 #include <Availability.h>
 #include <AvailabilityMacros.h>
 #include <TargetConditionals.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #ifndef __has_feature
 #   define __has_feature(x) 0
@@ -40,6 +42,19 @@
 #ifndef __has_attribute
 #   define __has_attribute(x) 0
 #endif
+
+#if !__has_feature(nullability)
+#   ifndef _Nullable
+#       define _Nullable
+#   endif
+#   ifndef _Nonnull
+#       define _Nonnull
+#   endif
+#   ifndef _Null_unspecified
+#       define _Null_unspecified
+#   endif
+#endif
+
 
 
 /*
@@ -55,69 +70,141 @@
 #endif
 
 
+/*
+ * OBJC_NO_GC 1: GC is not supported
+ * OBJC_NO_GC undef: GC is supported. This SDK no longer supports this mode.
+ *
+ * OBJC_NO_GC_API undef: Libraries must export any symbols that 
+ *                       dual-mode code may links to.
+ * OBJC_NO_GC_API 1: Libraries need not export GC-related symbols.
+ */
+#if defined(__OBJC_GC__)
+#   error Objective-C garbage collection is not supported.
+#elif TARGET_OS_OSX
+    /* GC is unsupported. GC API symbols are exported. */
+#   define OBJC_NO_GC 1
+#   undef  OBJC_NO_GC_API
+#else
+    /* GC is unsupported. GC API symbols are not exported. */
+#   define OBJC_NO_GC 1
+#   define OBJC_NO_GC_API 1
+#endif
+
+
+/* NS_ENFORCE_NSOBJECT_DESIGNATED_INITIALIZER == 1 
+ * marks -[NSObject init] as a designated initializer. */
+#if !defined(NS_ENFORCE_NSOBJECT_DESIGNATED_INITIALIZER)
+#   define NS_ENFORCE_NSOBJECT_DESIGNATED_INITIALIZER 1
+#endif
+
+/* The arm64 ABI requires proper casting to ensure arguments are passed
+ *  * correctly.  */
+#if defined(__arm64__) && !__swift__
+#   undef OBJC_OLD_DISPATCH_PROTOTYPES
+#   define OBJC_OLD_DISPATCH_PROTOTYPES 0
+#endif
+
 /* OBJC_OLD_DISPATCH_PROTOTYPES == 0 enforces the rule that the dispatch 
  * functions must be cast to an appropriate function pointer type. */
 #if !defined(OBJC_OLD_DISPATCH_PROTOTYPES)
-#   define OBJC_OLD_DISPATCH_PROTOTYPES 1
+#   if __swift__
+        // Existing Swift code expects IMP to be Comparable.
+        // Variadic IMP is comparable via OpaquePointer; non-variadic IMP isn't.
+#       define OBJC_OLD_DISPATCH_PROTOTYPES 1
+#   else
+#       define OBJC_OLD_DISPATCH_PROTOTYPES 0
+#   endif
 #endif
+
+
+/* OBJC_AVAILABLE: shorthand for all-OS availability */
+
+#   if !defined(OBJC_AVAILABLE)
+#       define OBJC_AVAILABLE(x, i, t, w, b)                            \
+            __OSX_AVAILABLE(x)  __IOS_AVAILABLE(i)  __TVOS_AVAILABLE(t) \
+            __WATCHOS_AVAILABLE(w)
+#   endif
+
+
+
+/* OBJC_OSX_DEPRECATED_OTHERS_UNAVAILABLE: Deprecated on OS X,
+ * unavailable everywhere else. */
+
+#   if !defined(OBJC_OSX_DEPRECATED_OTHERS_UNAVAILABLE)
+#       define OBJC_OSX_DEPRECATED_OTHERS_UNAVAILABLE(_start, _dep, _msg) \
+            __OSX_DEPRECATED(_start, _dep, _msg)                          \
+            __IOS_UNAVAILABLE __TVOS_UNAVAILABLE                          \
+            __WATCHOS_UNAVAILABLE
+#   endif
+
+
+
+/* OBJC_OSX_AVAILABLE_OTHERS_UNAVAILABLE: Available on OS X,
+ * unavailable everywhere else. */
+
+#   if !defined(OBJC_OSX_AVAILABLE_OTHERS_UNAVAILABLE)
+#       define OBJC_OSX_AVAILABLE_OTHERS_UNAVAILABLE(vers) \
+            __OSX_AVAILABLE(vers)                          \
+            __IOS_UNAVAILABLE __TVOS_UNAVAILABLE           \
+            __WATCHOS_UNAVAILABLE
+#    endif
+
 
 
 /* OBJC_ISA_AVAILABILITY: `isa` will be deprecated or unavailable 
  * in the future */
 #if !defined(OBJC_ISA_AVAILABILITY)
-#   if __OBJC2__
-#       define OBJC_ISA_AVAILABILITY  __attribute__((deprecated))
+#   define OBJC_ISA_AVAILABILITY  __attribute__((deprecated))
+#endif
+
+/* OBJC_UNAVAILABLE: unavailable, with a message where supported */
+#if !defined(OBJC_UNAVAILABLE)
+#   if __has_extension(attribute_unavailable_with_message)
+#       define OBJC_UNAVAILABLE(_msg) __attribute__((unavailable(_msg)))
 #   else
-#       define OBJC_ISA_AVAILABILITY  /* still available */
+#       define OBJC_UNAVAILABLE(_msg) __attribute__((unavailable))
 #   endif
 #endif
 
-
-/* OBJC2_UNAVAILABLE: unavailable in objc 2.0, deprecated in Leopard */
-#if !defined(OBJC2_UNAVAILABLE)
-#   if __OBJC2__
-#       define OBJC2_UNAVAILABLE UNAVAILABLE_ATTRIBUTE
+/* OBJC_DEPRECATED: deprecated, with a message where supported */
+#if !defined(OBJC_DEPRECATED)
+#   if __has_extension(attribute_deprecated_with_message)
+#       define OBJC_DEPRECATED(_msg) __attribute__((deprecated(_msg)))
 #   else
-        /* plain C code also falls here, but this is close enough */
-#       define OBJC2_UNAVAILABLE __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_5, __IPHONE_2_0,__IPHONE_2_0)
+#       define OBJC_DEPRECATED(_msg) __attribute__((deprecated))
 #   endif
 #endif
 
 /* OBJC_ARC_UNAVAILABLE: unavailable with -fobjc-arc */
 #if !defined(OBJC_ARC_UNAVAILABLE)
 #   if __has_feature(objc_arc)
-#       if __has_extension(attribute_unavailable_with_message)
-#           define OBJC_ARC_UNAVAILABLE __attribute__((unavailable("not available in automatic reference counting mode")))
-#       else
-#           define OBJC_ARC_UNAVAILABLE __attribute__((unavailable))
-#       endif
+#       define OBJC_ARC_UNAVAILABLE OBJC_UNAVAILABLE("not available in automatic reference counting mode")
 #   else
 #       define OBJC_ARC_UNAVAILABLE
 #   endif
 #endif
 
-#if !defined(OBJC_HIDE_64)
+/* OBJC_SWIFT_UNAVAILABLE: unavailable in Swift */
+#if !defined(OBJC_SWIFT_UNAVAILABLE)
+#   if __has_feature(attribute_availability_swift)
+#       define OBJC_SWIFT_UNAVAILABLE(_msg) __attribute__((availability(swift, unavailable, message=_msg)))
+#   else
+#       define OBJC_SWIFT_UNAVAILABLE(_msg)
+#   endif
+#endif
+
 /* OBJC_ARM64_UNAVAILABLE: unavailable on arm64 (i.e. stret dispatch) */
 #if !defined(OBJC_ARM64_UNAVAILABLE)
 #   if defined(__arm64__)
-#       define OBJC_ARM64_UNAVAILABLE __attribute__((unavailable("not available in arm64")))
+#       define OBJC_ARM64_UNAVAILABLE OBJC_UNAVAILABLE("not available in arm64")
 #   else
 #       define OBJC_ARM64_UNAVAILABLE 
 #   endif
 #endif
-#endif
 
 /* OBJC_GC_UNAVAILABLE: unavailable with -fobjc-gc or -fobjc-gc-only */
 #if !defined(OBJC_GC_UNAVAILABLE)
-#   if __OBJC_GC__
-#       if __has_extension(attribute_unavailable_with_message)
-#           define OBJC_GC_UNAVAILABLE __attribute__((unavailable("not available in garbage collecting mode")))
-#       else
-#           define OBJC_GC_UNAVAILABLE __attribute__((unavailable))
-#       endif
-#   else
-#       define OBJC_GC_UNAVAILABLE
-#   endif
+#   define OBJC_GC_UNAVAILABLE
 #endif
 
 #if !defined(OBJC_EXTERN)
@@ -129,15 +216,7 @@
 #endif
 
 #if !defined(OBJC_VISIBLE)
-#   if TARGET_OS_WIN32
-#       if defined(BUILDING_OBJC)
-#           define OBJC_VISIBLE __declspec(dllexport)
-#       else
-#           define OBJC_VISIBLE __declspec(dllimport)
-#       endif
-#   else
 #       define OBJC_VISIBLE  __attribute__((visibility("default")))
-#   endif
 #endif
 
 #if !defined(OBJC_EXPORT)
@@ -162,6 +241,64 @@
 
 #if !defined(OBJC_INLINE)
 #   define OBJC_INLINE __inline
+#endif
+
+// Declares an enum type or option bits type as appropriate for each language.
+#if (__cplusplus && __cplusplus >= 201103L && (__has_extension(cxx_strong_enums) || __has_feature(objc_fixed_enum))) || (!__cplusplus && __has_feature(objc_fixed_enum))
+#define OBJC_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
+#if (__cplusplus)
+#define OBJC_OPTIONS(_type, _name) _type _name; enum : _type
+#else
+#define OBJC_OPTIONS(_type, _name) enum _name : _type _name; enum _name : _type
+#endif
+#else
+#define OBJC_ENUM(_type, _name) _type _name; enum
+#define OBJC_OPTIONS(_type, _name) _type _name; enum
+#endif
+
+#if !defined(OBJC_RETURNS_RETAINED)
+#   if __OBJC__ && __has_attribute(ns_returns_retained)
+#       define OBJC_RETURNS_RETAINED __attribute__((ns_returns_retained))
+#   else
+#       define OBJC_RETURNS_RETAINED
+#   endif
+#endif
+
+/* OBJC_COLD: very rarely called, e.g. on error path */
+#if !defined(OBJC_COLD)
+#   if __OBJC__ && __has_attribute(cold)
+#       define OBJC_COLD __attribute__((cold))
+#   else
+#       define OBJC_COLD
+#   endif
+#endif
+
+/* OBJC_NORETURN: does not return normally, but may throw */
+#if !defined(OBJC_NORETURN)
+#   if __OBJC__ && __has_attribute(noreturn)
+#       define OBJC_NORETURN __attribute__((noreturn))
+#   else
+#       define OBJC_NORETURN
+#   endif
+#endif
+
+/* OBJC_NOESCAPE: marks a block as nonescaping */
+#if !defined(OBJC_NOESCAPE)
+#   if __has_attribute(noescape)
+#       define OBJC_NOESCAPE __attribute__((noescape))
+#   else
+#       define OBJC_NOESCAPE
+#   endif
+#endif
+
+/* OBJC_REFINED_FOR_SWIFT: hide the definition from Swift as we have a
+   better one in the overlay */
+#if !defined(OBJC_REFINED_FOR_SWIFT)
+#   if __has_attribute(swift_private)
+#       define OBJC_REFINED_FOR_SWIFT __attribute__((swift_private))
+#   else
+#       define OBJC_REFINED_FOR_SWIFT
+#   endif
 #endif
 
 #endif

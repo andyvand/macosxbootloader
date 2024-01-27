@@ -24,6 +24,9 @@
 #ifndef _XLOCALE__STDIO_H_
 #define _XLOCALE__STDIO_H_
 
+#include <_stdio.h>
+#include <_xlocale.h>
+
 __BEGIN_DECLS
 
 int	 fprintf_l(FILE * __restrict, locale_t __restrict, const char * __restrict, ...)
@@ -35,7 +38,7 @@ int	 printf_l(locale_t __restrict, const char * __restrict, ...)
 int	 scanf_l(locale_t __restrict, const char * __restrict, ...)
         __scanflike(2, 3);
 int	 sprintf_l(char * __restrict, locale_t __restrict, const char * __restrict, ...)
-        __printflike(3, 4);
+        __printflike(3, 4) __swift_unavailable("Use snprintf_l instead.");
 int	 sscanf_l(const char * __restrict, locale_t __restrict, const char * __restrict, ...) 
         __scanflike(3, 4);
 int	 vfprintf_l(FILE * __restrict, locale_t __restrict, const char * __restrict, va_list)
@@ -43,7 +46,7 @@ int	 vfprintf_l(FILE * __restrict, locale_t __restrict, const char * __restrict,
 int	 vprintf_l(locale_t __restrict, const char * __restrict, va_list)
         __printflike(2, 0);
 int	 vsprintf_l(char * __restrict, locale_t __restrict, const char * __restrict, va_list)
-        __printflike(3, 0);
+        __printflike(3, 0) __swift_unavailable("Use vsnprintf_l instead.");
 
 #if __DARWIN_C_LEVEL >= 200112L || defined(__cplusplus)
 int	 snprintf_l(char * __restrict, size_t, locale_t __restrict, const char * __restrict, ...)

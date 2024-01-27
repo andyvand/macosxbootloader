@@ -69,9 +69,11 @@
  * results.
  * @discussion Such work is requested to run at a priority below critical user-
  * interactive work, but relatively higher than other work on the system. This
- * is not an energy-efficient QOS class to use for large tasks and the use of
- * this QOS class should be limited to operations where the user is immediately
- * waiting for the results.
+ * is not an energy-efficient QOS class to use for large tasks. Its use
+ * should be limited to operations of short enough duration that the user is
+ * unlikely to switch tasks while waiting for the results. Typical
+ * user-initiated work will have progress indicated by the display of
+ * placeholder content or modal user interface.
  *
  * @constant QOS_CLASS_DEFAULT
  * @abstract A default QOS class used by the system in cases where more specific
@@ -89,8 +91,10 @@
  * immediately waiting for the results.
  * @discussion Such work is requested to run at a priority below critical user-
  * interactive and user-initiated work, but relatively higher than low-level
- * system maintenance tasks. The use of this QOS class indicates the work should
- * be run in an energy and thermally-efficient manner.
+ * system maintenance tasks. The use of this QOS class indicates the work
+ * should be run in an energy and thermally-efficient manner. The progress of
+ * utility work may or may not be indicated to the user, but the effect of such
+ * work is user-visible.
  *
  * @constant QOS_CLASS_BACKGROUND
  * @abstract A QOS class which indicates work performed by this thread was not
@@ -108,32 +112,34 @@
  */
 
 #define __QOS_ENUM(name, type, ...) enum { __VA_ARGS__ }; typedef type name##_t
-#define __QOS_CLASS_AVAILABLE_STARTING(...)
+#define __QOS_CLASS_AVAILABLE(...)
 
+#if defined(__cplusplus) || defined(__OBJC__) || __LP64__
 #if defined(__has_feature) && defined(__has_extension)
 #if __has_feature(objc_fixed_enum) || __has_extension(cxx_strong_enums)
 #undef __QOS_ENUM
 #define __QOS_ENUM(name, type, ...) typedef enum : type { __VA_ARGS__ } name##_t
 #endif
+#endif
 #if __has_feature(enumerator_attributes)
-#undef __QOS_CLASS_AVAILABLE_STARTING
-#define __QOS_CLASS_AVAILABLE_STARTING __OSX_AVAILABLE_STARTING
+#undef __QOS_CLASS_AVAILABLE
+#define __QOS_CLASS_AVAILABLE __API_AVAILABLE
 #endif
 #endif
 
 __QOS_ENUM(qos_class, unsigned int,
 	QOS_CLASS_USER_INTERACTIVE
-			__QOS_CLASS_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x21,
+			__QOS_CLASS_AVAILABLE(macos(10.10), ios(8.0)) = 0x21,
 	QOS_CLASS_USER_INITIATED
-			__QOS_CLASS_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x19,
+			__QOS_CLASS_AVAILABLE(macos(10.10), ios(8.0)) = 0x19,
 	QOS_CLASS_DEFAULT
-			__QOS_CLASS_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x15,
+			__QOS_CLASS_AVAILABLE(macos(10.10), ios(8.0)) = 0x15,
 	QOS_CLASS_UTILITY
-			__QOS_CLASS_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x11,
+			__QOS_CLASS_AVAILABLE(macos(10.10), ios(8.0)) = 0x11,
 	QOS_CLASS_BACKGROUND
-			__QOS_CLASS_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x09,
+			__QOS_CLASS_AVAILABLE(macos(10.10), ios(8.0)) = 0x09,
 	QOS_CLASS_UNSPECIFIED
-			__QOS_CLASS_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0) = 0x00,
+			__QOS_CLASS_AVAILABLE(macos(10.10), ios(8.0)) = 0x00,
 );
 
 #undef __QOS_ENUM
@@ -161,7 +167,7 @@ __BEGIN_DECLS
  * @return
  * One of the QOS class values in qos_class_t.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+__API_AVAILABLE(macos(10.10), ios(8.0))
 qos_class_t
 qos_class_self(void);
 
@@ -183,7 +189,7 @@ qos_class_self(void);
  * @return
  * One of the QOS class values in qos_class_t.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_8_0)
+__API_AVAILABLE(macos(10.10), ios(8.0))
 qos_class_t
 qos_class_main(void);
 

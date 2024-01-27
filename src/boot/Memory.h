@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef _MEMORY_H_
-#define _MEMORY_H_
-
 //
 // initialize
 //
@@ -23,7 +20,7 @@ VOID MmFinalize();
 //
 // translate address
 //
-BOOLEAN BOOTAPI MmTranslateVirtualAddress(VOID* virtualAddress, UINT64* physicalAddress);
+extern "C" BOOLEAN BOOTAPI MmTranslateVirtualAddress(VOID* virtualAddress, UINT64* physicalAddress);
 
 //
 // allocate pool
@@ -38,12 +35,12 @@ VOID MmFreePool(VOID* freeBuffer);
 //
 // allocate page
 //
-VOID* MmAllocatePages(EFI_ALLOCATE_TYPE allocateType, EFI_MEMORY_TYPE memoryType, UINTN pagesCount, UINT64* physicalAddress);
+extern "C" VOID* MmAllocatePages(EFI_ALLOCATE_TYPE allocateType, EFI_MEMORY_TYPE memoryType, UINTN pagesCount, UINT64* physicalAddress);
 
 //
 // free pages
 //
-VOID MmFreePages(UINT64 phyAddress);
+extern "C" VOID MmFreePages(UINT64 phyAddress);
 
 //
 // allocate kernel memory
@@ -74,5 +71,3 @@ VOID MmGetKernelPhysicalRange(UINT64* lowerAddress, UINT64* upperAddress);
 // get kernel virtual start
 //
 UINT64 MmGetKernelVirtualStart();
-
-#endif

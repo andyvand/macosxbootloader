@@ -21,8 +21,14 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
+#import <CoreFoundation/CFBase.h> // CF_EXPORT
+
 #if !defined(__ODCONSTANTS_H)
 #define __ODCONSTANTS_H
+
+#if __OBJC__ && !defined(__OD_USE_OBJC__)
+#define __OD_USE_OBJC__ 1
+#endif
 
 /*!
     @const      kODSessionProxyAddress
@@ -92,6 +98,7 @@ const CFStringRef kODModuleConfigOptionPacketSigning __OSX_AVAILABLE_STARTING(__
  */
 CF_EXPORT
 const CFStringRef kODModuleConfigOptionPacketEncryption __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_NA);
+
 /*!
  @const      kODModuleConfigOptionManInTheMiddle
  @abstract   enable or disable man-in-middle countermeasures
@@ -99,6 +106,7 @@ const CFStringRef kODModuleConfigOptionPacketEncryption __OSX_AVAILABLE_STARTING
  */
 CF_EXPORT
 const CFStringRef kODModuleConfigOptionManInTheMiddle __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_NA);
+
 /*!
 	@enum		ODNodeType
 	@abstract   Types of nodes that can be opened
@@ -175,7 +183,7 @@ typedef uint32_t ODMatchType;
 				Note:  CFStringRef can be use interchangeably with ODRecordType for ease
 				of use.
 */
-#ifdef __OBJC__
+#if __OD_USE_OBJC__
 #include <Foundation/Foundation.h>
 typedef NSString *ODRecordType;
 #else
@@ -196,7 +204,7 @@ typedef CFStringRef ODRecordType;
 				Note:  CFStringRef can be use interchangeably with ODAttributeType for ease
 				of use.
 */
-#ifdef __OBJC__
+#if __OD_USE_OBJC__
 typedef NSString *ODAttributeType;
 #else
 typedef CFStringRef ODAttributeType;
@@ -216,7 +224,7 @@ typedef CFStringRef ODAttributeType;
 				Note:  CFStringRef can be use interchangeably with ODAuthenticationType for ease
 				of use.
 */
-#ifdef __OBJC__
+#if __OD_USE_OBJC__
 typedef NSString *ODAuthenticationType;
 #else
 typedef CFStringRef ODAuthenticationType;
@@ -227,10 +235,30 @@ typedef CFStringRef ODAuthenticationType;
 	@abstract   is used to modify policies on nodes or records
 	@discussion is used to modify policies on nodes or records
 */
-#ifdef __OBJC_
+#if __OD_USE_OBJC__
 typedef NSString *ODPolicyType;
 #else
 typedef CFStringRef ODPolicyType;
+#endif
+
+/*!
+    @typedef    ODErrorUserInfoKeyType
+    @abstract   Type for any additional keys in userInfo dictionary in NS/CFError
+ */
+#if __OD_USE_OBJC__
+typedef NSString *ODErrorUserInfoKeyType;
+#else
+typedef CFStringRef ODErrorUserInfoKeyType;
+#endif
+
+/*!
+   @typedef    ODOptionKeyType
+   @abstract   Type for any  keys passed in an options dictionary
+*/
+#if __OD_USE_OBJC__
+typedef NSString *ODOptionKeyType;
+#else
+typedef CFStringRef ODOptionKeyType;
 #endif
 
 // Compatibility
@@ -2705,6 +2733,18 @@ CF_EXPORT
 const ODAuthenticationType kODAuthenticationTypeClearText;
 
 /*!
+    @const		kODAuthenticationTypeClearTextReadOnly
+	@abstract   Clear text authentication method.
+	@discussion Clear text authentication method.
+
+                Authentication array has following items in order:
+                    user name in UTF8 encoding,
+                    password in UTF8 encoding
+ */
+CF_EXPORT
+const ODAuthenticationType kODAuthenticationTypeClearTextReadOnly;
+
+/*!
     @const		kODAuthenticationTypeCrypt
 	@abstract   Use a crypt password stored in the user record if available to
 				do the authentication.
@@ -2848,9 +2888,9 @@ CF_EXPORT
 const ODAuthenticationType kODAuthenticationTypeKerberosTickets;
 
 /*!
-    @const		kODAuthenticationTypeMPPEMasterKeys
-	@abstract   Generated 40-bit or 128-bit master keys from MS-CHAPv2 credentials (RFC 3079).
-	@discussion Generated 40-bit or 128-bit master keys from MS-CHAPv2 credentials (RFC 3079).
+    @const		kODAuthenticationTypeMPPEPrimaryKeys
+	@abstract   Generated 40-bit or 128-bit primary keys from MS-CHAPv2 credentials (RFC 3079).
+	@discussion Keys from which the session keys will be derived.
 
 				Authentication array has following items in order:
 					user name in UTF8 encoding,
@@ -2858,7 +2898,14 @@ const ODAuthenticationType kODAuthenticationTypeKerberosTickets;
 					key size, 8 or 16 (packed as a byte, not a string)
 */
 CF_EXPORT
-const ODAuthenticationType kODAuthenticationTypeMPPEMasterKeys;
+const ODAuthenticationType kODAuthenticationTypeMPPEPrimaryKeys;
+
+/*!
+    @const      kODAuthenticationTypeMPPEMasterKeys
+    @discussion Deprecated.  Use kODAuthenticationTypeMPPEPrimaryKeys.
+ */
+CF_EXPORT
+const ODAuthenticationType kODAuthenticationTypeMPPEMasterKeys API_DEPRECATED_WITH_REPLACEMENT("kODAuthenticationTypeMPPEPrimaryKeys", macos(10.7, 12.0));
 
 /*!
     @const		kODAuthenticationTypeMSCHAP2
@@ -3421,7 +3468,7 @@ enum {
                 information see the the specific key.  Some keys are used in
                 individual policies, others in a policy set.
 */
-#ifdef __OBJC__
+#if __OD_USE_OBJC__
 typedef NSString *ODPolicyKeyType;
 #else
 typedef CFStringRef ODPolicyKeyType;
@@ -3462,6 +3509,49 @@ const ODPolicyKeyType kODPolicyKeyParameters __OSX_AVAILABLE_STARTING(__MAC_10_1
 CF_EXPORT
 const ODPolicyKeyType kODPolicyKeyContent __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_NA);
 
+/*!
+    @const      kODPolicyKeyContentDescription
+    @abstract   Key for the policy content description.
+    @discussion Key for the policy content description.  Used in either a policy
+                dictionary or in kODPolicyKeyEvaluationDetails dictionary.  It
+                is an optional key in either dictionary.
+
+                When used in a policy dictionary, the value of this key is a
+                dictionary containing key/value pairs consisting of locale
+                identifiers and localized descriptions of the policy content.
+
+                When used in kODPolicyKeyEvaluationDetails dictionary, the value
+                is a string containing the localized description of the policy
+                content.
+ */
+CF_EXPORT
+const ODPolicyKeyType kODPolicyKeyContentDescription __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_NA);
+
+/*!
+    @const      kODPolicyKeyEvaluationDetails
+    @abstract   Key containing details of the policy evaluation results.
+    @discussion Key containing details of the policy evaluation results.  This
+                key may be used in the userInfo portion of a CFErrorRef/NSError.
+                The value of this key is an array of dictionaries, with each
+                dictionary containing the results of an individual policy
+                evaluation.  The keys in the details dictionaries are:
+                   kODPolicyKeyIdentifier
+                   kODPolicyKeyContentDescription
+                   kODPolicyKeyPolicySatisfied
+*/
+CF_EXPORT
+const ODPolicyKeyType kODPolicyKeyEvaluationDetails __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_NA);
+
+/*!
+    @const      kODPolicyKeyPolicySatisfied
+    @abstract   Key denoting if a specific policy was satisfied during evaluation.
+    @discussion Key denoting if a specific policy was satisfied during evaluation.
+                This key is used in the dictionaries in kODPolicyKeyEvaluationDetails.
+                The value of this key will be true if the specific policy was
+                satisfied and false if not.
+*/
+CF_EXPORT
+const ODPolicyKeyType kODPolicyKeyPolicySatisfied __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_NA);
 
 /*!
     @typedef    ODPolicyCategoryType
@@ -3470,7 +3560,7 @@ const ODPolicyKeyType kODPolicyKeyContent __OSX_AVAILABLE_STARTING(__MAC_10_10, 
                 in a policy set dictionary, where the value of each category is
                 an array of policy dictionaries.
 */
-#ifdef __OBJC__
+#if __OD_USE_OBJC__
 typedef NSString *ODPolicyCategoryType;
 #else
 typedef CFStringRef ODPolicyCategoryType;
@@ -3521,7 +3611,7 @@ ODPolicyCategoryType kODPolicyCategoryPasswordChange __OSX_AVAILABLE_STARTING(__
                 policy set dictionary with a value containing an array of policy
                 dictionaries. 
 */
-#ifdef __OBJC__
+#if __OD_USE_OBJC__
 typedef NSString *ODPolicyAttributeType;
 #else
 typedef CFStringRef ODPolicyAttributeType;
@@ -4069,12 +4159,14 @@ ODPolicyAttributeType kODPolicyAttributeDaysUntilExpiration __OSX_AVAILABLE_STAR
  @constant kODErrorCredentialsServerNotFound is when the authentication server could not be found for the operation requested
  @constant kODErrorCredentialsServerError is when the authentication server encountered an error
  @constant kODErrorCredentialsServerTimeout is when the authentication server timed out
- @constant kODErrorCredentialsContactMaster is when the authentication server is not the master and the operation requires the master
+ @constant kODErrorCredentialsContactPrimary is when the authentication server is not the primary and the operation requires the primary
  @constant kODErrorCredentialsServerCommunicationError is when the authentication server had a communications error
  @constant kODErrorCredentialsAccountNotFound is when the authentication server could not find the account provided
  @constant kODErrorCredentialsAccountDisabled is when the account is disabled
  @constant kODErrorCredentialsAccountExpired is when the account is expired
  @constant kODErrorCredentialsAccountInactive is when the account is inactive
+ @constant kODErrorCredentialsAccountTemporarilyLocked is when the account is in backoff (verification attempts ignored for a period of time)
+ @constant kODErrorCredentialsAccountLocked is when the account is locked due to too many verification failures.
  @constant kODErrorCredentialsPasswordExpired is when the password has expired and must be changed
  @constant kODErrorCredentialsPasswordChangeRequired is when a password change is required
  @constant kODErrorCredentialsPasswordQualityFailed is when a password provided for change did not meet quality minimum requirements
@@ -4153,14 +4245,17 @@ enum ODFrameworkErrors
 	kODErrorCredentialsServerNotFound			=	5201,
 	kODErrorCredentialsServerError				=	5202,
 	kODErrorCredentialsServerTimeout			=	5203,
-	kODErrorCredentialsContactMaster			=	5204,
+	kODErrorCredentialsContactPrimary			=	5204,
+	kODErrorCredentialsContactMaster API_DEPRECATED_WITH_REPLACEMENT("kODErrorCredentialsContactPrimary", macos(10.7, 10.7)) = kODErrorCredentialsContactPrimary,
 	kODErrorCredentialsServerCommunicationError	=	5205,
 	
 	kODErrorCredentialsAccountNotFound			=	5300,
 	kODErrorCredentialsAccountDisabled			=	5301,
 	kODErrorCredentialsAccountExpired			=	5302,
 	kODErrorCredentialsAccountInactive			=	5303,
-	
+    kODErrorCredentialsAccountTemporarilyLocked =   5304,
+    kODErrorCredentialsAccountLocked            =   5305,
+
 	kODErrorCredentialsPasswordExpired			=	5400,
 	kODErrorCredentialsPasswordChangeRequired	=	5401,
 	kODErrorCredentialsPasswordQualityFailed	=	5402,
@@ -4184,5 +4279,15 @@ enum ODFrameworkErrors
 	kODErrorDaemonError							=	10002,
     kODErrorPluginOperationTimeout              =   10003,
 };
+
+/*!
+    @const      kODBackOffSeconds
+    @abstract   Number of seconds an account is in backoff
+    @discussion Returned by verifyPassword and authenticationAllowed APIs.
+                This is the number of seconds the account is in "back off".
+                During backoff authentication attempts are ignored.
+ */
+CF_EXPORT
+ODErrorUserInfoKeyType kODBackOffSeconds __OSX_AVAILABLE_STARTING(__MAC_10_15, __IPHONE_NA);
 
 #endif

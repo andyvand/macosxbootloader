@@ -5,7 +5,7 @@
 //	purpose:	net boot
 //********************************************************************
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 //
 // get root match dict
@@ -43,8 +43,10 @@ EFI_STATUS NetSetupDeviceTree(EFI_HANDLE bootDeviceHandle)
 	VOID* bsdpResponse														= 0;
 	EFI_STATUS status														= EFI_SUCCESS;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// get protocol from device handle
 		//
@@ -52,29 +54,47 @@ EFI_STATUS NetSetupDeviceTree(EFI_HANDLE bootDeviceHandle)
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(bootDeviceHandle, &AppleNetBootProtocolGuid, reinterpret_cast<VOID**>(&netBootProtocol))))
 		{
 			if(EFI_ERROR(EfiBootServices->LocateProtocol(&AppleNetBootProtocolGuid, nullptr, reinterpret_cast<VOID**>(&netBootProtocol))))
-				try_leave(NOTHING);
-		}
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return -1;
+#endif
+        }
 
 		//
 		// get chosen node
 		//
 		DEVICE_TREE_NODE* theNode											= DevTreeFindNode(CHAR8_CONST_STRING("/chosen"), TRUE);
-		if(!theNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!theNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// get length
 		//
 		UINTN bufferSize													= 0;
 		if(netBootProtocol->GetDhcpResponse(netBootProtocol, &bufferSize, nullptr) != EFI_BUFFER_TOO_SMALL)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// allocate buffer
 		//
 		dhcpResponse														= MmAllocatePool(bufferSize);
 		if(!dhcpResponse)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// get and add it
@@ -87,29 +107,41 @@ EFI_STATUS NetSetupDeviceTree(EFI_HANDLE bootDeviceHandle)
 		//
 		bufferSize															= 0;
 		if(netBootProtocol->GetBsdpResponse(netBootProtocol, &bufferSize, nullptr) != EFI_BUFFER_TOO_SMALL)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// allocate buffer
 		//
 		bsdpResponse														= MmAllocatePool(bufferSize);
 		if(!bsdpResponse)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// get and add it
 		//
 		if(!EFI_ERROR(netBootProtocol->GetBsdpResponse(netBootProtocol, &bufferSize, bsdpResponse)))
 			DevTreeAddProperty(theNode, CHAR8_CONST_STRING("bsdp-response"), bsdpResponse, static_cast<UINT32>(bufferSize), TRUE);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(dhcpResponse)
 			MmFreePool(dhcpResponse);
 
 		if(bsdpResponse)
 			MmFreePool(bsdpResponse);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }

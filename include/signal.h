@@ -76,7 +76,7 @@ __END_DECLS
 
 #ifndef	_ANSI_SOURCE
 __BEGIN_DECLS
-void	(*bsd_signal(int, void (*)(int)))(int);
+void	(* _Nullable bsd_signal(int, void (* _Nullable)(int)))(int);
 int	kill(pid_t, int) __DARWIN_ALIAS(kill);
 int	killpg(pid_t, int) __DARWIN_ALIAS(killpg);
 int	pthread_kill(pthread_t, int);
@@ -84,7 +84,7 @@ int	pthread_sigmask(int, const sigset_t *, sigset_t *) __DARWIN_ALIAS(pthread_si
 int	sigaction(int, const struct sigaction * __restrict,
 	    struct sigaction * __restrict);
 int	sigaddset(sigset_t *, int);
-int	sigaltstack(const stack_t * __restrict, stack_t * __restrict)  __DARWIN_ALIAS(sigaltstack);
+int	sigaltstack(const stack_t * __restrict, stack_t * __restrict)  __DARWIN_ALIAS(sigaltstack) __WATCHOS_PROHIBITED __TVOS_PROHIBITED;
 int	sigdelset(sigset_t *, int);
 int	sigemptyset(sigset_t *);
 int	sigfillset(sigset_t *);
@@ -96,11 +96,13 @@ int	sigpause(int) __DARWIN_ALIAS_C(sigpause);
 int	sigpending(sigset_t *);
 int	sigprocmask(int, const sigset_t * __restrict, sigset_t * __restrict);
 int	sigrelse(int);
-void    (*sigset(int, void (*)(int)))(int); 
+void    (* _Nullable sigset(int, void (* _Nullable)(int)))(int);
 int	sigsuspend(const sigset_t *) __DARWIN_ALIAS_C(sigsuspend);
 int	sigwait(const sigset_t * __restrict, int * __restrict) __DARWIN_ALIAS_C(sigwait);
+#if !defined(_POSIX_C_SOURCE) || _POSIX_C_SOURCE >= 200809L || defined(_DARWIN_C_SOURCE)
+void	psignal(int, const char *);
+#endif /*  (!_POSIX_C_SOURCE || _POSIX_C_SOURCE >= 200809L || _DARWIN_C_SOURCE) */
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-void	psignal(unsigned int, const char *);
 int	sigblock(int);
 int	sigsetmask(int);
 int	sigvec(int, struct sigvec *, struct sigvec *);
@@ -108,16 +110,11 @@ int	sigvec(int, struct sigvec *, struct sigvec *);
 __END_DECLS
 
 /* List definitions after function declarations, or Reiser cpp gets upset. */
-#if defined(__i386__) || defined(__x86_64__)
-/* The left shift operator on intel is modulo 32 */
 __header_always_inline int
 __sigbits(int __signo)
 {
     return __signo > __DARWIN_NSIG ? 0 : (1 << (__signo - 1));
 }
-#else /* !__i386__ && !__x86_64__ */
-#define __sigbits(signo)	(1 << ((signo) - 1))
-#endif /* __i386__ || __x86_64__ */
 
 #define	sigaddset(set, signo)	(*(set) |= __sigbits(signo), 0)
 #define	sigdelset(set, signo)	(*(set) &= ~__sigbits(signo), 0)

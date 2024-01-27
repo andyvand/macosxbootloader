@@ -24,6 +24,9 @@
 #if !defined(__ODMODULE_H)
 #define __ODMODULE_H
 
+#include <stdint.h>
+#include <xpc/xpc.h>
+
 enum {
 	eODModuleTypeSession		= 1L << 0,
 	eODModuleTypeAuthentication	= 1L << 1,
@@ -37,7 +40,7 @@ typedef int32_t eODModuleType;
 typedef eODCallbackResponse (*odm_customfunction_t)(od_request_t request, od_connection_t connection, xpc_object_t custom_payload);
 
 struct odmodule_vtable_s {
-#define ODMODULE_VTABLE_VERSION 2
+#define ODMODULE_VTABLE_VERSION 3
     int version; /* set to ODMODULE_VTABLE_VERSION */
     
     /* Callbacks not associated with API calls */
@@ -146,6 +149,13 @@ struct odmodule_vtable_s {
     eODCallbackResponse (*odm_RecordSecondsUntilPasswordExpires)(od_request_t request, od_connection_t connection, const char *record_type, const char *metarecordname,
                                                                  const char *recordname, xpc_object_t addinfo_dict);
 
+    /*
+     * Version 3 additions
+     */
+
+    eODCallbackResponse (*odm_RecordCopyPasswordContentSummary)(od_request_t request, od_connection_t connection, const char *record_type, const char *metarecordname,
+                                                                const char *recordname, xpc_object_t addinfo_dict);
+
 };
 
 typedef struct odmodule_vtable_s *odmodule_vtable_t;
@@ -157,7 +167,8 @@ __BEGIN_DECLS
     @abstract   log a module specific message, that is not associated with a request
     @discussion use only for things done internally to a module that are not associated with a request
  */
-OD_NOTHROW
+API_DEPRECATED("Switch to using os_log API for logging", macos(10.10, 10.13))
+OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED
 void
 odmodule_log_message(od_module_t module, eODLogLevel level, CFStringRef format, ...) CF_FORMAT_FUNCTION(3, 4);
 
@@ -172,22 +183,23 @@ odmodule_log_message(od_module_t module, eODLogLevel level, CFStringRef format, 
     @param      attr is a valid dispatch_queue_attr_t
     @result     a valid dispatch queue object
 */
-OD_NOTHROW OD_WARN_RESULT
+OS_EXPORT OS_NOTHROW OS_WARN_RESULT
 dispatch_queue_t
 odmodule_dispatch_queue_create(od_module_t module, const char *name, dispatch_queue_attr_t attr);
 
-OD_NOTHROW OD_WARN_RESULT
+OS_EXPORT OS_NOTHROW OS_WARN_RESULT
 int32_t
 odmodule_get_option_int32(od_module_t module, CFStringRef key, int32_t defaultValue);
 
+OS_EXPORT OS_NOTHROW
 void
 odmodule_set_option_int32(od_module_t module, CFStringRef key, int32_t value);
 
-OD_NOTHROW OD_WARN_RESULT
+OS_EXPORT OS_NOTHROW OS_WARN_RESULT
 bool
 odmodule_options_current(od_module_t module);
 
-OD_NOTHROW OD_WARN_RESULT
+OS_NOTHROW OS_WARN_RESULT
 bool
 odmodule_supports_customfunction(od_module_t module, CFStringRef function);
 
@@ -198,11 +210,11 @@ odmodule_supports_customfunction(od_module_t module, CFStringRef function);
     @param      vtable is an odmodule_vtable_t.  Pointer is stored and should not be modified
                 or released after calling odmodule_main()
 */
-OD_NORETURN
+OS_NORETURN
 void
 odmodule_main(const odmodule_vtable_t vtable);
 
-OD_NOTHROW OD_WARN_RESULT
+OS_NOTHROW OS_WARN_RESULT
 bool
 odmodule_supports_customfunction(od_module_t module, CFStringRef function);
 

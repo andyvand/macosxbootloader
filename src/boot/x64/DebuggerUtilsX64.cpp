@@ -5,18 +5,23 @@
 //	purpose:	debugger utils
 //********************************************************************
 
-#include "stdafx.h"
 #include "../StdAfx.h"
 #include "../BootDebuggerPrivate.h"
 
-KPCR* BdPcr																	= nullptr;
-KPRCB* BdPrcb																= nullptr;
+KPCR* BdPcr																	/*= nullptr*/;
+KPRCB* BdPrcb																/*= nullptr*/;
 UINT64 BdPcrPhysicalAddress													= 0;
+
+extern "C" VOID BdTrap01(void);
+extern "C" VOID BdTrap03(void);
+extern "C" VOID BdTrap0d(void);
+extern "C" VOID BdTrap0e(void);
+extern "C" VOID BdTrap2d(void);
 
 //
 // translate physical address
 //
-VOID* BdTranslatePhysicalAddress(UINT64 physicalAddress)
+extern "C" VOID* BdTranslatePhysicalAddress(UINT64 physicalAddress)
 {
 	return ArchConvertAddressToPointer(physicalAddress, VOID*);
 }
@@ -24,7 +29,7 @@ VOID* BdTranslatePhysicalAddress(UINT64 physicalAddress)
 //
 // set common state
 //
-VOID BdSetCommonState(UINT32 newState, CONTEXT* contextRecord, DBGKD_WAIT_STATE_CHANGE64* waitStateChange)
+extern "C" VOID BdSetCommonState(UINT32 newState, CONTEXT* contextRecord, DBGKD_WAIT_STATE_CHANGE64* waitStateChange)
 {
 	//
 	// sign extend
@@ -56,7 +61,7 @@ VOID BdSetCommonState(UINT32 newState, CONTEXT* contextRecord, DBGKD_WAIT_STATE_
 //
 // set context state
 //
-VOID BdSetContextState(DBGKD_WAIT_STATE_CHANGE64* waitStateChange, CONTEXT* contextRecord)
+extern "C" VOID BdSetContextState(DBGKD_WAIT_STATE_CHANGE64* waitStateChange, CONTEXT* contextRecord)
 {
 	waitStateChange->ControlReport.Dr6										= BdPrcb->ProcessorState.SpecialRegisters.KernelDr6;
 	waitStateChange->ControlReport.Dr7										= BdPrcb->ProcessorState.SpecialRegisters.KernelDr7;
@@ -71,7 +76,7 @@ VOID BdSetContextState(DBGKD_WAIT_STATE_CHANGE64* waitStateChange, CONTEXT* cont
 //
 // get state change
 //
-VOID BdGetStateChange(DBGKD_MANIPULATE_STATE64* manipulateState, CONTEXT* contextRecord)
+extern "C" VOID BdGetStateChange(DBGKD_MANIPULATE_STATE64* manipulateState, CONTEXT* contextRecord)
 {
 	//
 	// the debugger is doing a continue, and it makes sense to apply control changes.
@@ -88,7 +93,7 @@ VOID BdGetStateChange(DBGKD_MANIPULATE_STATE64* manipulateState, CONTEXT* contex
 //
 // read control space
 //
-VOID BdReadControlSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
+extern "C" VOID BdReadControlSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
 	STRING messageHeader;
 	DBGKD_READ_MEMORY64* readMemory											= &manipulateState->ReadMemory;
@@ -136,7 +141,7 @@ VOID BdReadControlSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* addit
 //
 // write control space
 //
-VOID BdWriteControlSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
+extern "C" VOID BdWriteControlSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
 	STRING messageHeader;
 	DBGKD_WRITE_MEMORY64* writeMemory										= &manipulateState->WriteMemory;
@@ -163,8 +168,10 @@ VOID BdWriteControlSpace(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* addi
 		break;
 	}
 
-	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, nullptr);
+	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, (struct _STRING *)NULL);
 }
+
+extern "C" VOID BOOTAPI BdpSaveProcessorControlState(KSPECIAL_REGISTERS* specialRegisters);
 
 //
 // save trapframe
@@ -192,9 +199,10 @@ STATIC VOID BdpSaveKframe(KTRAP_FRAME* trapFrame, KEXCEPTION_FRAME* exceptionFra
 	contextRecord->R14														= exceptionFrame->R14;
 	contextRecord->R15														= exceptionFrame->R15;
 
-	VOID BOOTAPI BdpSaveProcessorControlState(KSPECIAL_REGISTERS* specialRegisters);
 	BdpSaveProcessorControlState(&BdPrcb->ProcessorState.SpecialRegisters);
 }
+
+extern "C" VOID BOOTAPI BdpRestoreProcessorControlState(KSPECIAL_REGISTERS* specialRegisters);
 
 //
 // restore trapframe
@@ -221,7 +229,6 @@ STATIC VOID BdpRestoreKframe(KTRAP_FRAME* trapFrame, KEXCEPTION_FRAME* exception
 	exceptionFrame->R14														= contextRecord->R14;
 	exceptionFrame->R15														= contextRecord->R15;
 
-	VOID BOOTAPI BdpRestoreProcessorControlState(KSPECIAL_REGISTERS* specialRegisters);
 	BdpRestoreProcessorControlState(&BdPrcb->ProcessorState.SpecialRegisters);
 }
 
@@ -232,7 +239,7 @@ STATIC VOID BdpRestoreKframe(KTRAP_FRAME* trapFrame, KEXCEPTION_FRAME* exception
 #pragma optimize("",off)
 #endif
 
-BOOLEAN BdTrap(EXCEPTION_RECORD* exceptionRecord, KEXCEPTION_FRAME* exceptionFrame, KTRAP_FRAME* trapFrame)
+extern "C" BOOLEAN BdTrap(EXCEPTION_RECORD* exceptionRecord, KEXCEPTION_FRAME* exceptionFrame, KTRAP_FRAME* trapFrame)
 {
 	BdPrcb->ProcessorState.ContextFrame.ContextFlags						= CONTEXT_FULL | CONTEXT_DEBUG_REGISTERS;
 	if(exceptionRecord->ExceptionCode != STATUS_BREAKPOINT || exceptionRecord->ExceptionInformation[0] == BREAKPOINT_BREAK)
@@ -314,7 +321,6 @@ BOOLEAN BdTrap(EXCEPTION_RECORD* exceptionRecord, KEXCEPTION_FRAME* exceptionFra
 
 	return TRUE;
 }
-
 #if defined(_MSC_VER)
 #pragma optimize("",on)
 #endif
@@ -322,7 +328,7 @@ BOOLEAN BdTrap(EXCEPTION_RECORD* exceptionRecord, KEXCEPTION_FRAME* exceptionFra
 //
 // initialize
 //
-EFI_STATUS BdArchInitialize()
+extern "C" EFI_STATUS BdArchInitialize()
 {
 	BdPcrPhysicalAddress													= 4 * 1024 * 1024 * 1024ULL - 1;
 	BdPcr																	= static_cast<KPCR*>(MmAllocatePages(AllocateMaxAddress, EfiBootServicesData, EFI_SIZE_TO_PAGES(sizeof(KPCR)), &BdPcrPhysicalAddress));
@@ -336,17 +342,12 @@ EFI_STATUS BdArchInitialize()
 	KDESCRIPTOR idtr;
 	ArchGetIdtRegister(&idtr);
 
-	extern VOID BdTrap01();
-	extern VOID BdTrap03();
-	extern VOID BdTrap0d();
-	extern VOID BdTrap0e();
-	extern VOID BdTrap2d();
 	UINT32 segCs															= ArchGetSegCs();
-	ArchSetIdtEntry(idtr.Base, 0x01, segCs, (VOID *)&BdTrap01, 0x8e00);
-	ArchSetIdtEntry(idtr.Base, 0x03, segCs, (VOID *)&BdTrap03, 0x8e00);
-	ArchSetIdtEntry(idtr.Base, 0x0d, segCs, (VOID *)&BdTrap0d, 0x8e00);
-	ArchSetIdtEntry(idtr.Base, 0x0e, segCs, (VOID *)&BdTrap0e, 0x8e00);
-	ArchSetIdtEntry(idtr.Base, 0x2d, segCs, (VOID *)&BdTrap2d, 0x8e00);
+	ArchSetIdtEntry(idtr.Base, 0x01, segCs, (void *)&BdTrap01, 0x8e00);
+	ArchSetIdtEntry(idtr.Base, 0x03, segCs, (void *)&BdTrap03, 0x8e00);
+	ArchSetIdtEntry(idtr.Base, 0x0d, segCs, (void *)&BdTrap0d, 0x8e00);
+	ArchSetIdtEntry(idtr.Base, 0x0e, segCs, (void *)&BdTrap0e, 0x8e00);
+	ArchSetIdtEntry(idtr.Base, 0x2d, segCs, (void *)&BdTrap2d, 0x8e00);
 	ArchSetIdtRegister(&idtr);
 
 	BdArchBlockDebuggerOperation											= FALSE;
@@ -356,7 +357,7 @@ EFI_STATUS BdArchInitialize()
 //
 // destroy
 //
-EFI_STATUS BdArchDestroy()
+extern "C" EFI_STATUS BdArchDestroy()
 {
 	if(BdPcrPhysicalAddress)
 		MmFreePages(BdPcrPhysicalAddress);
@@ -364,4 +365,19 @@ EFI_STATUS BdArchDestroy()
 	BdPcrPhysicalAddress													= 0;
 	BdArchBlockDebuggerOperation											= TRUE;
 	return EFI_SUCCESS;
+}
+
+extern "C" VOID __bzero(VOID *s, UINT64 n)
+{
+    __builtin_bzero(s, n);
+}
+
+extern "C" VOID *_alloca(UINT64 n)
+{
+    return __builtin_alloca(n);
+}
+
+extern "C" VOID ___chkstk_darwin(VOID)
+{
+    return;
 }

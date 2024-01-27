@@ -4,6 +4,11 @@
 
 #include <stdint.h>
 
+void *_alloca(uint64_t n)
+{
+    __builtin_alloca(n);
+}
+
 extern uint64_t __udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p);
 
 uint64_t __udivdi3(uint64_t num, uint64_t den)

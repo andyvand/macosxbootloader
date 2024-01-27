@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef _ACPI_UTILS_H_
-#define _ACPI_UTILS_H_
-
 //
 // get fadt
 //
@@ -39,5 +36,3 @@ UINTN AcpiAdjustMemoryMap(EFI_MEMORY_DESCRIPTOR* memoryMap, UINTN memoryMapSize,
 // checksum8 from AppleSMBIOS.kext
 //
 UINT8 Checksum8(VOID * start, unsigned int length);
-
-#endif

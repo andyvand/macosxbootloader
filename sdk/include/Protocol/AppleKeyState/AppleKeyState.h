@@ -8,7 +8,7 @@
 #ifndef _APPLE_KEY_STATE_H_
 #define _APPLE_KEY_STATE_H_
 
-#define APPLE_KEY_STATE_PROTOCOL_GUID										{ 0x5b213447, 0x6e73, 0x4901, { 0xa4, 0xf1, 0xb8, 0x64, 0xf3, 0xb7, 0xa1, 0x72 } }
+#define APPLE_KEY_STATE_PROTOCOL_GUID										{ 0x5b213447, 0x6e73, 0x4901, {0xa4, 0xf1, 0xb8, 0x64, 0xf3, 0xb7, 0xa1, 0x72} }
 
 #define APPLE_KEY_STATE_MODIFY_LEFT_CONTROL									0x01
 #define APPLE_KEY_STATE_MODIFY_LEFT_SHIFT									0x02
@@ -120,11 +120,11 @@ EFI_FORWARD_DECLARATION (APPLE_KEY_STATE_PROTOCOL);
 
 typedef EFI_STATUS (EFIAPI *READ_KEY_STATE)(IN APPLE_KEY_STATE_PROTOCOL *This, OUT UINT16 *ModifyFlags, OUT UINTN *PressedKeyStatesCount, OUT CHAR16 *PressedKeyStates);
 
-typedef struct _APPLE_KEY_STATE_PROTOCOL
+struct _APPLE_KEY_STATE_PROTOCOL
 {
 	UINT64																	Signature;
 	READ_KEY_STATE															ReadKeyState;
-}APPLE_KEY_STATE_PROTOCOL;
+};
 
 extern EFI_GUID gAppleKeyStateProtocolGuid;
 

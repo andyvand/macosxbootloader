@@ -383,16 +383,24 @@ STATIC INTN CmpParseTagList(CHAR8* contentBuffer, XML_TAG** theTag, UINTN tagTyp
 	XML_TAG* prevTag														= nullptr;
 	INTN position															= 0;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		if(!emptyTag)
 		{
 			while(TRUE)
 			{
 				XML_TAG* tempTag											= nullptr;
 				INTN length													= CmpParseNextTag(contentBuffer + position, &tempTag);
-				if(length == -1)
-					try_leave(position = -1);
+                if(length == -1) {
+#if defined(_MSC_VER)
+                    try_leave(position = -1);
+#else
+                    position = -1;
+                    return -1;
+#endif
+                }
 
 				position													+= length;
 				if(!tempTag)
@@ -409,8 +417,14 @@ STATIC INTN CmpParseTagList(CHAR8* contentBuffer, XML_TAG** theTag, UINTN tagTyp
 		}
 
 		XML_TAG* tempTag													= CmpNewTag();
-		if(!tempTag)
-			try_leave(position = -1);
+        if(!tempTag) {
+#if defined(_MSC_VER)
+            try_leave(position = -1);
+#else
+            position = -1;
+            return -1;
+#endif
+        }
 
 		tempTag->Type														= tagType;
 		tempTag->StringValue												= nullptr;
@@ -419,12 +433,16 @@ STATIC INTN CmpParseTagList(CHAR8* contentBuffer, XML_TAG** theTag, UINTN tagTyp
 		tempTag->TagValue													= tagList;
 		tempTag->NextTag													= nullptr;
 		*theTag																= tempTag;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(position == -1 && tagList)
 			CmFreeTag(tagList);
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return position;
 }
@@ -437,24 +455,41 @@ STATIC INTN CmpParseTagKey(CHAR8* contentBuffer, XML_TAG** theTag)
 	XML_TAG* subTag															= nullptr;
 	XML_TAG* tempTag														= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		length																= CmpFixDataMatchingTag(contentBuffer, CHAR8_CONST_STRING("key"));
 		if(length == -1)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
-
+#else
+            return -1;
+#endif
 
 		length2																= CmpParseNextTag(contentBuffer + length, &subTag);
 		if(length2 == -1)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		tempTag																= CmpNewTag();
 		if(!tempTag)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		CHAR8* stringValue													= CmpNewSymbol(contentBuffer);
 		if(!stringValue)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		tempTag->Type														= XML_TAG_KEY;
 		tempTag->StringValue												= stringValue;
@@ -464,9 +499,11 @@ STATIC INTN CmpParseTagKey(CHAR8* contentBuffer, XML_TAG** theTag)
 		tempTag->NextTag													= nullptr;
 		*theTag																= tempTag;
 		retValue															= length2 + length;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(retValue == -1)
 		{
 			if(subTag)
@@ -475,7 +512,9 @@ STATIC INTN CmpParseTagKey(CHAR8* contentBuffer, XML_TAG** theTag)
 			if(tempTag)
 				CmFreeTag(tempTag);
 		}
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return retValue;
 }
@@ -723,7 +762,6 @@ CHAR8 CONST* CmGetStringValueForKeyAndCommandLine(CHAR8 CONST* commandLine, CHAR
 		*valueLength														= 0;
 
 	CHAR8 CONST* retValue													= nullptr;
-
 	if(commandLine)
 		retValue															= CmpGetCommandStringValueForKey(commandLine, keyName, valueLength);
 

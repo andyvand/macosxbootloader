@@ -92,7 +92,6 @@ Abstract:
 //
 // Disabling bitfield type checking warnings.
 //
-#if defined( _MSC_VER )
 #pragma warning ( disable : 4214 )
 
 //
@@ -126,7 +125,7 @@ Abstract:
 // This warning is caused by empty (after preprocessing) souce file.
 //
 #pragma warning ( disable : 4206 )
-#endif
+
 
 #endif
 
@@ -135,16 +134,10 @@ Abstract:
   //
   // No ANSI C 2000 stdint.h integer width declarations, so define equivalents
   //
- 
-  #if _MSC_EXTENSIONS 
 
-    #if defined(__APPLE__) || defined(ARCH32)
-        #define __int64 long long
-        #define __int32 int
-    #endif
-
+  #if _MSC_EXTENSIONS
     //
-    // use Microsoft* C complier dependent interger width types 
+    // use Microsoft* C complier dependent interger width types
     //
     typedef unsigned __int64    uint64_t;
     typedef __int64             int64_t;
@@ -154,7 +147,6 @@ Abstract:
     typedef short               int16_t;
     typedef unsigned char       uint8_t;
     typedef char                int8_t;
-
   #else
 
     //

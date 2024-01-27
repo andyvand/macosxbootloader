@@ -23,6 +23,9 @@
 
 #include <dispatch/dispatch.h>
 
+DISPATCH_ASSUME_NONNULL_BEGIN
+DISPATCH_ASSUME_ABI_SINGLE_BEGIN
+
 /*!
  * @header
  *
@@ -47,7 +50,7 @@ __BEGIN_DECLS
  * The newly created dispatch queue.
  */
 
-__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0)
+API_AVAILABLE(macos(10.9), ios(7.0))
 DISPATCH_EXPORT
 void
 dispatch_introspection_hook_queue_create(dispatch_queue_t queue);
@@ -63,7 +66,7 @@ dispatch_introspection_hook_queue_create(dispatch_queue_t queue);
  * The dispatch queue about to be destroyed.
  */
 
-__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0)
+API_AVAILABLE(macos(10.9), ios(7.0))
 DISPATCH_EXPORT
 void
 dispatch_introspection_hook_queue_destroy(dispatch_queue_t queue);
@@ -82,7 +85,7 @@ dispatch_introspection_hook_queue_destroy(dispatch_queue_t queue);
  * The object about to be enqueued.
  */
 
-__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0)
+API_AVAILABLE(macos(10.9), ios(7.0))
 DISPATCH_EXPORT
 void
 dispatch_introspection_hook_queue_item_enqueue(dispatch_queue_t queue,
@@ -102,7 +105,7 @@ dispatch_introspection_hook_queue_item_enqueue(dispatch_queue_t queue,
  * The dequeued object.
  */
 
-__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0)
+API_AVAILABLE(macos(10.9), ios(7.0))
 DISPATCH_EXPORT
 void
 dispatch_introspection_hook_queue_item_dequeue(dispatch_queue_t queue,
@@ -124,7 +127,7 @@ dispatch_introspection_hook_queue_item_dequeue(dispatch_queue_t queue,
  * Opaque dentifier for completed item. Must NOT be dereferenced.
  */
 
-__OSX_AVAILABLE_STARTING(__MAC_10_10,__IPHONE_7_1)
+API_AVAILABLE(macos(10.10), ios(7.1))
 DISPATCH_EXPORT
 void
 dispatch_introspection_hook_queue_item_complete(dispatch_object_t item);
@@ -148,11 +151,11 @@ dispatch_introspection_hook_queue_item_complete(dispatch_object_t item);
  * this is the block object's invoke function.
  */
 
-__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0)
+API_AVAILABLE(macos(10.9), ios(7.0))
 DISPATCH_EXPORT
 void
 dispatch_introspection_hook_queue_callout_begin(dispatch_queue_t queue,
-		void *context, dispatch_function_t function);
+		void *_Nullable context, dispatch_function_t function);
 
 /*!
  * @function dispatch_introspection_hook_queue_callout_end
@@ -173,12 +176,15 @@ dispatch_introspection_hook_queue_callout_begin(dispatch_queue_t queue,
  * this is the block object's invoke function.
  */
 
-__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0)
+API_AVAILABLE(macos(10.9), ios(7.0))
 DISPATCH_EXPORT
 void
 dispatch_introspection_hook_queue_callout_end(dispatch_queue_t queue,
-		void *context, dispatch_function_t function);
+		void *_Nullable context, dispatch_function_t function);
 
 __END_DECLS
+
+DISPATCH_ASSUME_ABI_SINGLE_END
+DISPATCH_ASSUME_NONNULL_END
 
 #endif

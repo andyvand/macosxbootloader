@@ -1,18 +1,10 @@
 /*
- * "$Id: sidechannel.h 11093 2013-07-03 20:48:42Z msweet $"
+ * Side-channel API definitions for CUPS.
  *
- *   Side-channel API definitions for CUPS.
+ * Copyright © 2007-2019 by Apple Inc.
+ * Copyright © 2006 by Easy Software Products.
  *
- *   Copyright 2007-2012 by Apple Inc.
- *   Copyright 2006 by Easy Software Products.
- *
- *   These coded instructions, statements, and computer programs are the
- *   property of Apple Inc. and are protected by Federal copyright
- *   law.  Distribution and use rights are outlined in the file "LICENSE.txt"
- *   which should have been included with this file.  If this file is
- *   file is missing or damaged, see the license at "http://www.cups.org/".
- *
- *   This file is subject to the Apple OS-Developed Software exception.
+ * Licensed under Apache License v2.0.  See the file "LICENSE" for more information.
  */
 
 #ifndef _CUPS_SIDECHANNEL_H_
@@ -23,6 +15,13 @@
  */
 
 #  include "versioning.h"
+#  include <sys/types.h>
+#  if defined(_WIN32) && !defined(__CUPS_SSIZE_T_DEFINED)
+#    define __CUPS_SSIZE_T_DEFINED
+#    include <stddef.h>
+/* Windows does not support the ssize_t type, so map it to long... */
+typedef long ssize_t;			/* @private@ */
+#  endif /* _WIN32 && !__CUPS_SSIZE_T_DEFINED */
 
 
 /*
@@ -61,9 +60,9 @@ enum cups_sc_command_e			/**** Request command codes ****/
   CUPS_SC_CMD_GET_BIDI = 3,		/* Return bidirectional capabilities */
   CUPS_SC_CMD_GET_DEVICE_ID = 4,	/* Return the IEEE-1284 device ID */
   CUPS_SC_CMD_GET_STATE = 5,		/* Return the device state */
-  CUPS_SC_CMD_SNMP_GET = 6,		/* Query an SNMP OID @since CUPS 1.4/OS X 10.6@ */
-  CUPS_SC_CMD_SNMP_GET_NEXT = 7,	/* Query the next SNMP OID @since CUPS 1.4/OS X 10.6@ */
-  CUPS_SC_CMD_GET_CONNECTED = 8,	/* Return whether the backend is "connected" to the printer @since CUPS 1.5/OS X 10.7@ */
+  CUPS_SC_CMD_SNMP_GET = 6,		/* Query an SNMP OID @since CUPS 1.4/macOS 10.6@ */
+  CUPS_SC_CMD_SNMP_GET_NEXT = 7,	/* Query the next SNMP OID @since CUPS 1.4/macOS 10.6@ */
+  CUPS_SC_CMD_GET_CONNECTED = 8,	/* Return whether the backend is "connected" to the printer @since CUPS 1.5/macOS 10.7@ */
   CUPS_SC_CMD_MAX			/* End of valid values @private@ */
 };
 typedef enum cups_sc_command_e cups_sc_command_t;
@@ -115,6 +114,13 @@ typedef void (*cups_sc_walk_func_t)(const char *oid, const char *data,
  * Prototypes...
  */
 
+/**** New in CUPS 1.2/macOS 10.5 ****/
+extern ssize_t		cupsBackChannelRead(char *buffer, size_t bytes,
+			                    double timeout) _CUPS_API_1_2;
+extern ssize_t		cupsBackChannelWrite(const char *buffer, size_t bytes,
+			                     double timeout) _CUPS_API_1_2;
+
+/**** New in CUPS 1.3/macOS 10.5 ****/
 extern cups_sc_status_t	cupsSideChannelDoRequest(cups_sc_command_t command,
 			                         char *data, int *datalen,
 						 double timeout) _CUPS_API_1_3;
@@ -127,7 +133,7 @@ extern int		cupsSideChannelWrite(cups_sc_command_t command,
 					     const char *data, int datalen,
 					     double timeout) _CUPS_API_1_3;
 
-/**** New in CUPS 1.4 ****/
+/**** New in CUPS 1.4/macOS 10.6 ****/
 extern cups_sc_status_t	cupsSideChannelSNMPGet(const char *oid, char *data,
 			                       int *datalen, double timeout)
 					       _CUPS_API_1_4;
@@ -141,7 +147,3 @@ extern cups_sc_status_t	cupsSideChannelSNMPWalk(const char *oid, double timeout,
 #  endif /* __cplusplus */
 
 #endif /* !_CUPS_SIDECHANNEL_H_ */
-
-/*
- * End of "$Id: sidechannel.h 11093 2013-07-03 20:48:42Z msweet $".
- */

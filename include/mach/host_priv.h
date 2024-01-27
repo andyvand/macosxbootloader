@@ -12,13 +12,39 @@
 #include <mach/message.h>
 #include <mach/mig_errors.h>
 #include <mach/port.h>
+	
+/* BEGIN MIG_STRNCPY_ZEROFILL CODE */
+
+#if defined(__has_include)
+#if __has_include(<mach/mig_strncpy_zerofill_support.h>)
+#ifndef USING_MIG_STRNCPY_ZEROFILL
+#define USING_MIG_STRNCPY_ZEROFILL
+#endif
+#ifndef __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS__
+#define __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS__
+#ifdef __cplusplus
+extern "C" {
+#endif
+#ifndef __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_ATTR
+#define __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_COUNTEDBY_ATTR(C) __unsafe_indexable
+#endif
+	extern int mig_strncpy_zerofill(char * dest, const char * src, int len) __attribute__((weak_import));
+#ifdef __cplusplus
+}
+#endif
+#endif /* __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS__ */
+#endif /* __has_include(<mach/mig_strncpy_zerofill_support.h>) */
+#endif /* __has_include */
+	
+/* END MIG_STRNCPY_ZEROFILL CODE */
+
 
 #ifdef AUTOTEST
 #ifndef FUNCTION_PTR_T
 #define FUNCTION_PTR_T
 typedef void (*function_ptr_t)(mach_port_t, char *, mach_msg_type_number_t);
 typedef struct {
-        char            *name;
+        char            * name;
         function_ptr_t  function;
 } function_table_entry;
 typedef function_table_entry   *function_table_t;
@@ -29,6 +55,7 @@ typedef function_table_entry   *function_table_t;
 #define	host_priv_MSG_COUNT	26
 #endif	/* host_priv_MSG_COUNT */
 
+#include <Availability.h>
 #include <mach/std_types.h>
 #include <mach/mig.h>
 #include <mach/mig.h>
@@ -324,30 +351,6 @@ kern_return_t host_processor_set_priv
 	processor_set_t *set
 );
 
-/* Routine set_dp_control_port */
-#ifdef	mig_external
-mig_external
-#else
-extern
-#endif	/* mig_external */
-kern_return_t set_dp_control_port
-(
-	host_priv_t host,
-	mach_port_t control_port
-);
-
-/* Routine get_dp_control_port */
-#ifdef	mig_external
-mig_external
-#else
-extern
-#endif	/* mig_external */
-kern_return_t get_dp_control_port
-(
-	host_priv_t host,
-	mach_port_t *contorl_port
-);
-
 /* Routine host_set_UNDServer */
 #ifdef	mig_external
 mig_external
@@ -410,42 +413,42 @@ __END_DECLS
 #define __Request__host_priv_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
-	} __Request__host_get_boot_info_t;
+	} __Request__host_get_boot_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		int options;
-	} __Request__host_reboot_t;
+	} __Request__host_reboot_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		host_flavor_t flavor;
 		mach_msg_type_number_t host_info_outCnt;
-	} __Request__host_priv_statistics_t;
+	} __Request__host_priv_statistics_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -455,13 +458,13 @@ __END_DECLS
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		memory_object_cluster_size_t cluster_size;
-	} __Request__host_default_memory_manager_t;
+	} __Request__host_default_memory_manager_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -473,13 +476,13 @@ __END_DECLS
 		vm_address_t address;
 		vm_size_t size;
 		vm_prot_t desired_access;
-	} __Request__vm_wire_t;
+	} __Request__vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -489,13 +492,13 @@ __END_DECLS
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		boolean_t wired;
-	} __Request__thread_wire_t;
+	} __Request__thread_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -507,59 +510,59 @@ __END_DECLS
 		vm_address_t address;
 		vm_size_t size;
 		int flags;
-	} __Request__vm_allocate_cpm_t;
+	} __Request__vm_allocate_cpm_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
-	} __Request__host_processors_t;
+	} __Request__host_processors_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		clock_id_t clock_id;
-	} __Request__host_get_clock_control_t;
+	} __Request__host_get_clock_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		vm_address_t info;
-	} __Request__kmod_create_t;
+	} __Request__kmod_create_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kmod_t module;
-	} __Request__kmod_destroy_t;
+	} __Request__kmod_destroy_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -571,26 +574,26 @@ __END_DECLS
 		kmod_t module;
 		kmod_control_flavor_t flavor;
 		mach_msg_type_number_t dataCnt;
-	} __Request__kmod_control_t;
+	} __Request__kmod_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		int node;
 		int which;
-	} __Request__host_get_special_port_t;
+	} __Request__host_get_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -600,13 +603,13 @@ __END_DECLS
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		int which;
-	} __Request__host_set_special_port_t;
+	} __Request__host_set_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -618,25 +621,25 @@ __END_DECLS
 		exception_mask_t exception_mask;
 		exception_behavior_t behavior;
 		thread_state_flavor_t new_flavor;
-	} __Request__host_set_exception_ports_t;
+	} __Request__host_set_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		exception_mask_t exception_mask;
-	} __Request__host_get_exception_ports_t;
+	} __Request__host_get_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -648,13 +651,13 @@ __END_DECLS
 		exception_mask_t exception_mask;
 		exception_behavior_t behavior;
 		thread_state_flavor_t new_flavor;
-	} __Request__host_swap_exception_ports_t;
+	} __Request__host_swap_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -666,23 +669,23 @@ __END_DECLS
 		mach_vm_address_t address;
 		mach_vm_size_t size;
 		vm_prot_t desired_access;
-	} __Request__mach_vm_wire_t;
+	} __Request__mach_vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
-	} __Request__host_processor_sets_t;
+	} __Request__host_processor_sets_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -690,37 +693,13 @@ __END_DECLS
 		mach_msg_body_t msgh_body;
 		mach_msg_port_descriptor_t set_name;
 		/* end of the kernel processed data */
-	} __Request__host_processor_set_priv_t;
+	} __Request__host_processor_set_priv_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
-#endif
-	typedef struct {
-		mach_msg_header_t Head;
-		/* start of the kernel processed data */
-		mach_msg_body_t msgh_body;
-		mach_msg_port_descriptor_t control_port;
-		/* end of the kernel processed data */
-	} __Request__set_dp_control_port_t;
-#ifdef  __MigPackStructs
-#pragma pack()
-#endif
-
-#ifdef  __MigPackStructs
-#pragma pack(4)
-#endif
-	typedef struct {
-		mach_msg_header_t Head;
-	} __Request__get_dp_control_port_t;
-#ifdef  __MigPackStructs
-#pragma pack()
-#endif
-
-#ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -728,23 +707,23 @@ __END_DECLS
 		mach_msg_body_t msgh_body;
 		mach_msg_port_descriptor_t server;
 		/* end of the kernel processed data */
-	} __Request__host_set_UNDServer_t;
+	} __Request__host_set_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
-	} __Request__host_get_UNDServer_t;
+	} __Request__host_get_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -755,9 +734,9 @@ __END_DECLS
 		NDR_record_t NDR;
 		uint32_t user_log_flags;
 		mach_msg_type_number_t request_dataCnt;
-	} __Request__kext_request_t;
+	} __Request__kext_request_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 #endif /* !__Request__host_priv_subsystem__defined */
 
@@ -786,8 +765,6 @@ union __RequestUnion__host_priv_subsystem {
 	__Request__mach_vm_wire_t Request_mach_vm_wire;
 	__Request__host_processor_sets_t Request_host_processor_sets;
 	__Request__host_processor_set_priv_t Request_host_processor_set_priv;
-	__Request__set_dp_control_port_t Request_set_dp_control_port;
-	__Request__get_dp_control_port_t Request_get_dp_control_port;
 	__Request__host_set_UNDServer_t Request_host_set_UNDServer;
 	__Request__host_get_UNDServer_t Request_host_get_UNDServer;
 	__Request__kext_request_t Request_kext_request;
@@ -799,7 +776,7 @@ union __RequestUnion__host_priv_subsystem {
 #define __Reply__host_priv_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -808,25 +785,25 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_type_number_t boot_infoOffset; /* MiG doesn't use it */
 		mach_msg_type_number_t boot_infoCnt;
 		char boot_info[4096];
-	} __Reply__host_get_boot_info_t;
+	} __Reply__host_get_boot_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__host_reboot_t;
+	} __Reply__host_reboot_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -834,13 +811,13 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 		mach_msg_type_number_t host_info_outCnt;
 		integer_t host_info_out[68];
-	} __Reply__host_priv_statistics_t;
+	} __Reply__host_priv_statistics_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -848,50 +825,50 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_body_t msgh_body;
 		mach_msg_port_descriptor_t default_manager;
 		/* end of the kernel processed data */
-	} __Reply__host_default_memory_manager_t;
+	} __Reply__host_default_memory_manager_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_wire_t;
+	} __Reply__vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__thread_wire_t;
+	} __Reply__thread_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		vm_address_t address;
-	} __Reply__vm_allocate_cpm_t;
+	} __Reply__vm_allocate_cpm_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -901,13 +878,13 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		mach_msg_type_number_t out_processor_listCnt;
-	} __Reply__host_processors_t;
+	} __Reply__host_processors_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -915,38 +892,38 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_body_t msgh_body;
 		mach_msg_port_descriptor_t clock_ctrl;
 		/* end of the kernel processed data */
-	} __Reply__host_get_clock_control_t;
+	} __Reply__host_get_clock_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		kmod_t module;
-	} __Reply__kmod_create_t;
+	} __Reply__kmod_create_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__kmod_destroy_t;
+	} __Reply__kmod_destroy_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -956,13 +933,13 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		mach_msg_type_number_t dataCnt;
-	} __Reply__kmod_control_t;
+	} __Reply__kmod_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -970,37 +947,37 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_body_t msgh_body;
 		mach_msg_port_descriptor_t port;
 		/* end of the kernel processed data */
-	} __Reply__host_get_special_port_t;
+	} __Reply__host_get_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__host_set_special_port_t;
+	} __Reply__host_set_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__host_set_exception_ports_t;
+	} __Reply__host_set_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1013,13 +990,13 @@ union __RequestUnion__host_priv_subsystem {
 		exception_mask_t masks[32];
 		exception_behavior_t old_behaviors[32];
 		thread_state_flavor_t old_flavors[32];
-	} __Reply__host_get_exception_ports_t;
+	} __Reply__host_get_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1032,25 +1009,25 @@ union __RequestUnion__host_priv_subsystem {
 		exception_mask_t masks[32];
 		exception_behavior_t old_behaviors[32];
 		thread_state_flavor_t old_flavors[32];
-	} __Reply__host_swap_exception_ports_t;
+	} __Reply__host_swap_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__mach_vm_wire_t;
+	} __Reply__mach_vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1060,13 +1037,13 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		mach_msg_type_number_t processor_setsCnt;
-	} __Reply__host_processor_sets_t;
+	} __Reply__host_processor_sets_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1074,51 +1051,25 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_body_t msgh_body;
 		mach_msg_port_descriptor_t set;
 		/* end of the kernel processed data */
-	} __Reply__host_processor_set_priv_t;
+	} __Reply__host_processor_set_priv_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__set_dp_control_port_t;
+	} __Reply__host_set_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
-#endif
-	typedef struct {
-		mach_msg_header_t Head;
-		/* start of the kernel processed data */
-		mach_msg_body_t msgh_body;
-		mach_msg_port_descriptor_t contorl_port;
-		/* end of the kernel processed data */
-	} __Reply__get_dp_control_port_t;
-#ifdef  __MigPackStructs
-#pragma pack()
-#endif
-
-#ifdef  __MigPackStructs
-#pragma pack(4)
-#endif
-	typedef struct {
-		mach_msg_header_t Head;
-		NDR_record_t NDR;
-		kern_return_t RetCode;
-	} __Reply__host_set_UNDServer_t;
-#ifdef  __MigPackStructs
-#pragma pack()
-#endif
-
-#ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1126,13 +1077,13 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_body_t msgh_body;
 		mach_msg_port_descriptor_t server;
 		/* end of the kernel processed data */
-	} __Reply__host_get_UNDServer_t;
+	} __Reply__host_get_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1145,9 +1096,9 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_type_number_t response_dataCnt;
 		mach_msg_type_number_t log_dataCnt;
 		kern_return_t op_result;
-	} __Reply__kext_request_t;
+	} __Reply__kext_request_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 #endif /* !__Reply__host_priv_subsystem__defined */
 
@@ -1176,8 +1127,6 @@ union __ReplyUnion__host_priv_subsystem {
 	__Reply__mach_vm_wire_t Reply_mach_vm_wire;
 	__Reply__host_processor_sets_t Reply_host_processor_sets;
 	__Reply__host_processor_set_priv_t Reply_host_processor_set_priv;
-	__Reply__set_dp_control_port_t Reply_set_dp_control_port;
-	__Reply__get_dp_control_port_t Reply_get_dp_control_port;
 	__Reply__host_set_UNDServer_t Reply_host_set_UNDServer;
 	__Reply__host_get_UNDServer_t Reply_host_get_UNDServer;
 	__Reply__kext_request_t Reply_kext_request;
@@ -1206,8 +1155,6 @@ union __ReplyUnion__host_priv_subsystem {
     { "mach_vm_wire", 418 },\
     { "host_processor_sets", 419 },\
     { "host_processor_set_priv", 420 },\
-    { "set_dp_control_port", 421 },\
-    { "get_dp_control_port", 422 },\
     { "host_set_UNDServer", 423 },\
     { "host_get_UNDServer", 424 },\
     { "kext_request", 425 }

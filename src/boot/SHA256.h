@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef _SHA256_H_
-#define _SHA256_H_
-
 //
 // context
 //
@@ -50,5 +47,3 @@ VOID SHA256_Final(UINT8* resultBuffer, SHA256_CONTEXT* sha256Context);
 // sha256 buffer
 //
 VOID SHA256(VOID CONST* dataBuffer, UINTN dataLength, UINT8* resultBuffer);
-
-#endif

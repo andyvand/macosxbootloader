@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000-2014 Apple Inc. All rights reserved.
+ * Copyright (c) 2000-2017 Apple Inc. All rights reserved.
  *
  * @APPLE_OSREFERENCE_LICENSE_HEADER_START@
- * 
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -11,10 +11,10 @@
  * unlawful or unlicensed copies of an Apple operating system, or to
  * circumvent, violate, or enable the circumvention or violation of, any
  * terms of an Apple operating system software license agreement.
- * 
+ *
  * Please obtain a copy of the License at
  * http://www.opensource.apple.com/apsl/ and read it before using this file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -22,7 +22,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
- * 
+ *
  * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
  */
 /* Copyright (c) 1995 NeXT Computer, Inc. All Rights Reserved */
@@ -60,12 +60,14 @@
  *
  *	@(#)vnode.h	8.17 (Berkeley) 5/20/95
  */
- 
+
 #ifndef _VNODE_H_
 #define _VNODE_H_
 
+#include <stdint.h>
 #include <sys/appleapiopts.h>
 #include <sys/cdefs.h>
+#include <stdint.h>
 
 /*
  * The vnode is the focus of all file activity in UNIX.  There is a
@@ -76,13 +78,13 @@
 /*
  * Vnode types.  VNON means no type.
  */
-enum vtype	{ 
+enum vtype      {
 	/* 0 */
-	VNON, 
+	VNON,
 	/* 1 - 5 */
-	VREG, VDIR, VBLK, VCHR, VLNK, 
+	VREG, VDIR, VBLK, VCHR, VLNK,
 	/* 6 - 10 */
-	VSOCK, VFIFO, VBAD, VSTR, VCPLX 
+	VSOCK, VFIFO, VBAD, VSTR, VCPLX
 };
 
 /*
@@ -90,7 +92,7 @@ enum vtype	{
  * These are for the benefit of external programs only (e.g., pstat)
  * and should NEVER be inspected by the kernel.
  */
-enum vtagtype	{
+enum vtagtype   {
 	/* 0 */
 	VT_NON,
 	/* 1 reserved, overlaps with (CTL_VFS, VFS_NUMMNTOPS) */
@@ -98,39 +100,73 @@ enum vtagtype	{
 	/* 2 - 5 */
 	VT_NFS, VT_MFS, VT_MSDOSFS, VT_LFS,
 	/* 6 - 10 */
-	VT_LOFS, VT_FDESC, VT_PORTAL, VT_NULL, VT_UMAP, 
+	VT_LOFS, VT_FDESC, VT_PORTAL, VT_NULL, VT_UMAP,
 	/* 11 - 15 */
 	VT_KERNFS, VT_PROCFS, VT_AFS, VT_ISOFS, VT_MOCKFS,
 	/* 16 - 20 */
-	VT_HFS, VT_ZFS, VT_DEVFS, VT_WEBDAV, VT_UDF, 
-	/* 21 - 24 */
-	VT_AFP, VT_CDDA, VT_CIFS, VT_OTHER
+	VT_HFS, VT_ZFS, VT_DEVFS, VT_WEBDAV, VT_UDF,
+	/* 21 - 25 */
+	VT_AFP, VT_CDDA, VT_CIFS, VT_OTHER, VT_APFS,
+	/* 26 - 27*/
+	VT_LOCKERFS, VT_BINDFS,
 };
 
+#define HAVE_VT_LOCKERFS 1
 
 /*
  * flags for VNOP_BLOCKMAP
  */
-#define VNODE_READ	0x01
-#define VNODE_WRITE	0x02
-
+#define VNODE_READ      0x01
+#define VNODE_WRITE     0x02
+#define VNODE_BLOCKMAP_NO_TRACK 0x04 // APFS Fusion: Do not track this request
+#define VNODE_CLUSTER_VERIFY 0x08 // Verification will be performed in the cluster layer
 
 
 /* flags for VNOP_ALLOCATE */
-#define	PREALLOCATE		0x00000001	/* preallocate allocation blocks */
-#define	ALLOCATECONTIG	0x00000002	/* allocate contigious space */
-#define	ALLOCATEALL		0x00000004	/* allocate all requested space */
-									/* or no space at all */
-#define	FREEREMAINDER	0x00000008	/* deallocate allocated but */
-									/* unfilled blocks */
-#define	ALLOCATEFROMPEOF	0x00000010	/* allocate from the physical eof */
-#define	ALLOCATEFROMVOL		0x00000020	/* allocate from the volume offset */
+#define PREALLOCATE             0x00000001      /* preallocate allocation blocks */
+#define ALLOCATECONTIG  0x00000002      /* allocate contigious space */
+#define ALLOCATEALL             0x00000004      /* allocate all requested space */
+/* or no space at all */
+#define ALLOCATEPERSIST         0x00000008      /* do not deallocate allocated but unfilled blocks at close(2) */
+#define ALLOCATEFROMPEOF        0x00000010      /* allocate from the physical eof */
+#define ALLOCATEFROMVOL         0x00000020      /* allocate from the volume offset */
 
 /*
  * Token indicating no attribute value yet assigned. some user source uses this
  */
-#define	VNOVAL	(-1)
+#define VNOVAL  (-1)
 
+
+
+/*
+ * Structure for vnode level IO compression stats
+ */
+
+#define IOCS_BUFFER_NUM_SIZE_BUCKETS         10
+#define IOCS_BUFFER_MAX_BUCKET               9
+#define IOCS_BUFFER_NUM_COMPRESSION_BUCKETS  7
+#define IOCS_BLOCK_NUM_SIZE_BUCKETS          16
+
+struct io_compression_stats {
+	uint64_t uncompressed_size;
+	uint64_t compressed_size;
+	uint32_t buffer_size_compression_dist[IOCS_BUFFER_NUM_SIZE_BUCKETS][IOCS_BUFFER_NUM_COMPRESSION_BUCKETS];
+	uint32_t block_compressed_size_dist[IOCS_BLOCK_NUM_SIZE_BUCKETS];
+};
+typedef struct io_compression_stats *io_compression_stats_t;
+
+#define IOCS_SBE_PATH_LEN             128
+#define IOCS_PATH_START_BYTES_TO_COPY 108
+#define IOCS_PATH_END_BYTES_TO_COPY   20 /* Includes null termination */
+
+#define IOCS_SYSCTL_LIVE                  0x00000001
+#define IOCS_SYSCTL_STORE_BUFFER_RD_ONLY  0x00000002
+#define IOCS_SYSCTL_STORE_BUFFER_MARK     0x00000004
+
+struct iocs_store_buffer_entry {
+	char     path_name[IOCS_SBE_PATH_LEN];
+	struct io_compression_stats iocs;
+};
 
 
 #endif /* !_VNODE_H_ */

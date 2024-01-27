@@ -26,6 +26,9 @@
 #include <dispatch/base.h> // for HeaderDoc
 #endif
 
+DISPATCH_ASSUME_NONNULL_BEGIN
+DISPATCH_ASSUME_ABI_SINGLE_BEGIN
+
 __BEGIN_DECLS
 
 /*! @header
@@ -39,7 +42,7 @@ __BEGIN_DECLS
  * @typedef dispatch_data_t
  * A dispatch object representing memory regions.
  */
-DISPATCH_DECL(dispatch_data);
+DISPATCH_DATA_DECL_SWIFT(dispatch_data, __DispatchData);
 
 /*!
  * @var dispatch_data_empty
@@ -48,7 +51,7 @@ DISPATCH_DECL(dispatch_data);
  */
 #define dispatch_data_empty \
 		DISPATCH_GLOBAL_OBJECT(dispatch_data_t, _dispatch_data_empty)
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT struct dispatch_data_s _dispatch_data_empty;
 
 /*!
@@ -60,14 +63,9 @@ DISPATCH_EXPORT struct dispatch_data_s _dispatch_data_empty;
 #define DISPATCH_DATA_DESTRUCTOR_DEFAULT NULL
 
 #ifdef __BLOCKS__
-#if !TARGET_OS_WIN32
 /*! @parseOnly */
 #define DISPATCH_DATA_DESTRUCTOR_TYPE_DECL(name) \
 	DISPATCH_EXPORT const dispatch_block_t _dispatch_data_destructor_##name
-#else
-#define DISPATCH_DATA_DESTRUCTOR_TYPE_DECL(name) \
-	DISPATCH_EXPORT dispatch_block_t _dispatch_data_destructor_##name
-#endif
 #else
 #define DISPATCH_DATA_DESTRUCTOR_TYPE_DECL(name) \
 	DISPATCH_EXPORT const dispatch_function_t \
@@ -81,7 +79,8 @@ DISPATCH_EXPORT struct dispatch_data_s _dispatch_data_empty;
  * was allocated by the malloc() family and should be destroyed with free(3).
  */
 #define DISPATCH_DATA_DESTRUCTOR_FREE (_dispatch_data_destructor_free)
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
+DISPATCH_SWIFT_UNAVAILABLE("Unavailable in Swift")
 DISPATCH_DATA_DESTRUCTOR_TYPE_DECL(free);
 
 /*!
@@ -90,7 +89,8 @@ DISPATCH_DATA_DESTRUCTOR_TYPE_DECL(free);
  * from buffers that require deallocation with munmap(2).
  */
 #define DISPATCH_DATA_DESTRUCTOR_MUNMAP (_dispatch_data_destructor_munmap)
-__OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
+API_AVAILABLE(macos(10.9), ios(7.0))
+DISPATCH_SWIFT_UNAVAILABLE("Unavailable in Swift")
 DISPATCH_DATA_DESTRUCTOR_TYPE_DECL(munmap);
 
 #ifdef __BLOCKS__
@@ -115,13 +115,14 @@ DISPATCH_DATA_DESTRUCTOR_TYPE_DECL(munmap);
  *			is no longer needed.
  * @result		A newly created dispatch data object.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT DISPATCH_RETURNS_RETAINED DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_SWIFT_UNAVAILABLE("Use DispatchData.init(bytes:)")
 dispatch_data_t
-dispatch_data_create(const void *buffer,
+dispatch_data_create(const void *DISPATCH_SIZED_BY(size) buffer,
 	size_t size,
-	dispatch_queue_t queue,
-	dispatch_block_t destructor);
+	dispatch_queue_t _Nullable queue,
+	dispatch_block_t _Nullable destructor);
 #endif /* __BLOCKS__ */
 
 /*!
@@ -132,8 +133,9 @@ dispatch_data_create(const void *buffer,
  * @param data	The dispatch data object to query.
  * @result	The number of bytes represented by the data object.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT DISPATCH_PURE DISPATCH_NONNULL1 DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 size_t
 dispatch_data_get_size(dispatch_data_t data);
 
@@ -156,13 +158,14 @@ dispatch_data_get_size(dispatch_data_t data);
  *			size of the mapped contiguous memory region, or NULL.
  * @result		A newly created dispatch data object.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT DISPATCH_NONNULL1 DISPATCH_RETURNS_RETAINED
 DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 dispatch_data_t
 dispatch_data_create_map(dispatch_data_t data,
-	const void **buffer_ptr,
-	size_t *size_ptr);
+	const void *_Nullable DISPATCH_SIZED_BY(*size_ptr) *_Nullable buffer_ptr,
+	size_t *_Nullable size_ptr);
 
 /*!
  * @function dispatch_data_create_concat
@@ -179,9 +182,10 @@ dispatch_data_create_map(dispatch_data_t data,
  * @result	A newly created object representing the concatenation of the
  *		data1 and data2 objects.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_RETURNS_RETAINED
 DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 dispatch_data_t
 dispatch_data_create_concat(dispatch_data_t data1, dispatch_data_t data2);
 
@@ -200,9 +204,10 @@ dispatch_data_create_concat(dispatch_data_t data1, dispatch_data_t data2);
  * @result		A newly created object representing the specified
  *			subrange of the data object.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT DISPATCH_NONNULL1 DISPATCH_RETURNS_RETAINED
 DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 dispatch_data_t
 dispatch_data_create_subrange(dispatch_data_t data,
 	size_t offset,
@@ -220,9 +225,10 @@ dispatch_data_create_subrange(dispatch_data_t data,
  * @param size		The size of the memory for the current region.
  * @result		A Boolean indicating whether traversal should continue.
  */
+DISPATCH_SWIFT_UNAVAILABLE("Unavailable in Swift")
 typedef bool (^dispatch_data_applier_t)(dispatch_data_t region,
 	size_t offset,
-	const void *buffer,
+	const void *DISPATCH_SIZED_BY(size) buffer,
 	size_t size);
 
 /*!
@@ -245,10 +251,12 @@ typedef bool (^dispatch_data_applier_t)(dispatch_data_t region,
  * @result		A Boolean indicating whether traversal completed
  *			successfully.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 bool
-dispatch_data_apply(dispatch_data_t data, dispatch_data_applier_t applier);
+dispatch_data_apply(dispatch_data_t data,
+	DISPATCH_NOESCAPE dispatch_data_applier_t applier);
 #endif /* __BLOCKS__ */
 
 /*!
@@ -265,14 +273,18 @@ dispatch_data_apply(dispatch_data_t data, dispatch_data_applier_t applier);
  *			start of the queried data object.
  * @result		A newly created dispatch data object.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_5_0)
+API_AVAILABLE(macos(10.7), ios(5.0))
 DISPATCH_EXPORT DISPATCH_NONNULL1 DISPATCH_NONNULL3 DISPATCH_RETURNS_RETAINED
 DISPATCH_WARN_RESULT DISPATCH_NOTHROW
+DISPATCH_REFINED_FOR_SWIFT
 dispatch_data_t
 dispatch_data_copy_region(dispatch_data_t data,
 	size_t location,
 	size_t *offset_ptr);
 
 __END_DECLS
+
+DISPATCH_ASSUME_ABI_SINGLE_END
+DISPATCH_ASSUME_NONNULL_END
 
 #endif /* __DISPATCH_DATA__ */

@@ -5,10 +5,12 @@
 //	purpose:	arch define
 //********************************************************************
 
-#pragma once
+#ifndef __ARCHDEFINE_H__
+#define __ARCHDEFINE_H__
 
-#ifndef _ARCHDEFINE_H_
-#define _ARCHDEFINE_H_
+#if defined(_MSC_VER)
+#pragma once
+#endif
 
 //
 // consts
@@ -30,11 +32,8 @@
 //
 // byte pack
 //
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
 #endif
 
 //
@@ -56,7 +55,7 @@ typedef struct _DESCRIPTOR
 	// base
 	//
 	UINT32																	Base;
-} GNUPACK KDESCRIPTOR;
+}KDESCRIPTOR;
 
 //
 // idt entry
@@ -82,7 +81,7 @@ typedef struct _KIDTENTRY
 	// extended offset
 	//
 	UINT16																	ExtendedOffset;
-} GNUPACK KIDTENTRY;
+}KIDTENTRY;
 
 //
 // special register
@@ -163,7 +162,7 @@ typedef struct _KSPECIAL_REGISTERS
 	// padding
 	//
 	UINT32																	Reserved[6];
-} GNUPACK KSPECIAL_REGISTERS;
+}KSPECIAL_REGISTERS;
 
 //
 // floating save area
@@ -214,7 +213,7 @@ typedef struct _FLOATING_SAVE_AREA
 	// npx state
 	//
 	UINT32																	Cr0NpxState;
-} GNUPACK FLOATING_SAVE_AREA;
+}FLOATING_SAVE_AREA;
 
 //
 // context
@@ -345,7 +344,7 @@ typedef struct _CONTEXT
 	// extended registers
 	//
 	UINT8																	ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
-} GNUPACK CONTEXT;
+}CONTEXT;
 
 //
 // processor state
@@ -361,7 +360,7 @@ typedef struct _KPROCESSOR_STATE
 	// special register
 	//
 	KSPECIAL_REGISTERS														SpecialRegisters;
-} GNUPACK KPROCESSOR_STATE;
+}KPROCESSOR_STATE;
 
 //
 // trap frame
@@ -553,7 +552,7 @@ typedef struct _KTRAP_FRAME
 	// v86 mode gs
 	//
 	UINT32																	V86Gs;
-} GNUPACK KTRAP_FRAME;
+}KTRAP_FRAME;
 
 //
 // processor control block (PRCB)
@@ -629,7 +628,7 @@ typedef struct _KPRCB
 	// reserved
 	//
 	UINT8																	Reserved1[0xb84];
-} GNUPACK KPRCB;
+}KPRCB;
 
 //
 // pcr
@@ -800,12 +799,12 @@ typedef struct _KPCR
 	// prcb
 	//
 	KPRCB																	PrcbData;
-} GNUPACK KPCR;
+}KPCR;
 
 //
 // restore pack
 //
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -896,6 +895,11 @@ typedef struct _X86_DBGKD_CONTROL_SET
 	UINT32																	CurrentSymbolEnd;
 }DBGKD_CONTROL_SET;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 //
 // get cs
 //
@@ -926,4 +930,8 @@ VOID BOOTAPI ArchSetIdtRegister(KDESCRIPTOR* idtr);
 //
 VOID ArchSetIdtEntry(UINT32 base, UINT32 index, UINT32 segCs, VOID* offset,UINT32 access);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* __ARCHDEFINE_H__ */

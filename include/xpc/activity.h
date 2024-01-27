@@ -9,6 +9,7 @@
 
 #ifdef __BLOCKS__
 
+XPC_ASSUME_NONNULL_BEGIN
 __BEGIN_DECLS
 
 /*
@@ -34,7 +35,7 @@ __BEGIN_DECLS
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_INTERVAL;
+const char * const XPC_ACTIVITY_INTERVAL;
 
 /*!
  * @constant XPC_ACTIVITY_REPEATING
@@ -42,7 +43,7 @@ const char *XPC_ACTIVITY_INTERVAL;
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_REPEATING;
+const char * const XPC_ACTIVITY_REPEATING;
 
 /*!
  * @constant XPC_ACTIVITY_DELAY
@@ -51,7 +52,7 @@ const char *XPC_ACTIVITY_REPEATING;
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_DELAY;
+const char * const XPC_ACTIVITY_DELAY;
 
 /*!
  * @constant XPC_ACTIVITY_GRACE_PERIOD
@@ -60,7 +61,7 @@ const char *XPC_ACTIVITY_DELAY;
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_GRACE_PERIOD;
+const char * const XPC_ACTIVITY_GRACE_PERIOD;
 
 
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
@@ -105,27 +106,41 @@ const int64_t XPC_ACTIVITY_INTERVAL_7_DAYS;
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_PRIORITY;
+const char * const XPC_ACTIVITY_PRIORITY;
 
 /*!
  * @constant XPC_ACTIVITY_PRIORITY_MAINTENANCE
  * A string indicating activity is maintenance priority.
+ *
  * Maintenance priority is intended for user-invisible maintenance tasks
  * such as garbage collection or optimization.
+ *
+ * Maintenance activities are not permitted to run if the device thermal
+ * condition exceeds a nominal level or if the battery level is lower than 20%.
+ * In Low Power Mode (on supported devices), maintenance activities are not
+ * permitted to run while the device is on battery, or plugged in and the
+ * battery level is lower than 30%.
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_PRIORITY_MAINTENANCE;
+const char * const XPC_ACTIVITY_PRIORITY_MAINTENANCE;
 
 /*!
  * @constant XPC_ACTIVITY_PRIORITY_UTILITY
  * A string indicating activity is utility priority.
+ *
  * Utility priority is intended for user-visible tasks such as fetching data
  * from the network, copying files, or importing data.
+ *
+ * Utility activities are not permitted to run if the device thermal condition
+ * exceeds a moderate level or if the battery level is less than 10%.  In Low
+ * Power Mode (on supported devices) when on battery power, utility activities
+ * are only permitted when they are close to their deadline (90% of their time
+ * window has elapsed).
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_PRIORITY_UTILITY;
+const char * const XPC_ACTIVITY_PRIORITY_UTILITY;
 
 /*!
  * @constant XPC_ACTIVITY_ALLOW_BATTERY
@@ -135,16 +150,33 @@ const char *XPC_ACTIVITY_PRIORITY_UTILITY;
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_ALLOW_BATTERY;
+const char * const XPC_ACTIVITY_ALLOW_BATTERY;
 
 /*!
  * @constant XPC_ACTIVITY_REQUIRE_SCREEN_SLEEP
  * A Boolean value indicating whether the activity should only be performed
- * while the primary screen is in sleep mode. Defaults to false.
+ * while device appears to be asleep.  Note that the definition of screen sleep
+ * may vary by platform and may include states where the device is known to be
+ * idle despite the fact that the display itself is still powered.  Defaults to
+ * false.
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
 XPC_EXPORT
-const char *XPC_ACTIVITY_REQUIRE_SCREEN_SLEEP; // bool
+const char * const XPC_ACTIVITY_REQUIRE_SCREEN_SLEEP; // bool
+
+/*!
+ * @constant XPC_ACTIVITY_PREVENT_DEVICE_SLEEP
+ * A Boolean value indicating whether the activity should prevent system sleep while
+ * running on battery.
+ * If this property is set, the activity scheduler will take the appropriate power
+ * assertion to keep the device (but not the screen) awake while the activity is running.
+ * Only activities which perform critical system functions that do not want to be
+ * interrupted by system sleep should set this.
+ * Setting this property can impact battery life.
+ */
+__API_AVAILABLE(macos(12.0), ios(15.0), watchos(8.0))
+XPC_EXPORT
+const char * const XPC_ACTIVITY_PREVENT_DEVICE_SLEEP; // bool
 
 /*!
  * @constant XPC_ACTIVITY_REQUIRE_BATTERY_LEVEL
@@ -152,9 +184,10 @@ const char *XPC_ACTIVITY_REQUIRE_SCREEN_SLEEP; // bool
  * activity to run. A default minimum battery level is determined by the
  * system.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
+__OSX_AVAILABLE_BUT_DEPRECATED_MSG(__MAC_10_9, __MAC_10_9, __IPHONE_7_0, __IPHONE_7_0,
+	"REQUIRE_BATTERY_LEVEL is not implemented")
 XPC_EXPORT
-const char *XPC_ACTIVITY_REQUIRE_BATTERY_LEVEL; // int (%)
+const char * const XPC_ACTIVITY_REQUIRE_BATTERY_LEVEL; // int (%)
 
 /*!
  * @constant XPC_ACTIVITY_REQUIRE_HDD_SPINNING
@@ -162,15 +195,14 @@ const char *XPC_ACTIVITY_REQUIRE_BATTERY_LEVEL; // int (%)
  * while the hard disk drive (HDD) is spinning. Computers with flash storage
  * are considered to be equivalent to HDD spinning. Defaults to false.
  */
-__OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
+__OSX_AVAILABLE_BUT_DEPRECATED_MSG(__MAC_10_9, __MAC_10_9, __IPHONE_7_0, __IPHONE_7_0,
+	"REQUIRE_HDD_SPINNING is not implemented")
 XPC_EXPORT
-const char *XPC_ACTIVITY_REQUIRE_HDD_SPINNING; // bool
+const char * const XPC_ACTIVITY_REQUIRE_HDD_SPINNING; // bool
 
 /*!
  * @define XPC_TYPE_ACTIVITY
- * A type representing a connection to a named service. This connection is
- * bidirectional and can be used to both send and receive messages. A
- * connection carries the credentials of the remote service provider.
+ * A type representing the XPC activity object.
  */
 #define XPC_TYPE_ACTIVITY (&_xpc_type_activity)
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
@@ -199,6 +231,7 @@ XPC_DECL(xpc_activity);
  * @abstract
  * A block that is called when an XPC activity becomes eligible to run.
  */
+XPC_NONNULL1
 typedef void (^xpc_activity_handler_t)(xpc_activity_t activity);
 
 /*!
@@ -262,8 +295,8 @@ xpc_activity_register(const char *identifier, xpc_object_t criteria,
  * when checking in to an event that finished and was not rescheduled.
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
-XPC_EXPORT XPC_WARN_RESULT XPC_RETURNS_RETAINED
-xpc_object_t
+XPC_EXPORT XPC_WARN_RESULT XPC_RETURNS_RETAINED XPC_NONNULL1
+xpc_object_t _Nullable
 xpc_activity_copy_criteria(xpc_activity_t activity);
 
 /*!
@@ -392,7 +425,7 @@ xpc_activity_set_state(xpc_activity_t activity, xpc_activity_state_t state);
  * Returns true if the activity should be deferred.
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0)
-XPC_EXPORT
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL1
 bool
 xpc_activity_should_defer(xpc_activity_t activity);
 
@@ -405,7 +438,7 @@ xpc_activity_should_defer(xpc_activity_t activity);
  * @discussion
  * A dynamically registered activity will be deleted in response to this call.
  * Statically registered activity (from a launchd property list) will be
- * reverted to its original criteria if any modifications were made.
+ * deleted until the job is next loaded (e.g. at next boot).
  *
  * Unregistering an activity has no effect on any outstanding xpc_activity_t
  * objects or any currently executing xpc_activity_handler_t blocks; however,
@@ -420,6 +453,7 @@ void
 xpc_activity_unregister(const char *identifier);
 
 __END_DECLS
+XPC_ASSUME_NONNULL_END
 
 #endif // __BLOCKS__
 

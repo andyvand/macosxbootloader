@@ -5,7 +5,7 @@
 //	purpose:	memory
 //********************************************************************
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 //
 // memory tag
@@ -164,13 +164,6 @@ VOID* MmAllocatePool(UINTN bufferLength)
 	return allocatedBuffer;
 }
 
-#ifndef _MSC_VER
-VOID* _alloca(UINTN length)
-{
-    return MmAllocatePool(length);
-}
-#endif
-
 //
 // free
 //
@@ -188,7 +181,7 @@ VOID MmFreePool(VOID* freeBuffer)
 //
 // allocate page
 //
-VOID* MmAllocatePages(EFI_ALLOCATE_TYPE allocateType, EFI_MEMORY_TYPE memoryType, UINTN pagesCount, UINT64* physicalAddress)
+extern "C" VOID* MmAllocatePages(EFI_ALLOCATE_TYPE allocateType, EFI_MEMORY_TYPE memoryType, UINTN pagesCount, UINT64* physicalAddress)
 {
 	if (!EfiBootServices)
 		return nullptr;
@@ -204,7 +197,7 @@ VOID* MmAllocatePages(EFI_ALLOCATE_TYPE allocateType, EFI_MEMORY_TYPE memoryType
 //
 // free pages
 //
-VOID MmFreePages(UINT64 phyAddress)
+extern "C" VOID MmFreePages(UINT64 phyAddress)
 {
 	MEMORY_TAG* memoryTag													= MmpFindMemoryTag(nullptr, phyAddress, nullptr);
 	if (!memoryTag)
@@ -355,3 +348,18 @@ UINT64 MmGetKernelVirtualStart()
 {
 	return MmpKernelVirtualBegin;
 }
+
+#ifndef    GUARD_MAX
+#define    GUARD_MAX 8
+#endif  /* GUARD_MAX */
+
+extern "C"
+{
+long __stack_chk_guard[GUARD_MAX] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+void
+__stack_chk_fail()
+{
+}
+}
+

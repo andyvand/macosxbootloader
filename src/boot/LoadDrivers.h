@@ -7,12 +7,7 @@
 
 #pragma once
 
-#ifndef _LOADDRIVERS_H_
-#define _LOADDRIVERS_H_
-
 //
 // load drivers
 //
 EFI_STATUS LdrLoadDrivers();
-
-#endif

@@ -5,10 +5,16 @@
 //	purpose:	arch utils
 //********************************************************************
 
-#pragma once
+#ifndef __ARCHUTILS_H__
+#define __ARCHUTILS_H__
 
-#ifndef _ACPIUTILS_H_
-#define _ACPIUTILS_H_
+#if defined(_MSC_VER)
+#pragma once
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //
 // initialize phase 0
@@ -120,4 +126,8 @@ VOID BOOTAPI ARCH_WRITE_REGISTER_UINT16(UINT16* port, UINT16 value);
 //
 VOID BOOTAPI ARCH_WRITE_REGISTER_UINT32(UINT32* port, UINT32 value);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* __ARCHUTILS_H__ */

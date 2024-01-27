@@ -32,23 +32,6 @@
 
 #include <mach-o/loader.h>
 
-/* dynamically loading Mach-O object files that contain Objective-C code */
-
-OBJC_EXPORT long objc_loadModules (
-	char *modlist[], 
-	void *errStream,
-	void (*class_callback) (Class, Category),
-	/*headerType*/ struct mach_header **hdr_addr,
-	char *debug_file
-) OBJC2_UNAVAILABLE;
-OBJC_EXPORT int objc_loadModule (
-	char *	moduleName, 
-	void	(*class_callback) (Class, Category),
-	int *	errorCode
-) OBJC2_UNAVAILABLE;
-OBJC_EXPORT long objc_unloadModules(
-	void *errorStream,				/* input (optional) */
-	void (*unloadCallback)(Class, Category)		/* input (optional) */
-) OBJC2_UNAVAILABLE;
+// This file intentionally left blank.
 
 #endif /* _OBJC_LOAD_H_ */

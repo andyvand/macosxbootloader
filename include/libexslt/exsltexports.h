@@ -1,9 +1,9 @@
 /*
- * exsltexports.h : macros for marking symbols as exportable/importable.
+ * Summary: macros for marking symbols as exportable/importable.
  *
- * See Copyright for the status of this software.
+ * Copy: See Copyright for the status of this software.
  *
- * igor@zlatkovic.com
+ * Author: Igor Zlatkovic <igor@zlatkovic.com>
  */
 
 #ifndef __EXSLT_EXPORTS_H__
@@ -111,8 +111,8 @@
   #endif
 #endif
 
-/* Cygwin platform, GNU compiler */
-#if defined(_WIN32) && defined(__CYGWIN__)
+/* Cygwin platform (does not define _WIN32), GNU compiler */
+#if defined(__CYGWIN__)
   #undef EXSLTPUBFUN
   #undef EXSLTPUBVAR
   #undef EXSLTCALL
@@ -124,11 +124,28 @@
     #if !defined(LIBEXSLT_STATIC)
       #define EXSLTPUBVAR __declspec(dllimport) extern
     #else
-      #define EXSLTPUBVAR
+      #define EXSLTPUBVAR extern
     #endif
   #endif
   #define EXSLTCALL __cdecl
 #endif
+
+/* Apple/Darwin platforms */
+#ifdef __APPLE__
+  #undef EXSLTPUBFUN
+  #undef EXSLTPUBVAR
+  #if defined(IN_LIBEXSLT) && !defined(LIBEXSLT_STATIC)
+    #define EXSLTPUBFUN extern __attribute__((visibility ("default")))
+    #define EXSLTPUBVAR extern __attribute__((visibility ("default")))
+  #else
+    #define EXSLTPUBFUN
+    #if !defined(LIBEXSLT_STATIC)
+      #define EXSLTPUBVAR extern __attribute__((visibility ("default")))
+    #else
+      #define EXSLTPUBVAR extern
+    #endif
+  #endif
+#endif /* __APPLE__ */
 
 /* Compatibility */
 #if !defined(LIBEXSLT_PUBLIC)

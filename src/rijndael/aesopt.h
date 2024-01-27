@@ -229,9 +229,7 @@
 #endif
 
 #if (defined ( ASM_X86_V1C ) || defined( ASM_X86_V2 ) || defined( ASM_X86_V2C )) \
-      && !defined( _X86_ )   && !defined( __i386__ )  && !defined( _M_IX86 ) || \
-      defined( ASM_AMD64_C ) && !defined( _M_X64 )    && !defined( _AMD64_ ) && \
-      !defined( _X64_ )      && !defined( __x86_64__ )
+      && !defined( _M_IX86 ) || defined( ASM_AMD64_C ) && !defined( _M_X64 )
 #  error Assembler code is only available for x86 and AMD64 systems
 #endif
 
@@ -296,9 +294,7 @@
     field arithmetic (this has no effect if FIXED_TABLES is defined).
 */
 #if 1
-#  ifndef FF_TABLES
-#    define FF_TABLES 1
-#  endif
+#  define FF_TABLES
 #endif
 
 /*  7. INTERNAL STATE VARIABLE FORMAT

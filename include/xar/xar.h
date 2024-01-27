@@ -38,11 +38,21 @@
 #ifndef _XAR_H_
 #define _XAR_H_
 
-#define XAR_VERSION "1.7dev"
+#if __cplusplus
+extern "C" {
+#endif
+
+#define XAR_VERSION "1.8dev"
 
 #include <sys/types.h>
 #include <stdint.h>
 #include <sys/stat.h>
+
+#ifdef __APPLE__
+#import <os/availability.h>
+#else
+#define API_DEPRECATED(...)
+#endif
 
 #pragma pack(4)
 
@@ -60,8 +70,10 @@ typedef struct xar_header xar_header_t;
 #define XAR_HEADER_MAGIC 0x78617221
 #define XAR_EA_FORK "ea"
 
+/* NONE is not supported for security reasons, and may not be supported by all implementations */
 #define XAR_CKSUM_NONE   0
 #define XAR_CKSUM_SHA1   1
+/* MD5 is not supported for security reasons, and may not be supported by all implementations */
 #define XAR_CKSUM_MD5    2
 #define XAR_CKSUM_SHA256 3
 #define XAR_CKSUM_SHA512 4
@@ -86,6 +98,7 @@ typedef struct {
 typedef int32_t (*err_handler)(int32_t severit, int32_t instance, xar_errctx_t ctx, void *usrctx);
 /* the signed_data must be allocated durring the callback and will be released by the xar lib after the callback */
 typedef int32_t (*xar_signer_callback)(xar_signature_t sig, void *context, uint8_t *data, uint32_t length, uint8_t **signed_data, uint32_t *signed_len);
+typedef void (*xar_progress_callback)(xar_t x, xar_file_t f, size_t sizeread);
 
 #define READ 0
 #define WRITE 1
@@ -106,6 +119,7 @@ typedef int32_t (*xar_signer_callback)(xar_signature_t sig, void *context, uint8
 #define XAR_OPT_VAL_SHA1   "sha1"
 #define XAR_OPT_VAL_SHA256 "sha256"
 #define XAR_OPT_VAL_SHA512 "sha512"
+/* MD5 is not recommended for security reasons, and may not be supported by all implementations */
 #define XAR_OPT_VAL_MD5    "md5"
 
 #define XAR_OPT_COMPRESSION    "compression" /* set the file compression type */
@@ -141,10 +155,13 @@ typedef int32_t (*xar_signer_callback)(xar_signature_t sig, void *context, uint8
 #define XAR_ERR_ARCHIVE_CREATION   1
 #define XAR_ERR_ARCHIVE_EXTRACTION 2
 
-xar_t xar_open(const char *file, int32_t flags);
+xar_t xar_open(const char *file, int32_t flags) API_DEPRECATED("xar is a deprecated file format and should not be used.", macos(10.4,12.0));
+xar_t xar_open_digest_verify(const char *file, int32_t flags, void *expected_toc_digest, size_t expected_toc_digest_len) API_DEPRECATED("xar is a deprecated file format and should not be used.", macos(10.14.4,12.0));
 int xar_close(xar_t x);
-xar_file_t xar_add(xar_t x, const char *path);
 
+xar_header_t xar_header_get(xar_t x);
+
+xar_file_t xar_add(xar_t x, const char *path);
 xar_file_t xar_add_frombuffer(xar_t x, xar_file_t parent, const char *name, char *buffer, size_t length);
 xar_file_t xar_add_folder(xar_t x, xar_file_t f, const char *name, struct stat *info);
 xar_file_t xar_add_frompath(xar_t x, xar_file_t parent, const char *name, const char *realpath);
@@ -160,7 +177,14 @@ int32_t xar_extract_tostream(xar_stream *stream);
 int32_t xar_extract_tostream_end(xar_stream *stream);
 
 int32_t xar_verify(xar_t x, xar_file_t f);
+int32_t xar_verify_progress(xar_t x, xar_file_t f, xar_progress_callback progress);
 
+/* To get the checksum of the table of contents use this function.
+ * The function returns a alloced buffer that caller must free. */
+void* xar_get_toc_checksum(xar_t x, size_t* buffer_size);
+
+/* Returns XAR_CKSUM_* that maps to the type of the checksum. */
+int32_t xar_get_toc_checksum_type(xar_t x);
 
 const char *xar_opt_get(xar_t x, const char *option);
 int32_t xar_opt_set(xar_t x, const char *option, const char *value);
@@ -169,6 +193,7 @@ int32_t xar_opt_unset(xar_t x, const char *option);
 int32_t xar_prop_set(xar_file_t f, const char *key, const char *value);
 int32_t xar_prop_create(xar_file_t f, const char *key, const char *value);
 int32_t xar_prop_get(xar_file_t f, const char *key, const char **value);
+int32_t xar_prop_get_expect_notnull(xar_file_t f, const char *key, const char **value);
 
 xar_iter_t xar_iter_new(void);
 void xar_iter_free(xar_iter_t i);
@@ -239,8 +264,14 @@ void xar_err_new(xar_t x);
 int32_t xar_err_callback(xar_t x, int32_t sev, int32_t err);
 
 void xar_serialize(xar_t x, const char *file);
-char *xar_get_path(xar_file_t f);
+char *xar_get_path(xar_file_t f) API_DEPRECATED("Use xar_get_safe_path instead", macos(10.4,12.0));
+char *xar_get_safe_path(xar_file_t f) API_AVAILABLE(macos(12.0));
 off_t	xar_get_heap_offset(xar_t x);
 uint64_t xar_ntoh64(uint64_t num);
+int xar_get_archive_fd(xar_t x);
+
+#if __cplusplus
+}
+#endif
 
 #endif /* _XAR_H_ */

@@ -10,7 +10,7 @@
 //
 // ram dmg extent info
 //
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
 #endif
 
@@ -25,7 +25,7 @@ typedef struct _RAM_DMG_EXTENT_INFO
 	// length
 	//
 	UINT64																	Length;
-} GNUPACK RAM_DMG_EXTENT_INFO;
+}RAM_DMG_EXTENT_INFO;
 
 //
 // ram dmg header
@@ -61,9 +61,8 @@ typedef struct _RAM_DMG_HEADER
 	// signature 2
 	//
 	UINT64																	Signature2;
-} GNUPACK RAM_DMG_HEADER;
-
-#ifndef __APPLE__
+}RAM_DMG_HEADER;
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -79,28 +78,42 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 {
 	CHAR8 CONST* rootUUID													= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// get block io protocol
 		//
 		EFI_BLOCK_IO_PROTOCOL* blockIoProtocol								= nullptr;
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiBlockIoProtocolGuid, reinterpret_cast<VOID**>(&blockIoProtocol))))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return (const CHAR8 *)NULL;
+#endif
 
 		//
 		// get disk io protocol
 		//
 		EFI_DISK_IO_PROTOCOL* diskIoProtocol								= nullptr;
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiDiskIoProtocolGuid, reinterpret_cast<VOID**>(&diskIoProtocol))))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return (const CHAR8 *)NULL;
+#endif
 
 		//
 		// read volume header
 		//
 		STATIC UINT8 volumeHeader[0x200]									= {0};
 		if(EFI_ERROR(diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, 1024, sizeof(volumeHeader), volumeHeader)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return (const CHAR8 *)NULL;
+#endif
 
 		//
 		// hfs+ volume
@@ -113,7 +126,11 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 			volumeHeaderOffset												+= startBlock * blockSize;
 
 			if(EFI_ERROR(diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, volumeHeaderOffset, sizeof(volumeHeader), volumeHeader)))
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return (const CHAR8 *)NULL;
+#endif
 		}
 
 		//
@@ -123,7 +140,11 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 		if(volumeHeader[0] == 'H' && (volumeHeader[1] == '+' || volumeHeader[1] == 'X'))
 			memcpy(volumeId, volumeHeader + 0x68, sizeof(volumeId));
 		else
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return (const CHAR8 *)NULL;
+#endif
 
 		//
 		// just like AppleFileSystemDriver
@@ -180,10 +201,12 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 		}
 
 		rootUUID															= uuidBuffer;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 	}
+#endif
 
 	return rootUUID;
 }
@@ -209,14 +232,15 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDevicePath(EFI_HANDLE deviceHandle, CHAR8* uu
 	return uuidBuffer;
 }
 
-#ifndef MINORVERSION
 //
 // add ram dmg property
 //
 STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_PROTOCOL* bootDevicePath)
 {
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// get mem map device path
 		//
@@ -242,36 +266,53 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 			bootDevicePath													= EfiNextDevicePathNode(bootDevicePath);
 		}
 		if(!ramDmgDevicePath)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// check length
 		//
 		if(ramDmgDevicePath->EndingAddress + 1 - ramDmgDevicePath->StartingAddress < sizeof(RAM_DMG_HEADER))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// check header
 		//
 		RAM_DMG_HEADER* ramDmgHeader										= ArchConvertAddressToPointer(ramDmgDevicePath->StartingAddress, RAM_DMG_HEADER*);
 		if(ramDmgHeader->Signature != ramDmgHeader->Signature2 || ramDmgHeader->Signature != 0x544E5458444D4152ULL || ramDmgHeader->Version != 0x10000)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// check size
 		//
 		if(ramDmgHeader->ExtentCount > ARRAYSIZE(ramDmgHeader->ExtentInfo) || !*ramDmgSize)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-ramdmg-extents"), ramDmgHeader->ExtentInfo, ramDmgHeader->ExtentCount * sizeof(RAM_DMG_EXTENT_INFO), FALSE);
 		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-ramdmg-size"), ramDmgSize, sizeof(UINT64), FALSE);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
 
 	}
-}
 #endif
+}
 
 //
 // add memory range
@@ -292,8 +333,10 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 	UINT64 virtualAddress													= 0;
 	UINT64 physicalAddress													= 0;
 
-    __try
+#if defined(_MSC_VER)
+	__try
 	{
+#endif
 		//
 		// detect acpi nvs memory
 		//
@@ -305,8 +348,14 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		UINTN bufferLength													= sizeof(BOOT_ARGS);
 		physicalAddress														= MmAllocateKernelMemory(&bufferLength, &virtualAddress);
 
-		if(!physicalAddress)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!physicalAddress) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// fill common fileds
@@ -360,34 +409,60 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		// get root node
 		//
 		DEVICE_TREE_NODE* rootNode											= DevTreeFindNode(CHAR8_CONST_STRING("/"), FALSE);
-		if(!rootNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!rootNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// compatible = ACPI
 		//
 		if(EFI_ERROR(status = DevTreeAddProperty(rootNode, CHAR8_CONST_STRING("compatible"), "ACPI", 5, FALSE)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// model = ACPI
 		//
 		if(EFI_ERROR(status = DevTreeAddProperty(rootNode, CHAR8_CONST_STRING("model"), "ACPI", 5, FALSE)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// get chosen node
 		//
 		DEVICE_TREE_NODE* chosenNode										= DevTreeFindNode(CHAR8_CONST_STRING("/chosen"), TRUE);
-		if(!chosenNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!chosenNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// get memory map node
 		//
 		BlpMemoryMapNode													= DevTreeFindNode(CHAR8_CONST_STRING("/chosen/memory-map"), TRUE);
-		if(!BlpMemoryMapNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+        if(!BlpMemoryMapNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// get boot guid
@@ -438,7 +513,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 				//
 				if(rootUUID)
 					DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-uuid"), rootUUID, static_cast<UINT32>(strlen(rootUUID) + 1) * sizeof(CHAR8), TRUE);
-            }
+			}
 
 			//
 			// add root match
@@ -447,7 +522,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 			{
 				DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("root-matching"), rootMatchDict, static_cast<UINT32>(strlen(rootMatchDict) + 1) * sizeof(CHAR8), TRUE);
 				MmFreePool(const_cast<CHAR8*>(rootMatchDict));
-            }
+			}
 		}
 
 		//
@@ -460,20 +535,32 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file"), bootFileName, static_cast<UINT32>(strlen(bootFileName) + 1) * sizeof(CHAR8), FALSE)))
 		{
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 		}
 
 		//
 		// add boot device path
 		//
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-device-path"), bootDevicePath, static_cast<UINT32>(DevPathGetSize(bootDevicePath)), FALSE)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// add boot file path
 		//
 		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file-path"), bootFilePath, static_cast<UINT32>(DevPathGetSize(bootFilePath)), FALSE)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// Boot != Root key for firmware's /chosen
@@ -482,7 +569,11 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		{
 			if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("bootroot-active"), nullptr, 0, FALSE)))
 			{
+#if defined(_MSC_VER)
 				try_leave(NOTHING);
+#else
+                return -1;
+#endif
 			}
 		}
 
@@ -491,16 +582,14 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		//
 		BlAddBooterInfo(chosenNode);
 
-#ifndef MINORVERSION
 		//
 		// add ram dmg info
 		//
 		BlpAddRamDmgProperty(chosenNode, bootDevicePath);
-#endif
 
 #if (TARGET_OS >= YOSEMITE)
 		//
-		// add random-seed property with a static data (for testing only)
+		// Add 'random-seed' property.
 		//
 		UINT8 index															= 0;
 		UINT16 PMTimerValue													= 0;
@@ -514,7 +603,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 
 		do																						// 0x17e55:
 		{
-            		//
+			//
 			// The RDRAND instruction is part of the Intel Secure Key Technology, which is currently only available 
 			// on the Intel i5/i7 Ivy Bridge and Haswell processors. Not on processors used in the old MacPro models.
 			// This is why I had to disassemble Apple's boot.efi and port their assembler code to standard C.
@@ -526,7 +615,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 			{
 				continue;																		// jb		0x17e55		(retry)
 			}
-
+			
 			cpuTick = ArchGetCpuTick();															// callq	0x121a7
 			rcx = (cpuTick >> 8);																// mov		%rax,	%rcx
 																								// shr		$0x8,	%rcx
@@ -545,7 +634,7 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 			ecx = (edi & 0xffff);																// movzwl	%di,	%ecx
 			
 		} while (index < 64);																	// cmp		%r14d,	%r12d
-													// jne		0x17e55		(next)
+																								// jne		0x17e55		(next)
 
 		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("random-seed"), seedBuffer, sizeof(seedBuffer), TRUE);
 #endif // #if (TARGET_OS >= YOSEMITE)
@@ -554,12 +643,316 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		// output
 		//
 		*bootArgsP															= bootArgs;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(EFI_ERROR(status))
 			MmFreeKernelMemory(virtualAddress, physicalAddress);
+#if defined(_MSC_VER)
 	}
+#endif
+    
+	return status;
+}
+
+//
+// finalize boot args
+//
+EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLine, EFI_HANDLE bootDeviceHandle, MACH_O_LOADED_INFO* loadedInfo)
+{
+	EFI_STATUS status														= EFI_SUCCESS;
+
+#if defined(_MSC_VER)
+	__try
+	{
+#endif
+		//
+		// save command line
+		//
+		strncpy(bootArgs->CommandLine, kernelCommandLine, ARRAYSIZE(bootArgs->CommandLine) - 1);
+
+		//
+		// get chosen node
+		//
+		DEVICE_TREE_NODE* chosenNode										= DevTreeFindNode(CHAR8_CONST_STRING("/chosen"), TRUE);
+        if(!chosenNode) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
+
+		//
+		// add boot-args
+		//
+		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-args"), bootArgs->CommandLine, static_cast<UINT32>(strlen(bootArgs->CommandLine) + 1) * sizeof(CHAR8), FALSE)))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+        
+		//
+		// net
+		//
+		if(EFI_ERROR(status = NetSetupDeviceTree(bootDeviceHandle)))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// pe
+		//
+		if(EFI_ERROR(status = PeSetupDeviceTree()))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// FileVault2, key store
+		//
+		if(BlTestBootMode(BOOT_MODE_HAS_FILE_VAULT2_CONFIG))
+		{
+			UINT64 keyStorePhysicalAddress									= 0;
+			UINTN keyStoreDataSize											= 0;
+			if(EFI_ERROR(status = FvSetupDeviceTree(&keyStorePhysicalAddress, &keyStoreDataSize, TRUE)))
+#if defined(_MSC_VER)
+				try_leave(NOTHING);
+#else
+                return -1;
+#endif
+
+			bootArgs->KeyStoreDataStart										= static_cast<UINT32>(keyStorePhysicalAddress);
+			bootArgs->KeyStoreDataSize										= static_cast<UINT32>(keyStoreDataSize);
+		}
+			
+
+		//
+		// console device tree
+		//
+		if(EFI_ERROR(status = CsSetupDeviceTree(bootArgs)))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// get device tree size
+		//
+		UINT32 deviceTreeSize												= 0;
+		DevTreeFlatten(nullptr, &deviceTreeSize);
+
+		//
+		// allocate buffer
+		//
+		UINT64 virtualAddress												= 0;
+		UINTN bufferLength													= deviceTreeSize;
+		UINT64 physicalAddress												= MmAllocateKernelMemory(&bufferLength, &virtualAddress);
+        if(!physicalAddress) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
+		//
+		// flatten it
+		//
+		VOID* flattenBuffer													= ArchConvertAddressToPointer(physicalAddress, VOID*);
+		if(EFI_ERROR(status = DevTreeFlatten(&flattenBuffer, &deviceTreeSize)))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// save it
+		//
+		bootArgs->DeviceTree												= static_cast<UINT32>(physicalAddress);
+		bootArgs->DeviceTreeLength											= deviceTreeSize;
+
+		//
+		// free device tree
+		//
+		DevTreeFinalize();
+
+		//
+		// get memory map
+		//
+		UINTN memoryMapSize													= 0;
+		EFI_MEMORY_DESCRIPTOR* memoryMap									= nullptr;
+		UINTN memoryMapKey													= 0;
+		UINTN descriptorSize												= 0;
+		UINT32 descriptorVersion											= 0;
+		if(EFI_ERROR(status = MmGetMemoryMap(&memoryMapSize, &memoryMap, &memoryMapKey, &descriptorSize, &descriptorVersion)))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// get runtime memory info
+		//
+		UINT64 runtimeMemoryPages											= 0;
+		UINTN runtimeMemoryDescriptors										= MmGetRuntimeMemoryInfo(memoryMap, memoryMapSize, descriptorSize, &runtimeMemoryPages);
+
+		//
+		// free memory map
+		//
+		MmFreePool(memoryMap);
+
+		//
+		// allocate kernel memory for runtime area
+		//
+		runtimeMemoryPages													+= 1;
+		runtimeMemoryDescriptors											+= 1;
+		UINT64 runtimeServicesVirtualAddress								= 0;
+		bufferLength														= static_cast<UINTN>(runtimeMemoryPages << EFI_PAGE_SHIFT);
+		UINT64 runtimeServicesPhysicalAddress								= MmAllocateKernelMemory(&bufferLength, &runtimeServicesVirtualAddress);
+        if(!runtimeServicesPhysicalAddress) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
+		//
+		// allocate memory map
+		//
+		memoryMapSize														+= runtimeMemoryDescriptors * descriptorSize + 512;
+		UINT64 memoryMapVirtualAddress										= 0;
+		UINT64 memoryMapPhysicalAddress										= MmAllocateKernelMemory(&memoryMapSize, &memoryMapVirtualAddress);
+        if(!memoryMapPhysicalAddress) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_OUT_OF_RESOURCES);
+#else
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
+
+		//
+		// get memory map
+		//
+		for(UINTN i = 0; i < 5; i ++)
+		{
+			UINTN currentSize												= 0;
+			status															= EfiBootServices->GetMemoryMap(&currentSize, 0, &memoryMapKey, &descriptorSize, &descriptorVersion);
+			if(status != EFI_BUFFER_TOO_SMALL)
+#if defined(_MSC_VER)
+				try_leave(NOTHING);
+#else
+                return -1;
+#endif
+
+			if(currentSize > memoryMapSize)
+			{
+				MmFreeKernelMemory(memoryMapVirtualAddress, memoryMapPhysicalAddress);
+				currentSize													+= (runtimeMemoryDescriptors + 2) * descriptorSize + 512;
+				memoryMapPhysicalAddress									= MmAllocateKernelMemory(&currentSize, &memoryMapVirtualAddress);
+				memoryMapSize												= currentSize;
+			}
+
+			memoryMap														= ArchConvertAddressToPointer(memoryMapPhysicalAddress, EFI_MEMORY_DESCRIPTOR*);
+			status															= EfiBootServices->GetMemoryMap(&currentSize, memoryMap, &memoryMapKey, &descriptorSize, &descriptorVersion);
+			if(!EFI_ERROR(status))
+			{
+				memoryMapSize												= currentSize;
+				break;
+			}
+		}
+
+		//
+		// unable to get memory map
+		//
+		if(EFI_ERROR(status))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// save it
+		//
+		bootArgs->MemoryMap													= static_cast<UINT32>(memoryMapPhysicalAddress);
+		bootArgs->MemoryMapDescriptorSize									= static_cast<UINT32>(descriptorSize);
+		bootArgs->MemoryMapDescriptorVersion								= static_cast<UINT32>(descriptorVersion);
+		bootArgs->MemoryMapSize												= static_cast<UINT32>(memoryMapSize);
+
+		//
+		// exit boot services
+		//
+		if(EFI_ERROR(status = EfiBootServices->ExitBootServices(EfiImageHandle, memoryMapKey)))
+#if defined(_MSC_VER)
+			try_leave(NOTHING);
+#else
+            return -1;
+#endif
+
+		//
+		// adjust memory map
+		//
+		memoryMapSize														= AcpiAdjustMemoryMap(memoryMap, memoryMapSize, descriptorSize);
+		bootArgs->MemoryMapSize												= static_cast<UINT32>(memoryMapSize);
+
+		//
+		// sort memory map
+		//
+		MmSortMemoryMap(memoryMap, memoryMapSize, descriptorSize);
+
+		//
+		// convert pointer
+		//
+		UINT64 efiSystemTablePhysicalAddress								= ArchConvertPointerToAddress(EfiSystemTable);
+		MmConvertPointers(memoryMap, &memoryMapSize, descriptorSize, descriptorVersion, runtimeServicesPhysicalAddress, runtimeMemoryPages, runtimeServicesVirtualAddress, &efiSystemTablePhysicalAddress, TRUE, loadedInfo);
+
+		//
+		// sort memory map
+		//
+		MmSortMemoryMap(memoryMap, memoryMapSize, descriptorSize);
+
+		//
+		// save efi services
+		//
+		bootArgs->MemoryMapSize												= static_cast<UINT32>(memoryMapSize);
+		bootArgs->EfiSystemTable											= static_cast<UINT32>(efiSystemTablePhysicalAddress);
+		bootArgs->EfiRuntimeServicesPageCount								= static_cast<UINT32>(runtimeMemoryPages);
+		bootArgs->EfiRuntimeServicesPageStart								= static_cast<UINT32>(runtimeServicesPhysicalAddress >> EFI_PAGE_SHIFT);
+		bootArgs->EfiRuntimeServicesVirtualPageStart						= runtimeServicesVirtualAddress >> EFI_PAGE_SHIFT;
+
+		//
+		// save kernel range
+		//
+		UINT64 kernelBegin													= 0;
+		UINT64 kernelEnd													= 0;
+		MmGetKernelPhysicalRange(&kernelBegin, &kernelEnd);
+		bootArgs->KernelAddress												= static_cast<UINT32>(kernelBegin);
+		bootArgs->KernelSize												= static_cast<UINT32>(kernelEnd - kernelBegin);
+
+		//
+		// clear serives pointer
+		//
+		EfiBootServices														= nullptr;
+#if defined(_MSC_VER)
+	}
+	__finally
+	{
+	}
+#endif
 
 	return status;
 }
@@ -571,12 +964,12 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs)
 {
 #if DEBUG_NVRAM_CALL_CSPRINTF
-	UINT8 i = 0;
+	UINT8 i																	= 0;
 #endif
-	EFI_STATUS status = EFI_SUCCESS;
-	UINT32 attributes = (EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS);
-	UINT32 csrActiveConfig = CSR_ALLOW_APPLE_INTERNAL;
-	UINTN dataSize = sizeof(UINT32);
+	EFI_STATUS status														= EFI_SUCCESS;
+	UINT32 attributes														= (EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS);
+	UINT32 csrActiveConfig													= CSR_ALLOW_APPLE_INTERNAL;
+	UINTN dataSize															= sizeof(UINT32);
 
 	if(BlTestBootMode(BOOT_MODE_FROM_RECOVER_BOOT_DIRECTORY | BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE | BOOT_MODE_IS_INSTALLER))
 	{
@@ -596,24 +989,24 @@ EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs)
 			}
 		}
 #endif
- 		attributes															|= EFI_VARIABLE_NON_VOLATILE;
-		csrActiveConfig = CSR_ALLOW_DEVICE_CONFIGURATION;
-		bootArgs->Flags |= (kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRConfigMode + kBootArgsFlagCSRBoot);
+		attributes															|= EFI_VARIABLE_NON_VOLATILE;
+		csrActiveConfig														= CSR_ALLOW_DEVICE_CONFIGURATION;
+		bootArgs->Flags														|= (kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRConfigMode + kBootArgsFlagCSRBoot);
 	}
 	else
 	{
-		bootArgs->Flags |= (kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRBoot);
+		bootArgs->Flags														|= (kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRBoot);
 	}
 
 	//
 	// System Integrity Protection Capabilties.
 	//
-	bootArgs->CsrCapabilities = CSR_VALID_FLAGS;
- 	
+	bootArgs->CsrCapabilities												= CSR_VALID_FLAGS;
+	
 	//
 	// Check 'csr-active-config' variable in NVRAM.
 	//
-	if(EFI_ERROR(status = EfiRuntimeServices->GetVariable((CHAR16*)L"csr-active-config", &AppleNVRAMVariableGuid, nullptr, &dataSize, &csrActiveConfig)))
+	if(EFI_ERROR(status = EfiRuntimeServices->GetVariable(CHAR16_STRING(L"csr-active-config"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &csrActiveConfig)))
 	{
 #if DEBUG_NVRAM_CALL_CSPRINTF
 		for (i = 0; i < 5; i++)
@@ -624,7 +1017,7 @@ EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs)
 		//
 		// Not there. Add the 'csr-active-config' variable.
 		//
-		if(EFI_ERROR(status = EfiRuntimeServices->SetVariable((CHAR16*)L"csr-active-config", &AppleNVRAMVariableGuid, attributes, sizeof(UINT32), &csrActiveConfig)))
+		if(EFI_ERROR(status = EfiRuntimeServices->SetVariable(CHAR16_STRING(L"csr-active-config"), &AppleNVRAMVariableGuid, attributes, sizeof(UINT32), &csrActiveConfig)))
 		{
 #if DEBUG_NVRAM_CALL_CSPRINTF
 			for (i = 0; i < 5; i++)
@@ -676,7 +1069,7 @@ EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs)
 //
 EFI_STATUS BlAddBooterInfo(DEVICE_TREE_NODE* chosenNode)
 {
-	EFI_STATUS status = EFI_SUCCESS;
+	EFI_STATUS status														= EFI_SUCCESS;
 
 	//
 	// Static data for now. Should extract this from Apple's boot.efi
@@ -692,243 +1085,6 @@ EFI_STATUS BlAddBooterInfo(DEVICE_TREE_NODE* chosenNode)
 
 	DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("booter-version"), "version:307", 11, FALSE);
 	DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("booter-build-time"), "Fri Sep  4 15:34:00 PDT 2015", 28, FALSE);
-
-	return status;
-}
-
-//
-// finalize boot args
-//
-EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLine, EFI_HANDLE bootDeviceHandle, MACH_O_LOADED_INFO* loadedInfo)
-{
-	EFI_STATUS status														= EFI_SUCCESS;
-
-	__try
-	{
-		//
-		// save command line
-		//
-		strncpy(bootArgs->CommandLine, kernelCommandLine, ARRAYSIZE(bootArgs->CommandLine) - 1);
-
-		//
-		// get chosen node
-		//
-		DEVICE_TREE_NODE* chosenNode										= DevTreeFindNode(CHAR8_CONST_STRING("/chosen"), TRUE);
-		if(!chosenNode)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
-
-		//
-		// add boot-args
-		//
-		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-args"), bootArgs->CommandLine, static_cast<UINT32>(strlen(bootArgs->CommandLine) + 1) * sizeof(CHAR8), FALSE)))
-			try_leave(NOTHING);
-
-#ifndef MINORVERSION
-		//
-		// net
-		//
-		if(EFI_ERROR(status = NetSetupDeviceTree(bootDeviceHandle)))
-			try_leave(NOTHING);
-#endif
-
-		//
-		// pe
-		//
-		if(EFI_ERROR(status = PeSetupDeviceTree()))
-			try_leave(NOTHING);
-
-#ifndef MINORVERSION
-		//
-		// FileVault2, key store
-		//
-		if(BlTestBootMode(BOOT_MODE_HAS_FILE_VAULT2_CONFIG))
-		{
-			UINT64 keyStorePhysicalAddress									= 0;
-			UINTN keyStoreDataSize											= 0;
-			if(EFI_ERROR(status = FvSetupDeviceTree(&keyStorePhysicalAddress, &keyStoreDataSize, TRUE)))
-				try_leave(NOTHING);
-
-			bootArgs->KeyStoreDataStart										= static_cast<UINT32>(keyStorePhysicalAddress);
-			bootArgs->KeyStoreDataSize										= static_cast<UINT32>(keyStoreDataSize);
-		}
-#endif
-
-		//
-		// console device tree
-		//
-		if(EFI_ERROR(status = CsSetupDeviceTree(bootArgs)))
-			try_leave(NOTHING);
-
-		//
-		// get device tree size
-		//
-		UINT32 deviceTreeSize												= 0;
-		DevTreeFlatten(nullptr, &deviceTreeSize);
-
-		//
-		// allocate buffer
-		//
-		UINT64 virtualAddress												= 0;
-		UINTN bufferLength													= deviceTreeSize;
-		UINT64 physicalAddress												= MmAllocateKernelMemory(&bufferLength, &virtualAddress);
-		if(!physicalAddress)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
-
-		//
-		// flatten it
-		//
-		VOID* flattenBuffer													= ArchConvertAddressToPointer(physicalAddress, VOID*);
-		if(EFI_ERROR(status = DevTreeFlatten(&flattenBuffer, &deviceTreeSize)))
-			try_leave(NOTHING);
-
-		//
-		// save it
-		//
-		bootArgs->DeviceTree												= static_cast<UINT32>(physicalAddress);
-		bootArgs->DeviceTreeLength											= deviceTreeSize;
-
-		//
-		// free device tree
-		//
-		DevTreeFinalize();
-
-		//
-		// get memory map
-		//
-		UINTN memoryMapSize													= 0;
-		EFI_MEMORY_DESCRIPTOR* memoryMap									= nullptr;
-		UINTN memoryMapKey													= 0;
-		UINTN descriptorSize												= 0;
-		UINT32 descriptorVersion											= 0;
-		if(EFI_ERROR(status = MmGetMemoryMap(&memoryMapSize, &memoryMap, &memoryMapKey, &descriptorSize, &descriptorVersion)))
-			try_leave(NOTHING);
-
-		//
-		// get runtime memory info
-		//
-		UINT64 runtimeMemoryPages											= 0;
-		UINTN runtimeMemoryDescriptors										= MmGetRuntimeMemoryInfo(memoryMap, memoryMapSize, descriptorSize, &runtimeMemoryPages);
-
-		//
-		// free memory map
-		//
-		MmFreePool(memoryMap);
-
-		//
-		// allocate kernel memory for runtime area
-		//
-		runtimeMemoryPages													+= 1;
-		runtimeMemoryDescriptors											+= 1;
-		UINT64 runtimeServicesVirtualAddress								= 0;
-		bufferLength														= static_cast<UINTN>(runtimeMemoryPages << EFI_PAGE_SHIFT);
-		UINT64 runtimeServicesPhysicalAddress								= MmAllocateKernelMemory(&bufferLength, &runtimeServicesVirtualAddress);
-		if(!runtimeServicesPhysicalAddress)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
-
-		//
-		// allocate memory map
-		//
-		memoryMapSize														+= runtimeMemoryDescriptors * descriptorSize + 512;
-		UINT64 memoryMapVirtualAddress										= 0;
-		UINT64 memoryMapPhysicalAddress										= MmAllocateKernelMemory(&memoryMapSize, &memoryMapVirtualAddress);
-		if(!memoryMapPhysicalAddress)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
-
-		//
-		// get memory map
-		//
-		for(UINTN i = 0; i < 5; i ++)
-		{
-			UINTN currentSize												= 0;
-			status															= EfiBootServices->GetMemoryMap(&currentSize, 0, &memoryMapKey, &descriptorSize, &descriptorVersion);
-			if(status != EFI_BUFFER_TOO_SMALL)
-				try_leave(NOTHING);
-
-			if(currentSize > memoryMapSize)
-			{
-				MmFreeKernelMemory(memoryMapVirtualAddress, memoryMapPhysicalAddress);
-				currentSize													+= (runtimeMemoryDescriptors + 2) * descriptorSize + 512;
-				memoryMapPhysicalAddress									= MmAllocateKernelMemory(&currentSize, &memoryMapVirtualAddress);
-				memoryMapSize												= currentSize;
-			}
-
-			memoryMap														= ArchConvertAddressToPointer(memoryMapPhysicalAddress, EFI_MEMORY_DESCRIPTOR*);
-			status															= EfiBootServices->GetMemoryMap(&currentSize, memoryMap, &memoryMapKey, &descriptorSize, &descriptorVersion);
-			if(!EFI_ERROR(status))
-			{
-				memoryMapSize												= currentSize;
-				break;
-			}
-		}
-
-		//
-		// unable to get memory map
-		//
-		if(EFI_ERROR(status))
-			try_leave(NOTHING);
-
-		//
-		// save it
-		//
-		bootArgs->MemoryMap													= static_cast<UINT32>(memoryMapPhysicalAddress);
-		bootArgs->MemoryMapDescriptorSize									= static_cast<UINT32>(descriptorSize);
-		bootArgs->MemoryMapDescriptorVersion								= static_cast<UINT32>(descriptorVersion);
-		bootArgs->MemoryMapSize												= static_cast<UINT32>(memoryMapSize);
-
-		//
-		// exit boot services
-		//
-		if(EFI_ERROR(status = EfiBootServices->ExitBootServices(EfiImageHandle, memoryMapKey)))
-			try_leave(NOTHING);
-
-		//
-		// adjust memory map
-		//
-		memoryMapSize														= AcpiAdjustMemoryMap(memoryMap, memoryMapSize, descriptorSize);
-		bootArgs->MemoryMapSize												= static_cast<UINT32>(memoryMapSize);
-
-		//
-		// sort memory map
-		//
-		MmSortMemoryMap(memoryMap, memoryMapSize, descriptorSize);
-        
-		//
-		// convert pointer
-		//
-		UINT64 efiSystemTablePhysicalAddress								= ArchConvertPointerToAddress(EfiSystemTable);
-		MmConvertPointers(memoryMap, &memoryMapSize, descriptorSize, descriptorVersion, runtimeServicesPhysicalAddress, runtimeMemoryPages, runtimeServicesVirtualAddress, &efiSystemTablePhysicalAddress, TRUE, loadedInfo);
-
-		//
-		// sort memory map
-		//
-		MmSortMemoryMap(memoryMap, memoryMapSize, descriptorSize);
-
-		//
-		// save efi services
-		//
-		bootArgs->MemoryMapSize												= static_cast<UINT32>(memoryMapSize);
-		bootArgs->EfiSystemTable											= static_cast<UINT32>(efiSystemTablePhysicalAddress);
-		bootArgs->EfiRuntimeServicesPageCount								= static_cast<UINT32>(runtimeMemoryPages);
-		bootArgs->EfiRuntimeServicesPageStart								= static_cast<UINT32>(runtimeServicesPhysicalAddress >> EFI_PAGE_SHIFT);
-		bootArgs->EfiRuntimeServicesVirtualPageStart						= runtimeServicesVirtualAddress >> EFI_PAGE_SHIFT;
-
-		//
-		// save kernel range
-		//
-		UINT64 kernelBegin													= 0;
-		UINT64 kernelEnd													= 0;
-		MmGetKernelPhysicalRange(&kernelBegin, &kernelEnd);
-		bootArgs->KernelAddress												= static_cast<UINT32>(kernelBegin);
-		bootArgs->KernelSize												= static_cast<UINT32>(kernelEnd - kernelBegin);
-
-		//
-		// clear serives pointer
-		//
-		EfiBootServices														= nullptr;
-	}
-	__finally
-	{
-	}
 
 	return status;
 }

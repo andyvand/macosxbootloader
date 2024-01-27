@@ -1,3 +1,9 @@
+/*
+ * Summary: main header file
+ *
+ * Copy: See Copyright for the status of this software.
+ */
+
 
 #ifndef __EXSLT_H__
 #define __EXSLT_H__
@@ -5,7 +11,7 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include "exsltexports.h"
-#include <libexslt/exsltconfig.h>
+#include "exsltconfig.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -28,16 +28,12 @@
 									mov					[rbp + _KTRAP_FRAME.R10], r10
 									mov					[rbp + _KTRAP_FRAME.R11], r11
 									cld
-
 %endmacro
 
-%ifdef APPLE
-extern _Z6BdTrapP17_EXCEPTION_RECORDP17_KEXCEPTION_FRAMEP12_KTRAP_FRAME
-%else
-extern ?BdTrap@@YAEPEAU_EXCEPTION_RECORD@@PEAU_KEXCEPTION_FRAME@@PEAU_KTRAP_FRAME@@@Z
-%endif
+extern _BdTrap
 
-BdDispatch:
+global _BdDispatch
+_BdDispatch:
 									sub					rsp, _EXCEPTION_RECORD64_size + _KEXCEPTION_FRAME_size + 8
 
 									mov					rax, rsp
@@ -64,11 +60,7 @@ BdDispatch:
 									mov					r8 , rbp
 									mov					rdx, rsp
 									mov					rcx, rax
-%ifdef APPLE
-                                    call                _Z6BdTrapP17_EXCEPTION_RECORDP17_KEXCEPTION_FRAMEP12_KTRAP_FRAME
-%else
-									call				?BdTrap@@YAEPEAU_EXCEPTION_RECORD@@PEAU_KEXCEPTION_FRAME@@PEAU_KTRAP_FRAME@@@Z
-%endif
+									call				_BdTrap
 
 									mov					rcx, rsp
 									mov					rbx, [rcx + _KEXCEPTION_FRAME.Rbx]
@@ -93,28 +85,20 @@ BdDispatch:
 									iretq
 
 									align				16
-%ifdef APPLE
-PUBLIC_ROUTINE _Z8BdTrap01v
-%else
-PUBLIC_ROUTINE ?BdTrap01@@YAXXZ
-%endif
+PUBLIC_ROUTINE BdTrap01
 									TRAP_FRAME_ENTER	1
 
 									and					dword [rbp + _KTRAP_FRAME.EFlags], 0fffffeffh
 									mov					ecx, 80000004h
 									xor					edx, edx
 									mov					r8, [rbp + _KTRAP_FRAME.Rip]
-									call				BdDispatch
+									call				_BdDispatch
 
 .loop_forever:
 									jmp					.loop_forever
 
 									align				16
-%ifdef APPLE
-PUBLIC_ROUTINE _Z8BdTrap03v
-%else
-PUBLIC_ROUTINE ?BdTrap03@@YAXXZ
-%endif
+PUBLIC_ROUTINE BdTrap03
 									TRAP_FRAME_ENTER	1
 
 									dec					qword [rbp + _KTRAP_FRAME.Rip]
@@ -123,17 +107,13 @@ PUBLIC_ROUTINE ?BdTrap03@@YAXXZ
 									mov					r8,  [rbp + _KTRAP_FRAME.Rip]
 									dec					r8
 									xor					r9d, r9d
-									call				BdDispatch
+									call				_BdDispatch
 
 .loop_forever:
 									jmp					.loop_forever
 
 									align				16
-%ifdef APPLE
-PUBLIC_ROUTINE _Z8BdTrap0dv
-%else
-PUBLIC_ROUTINE ?BdTrap0d@@YAXXZ
-%endif
+PUBLIC_ROUTINE BdTrap0d
 									TRAP_FRAME_ENTER	0
 
 									mov					ecx, 0c0000005h
@@ -142,17 +122,13 @@ PUBLIC_ROUTINE ?BdTrap0d@@YAXXZ
 									mov					r9d, [rbp + _KTRAP_FRAME.ErrCode]
 									and					r9d, 0ffffh
 									xor					r10, r10
-									call				BdDispatch
+									call				_BdDispatch
 
 .loop_forever:
 									jmp					.loop_forever
 
 									align				16
-%ifdef APPLE
-PUBLIC_ROUTINE _Z8BdTrap0ev
-%else
-PUBLIC_ROUTINE ?BdTrap0e@@YAXXZ
-%endif
+PUBLIC_ROUTINE BdTrap0e
 									TRAP_FRAME_ENTER	0
 
 									mov					eax, [rbp + _KTRAP_FRAME.ErrCode]
@@ -166,17 +142,13 @@ PUBLIC_ROUTINE ?BdTrap0e@@YAXXZ
 									mov					r9d, [rbp + _KTRAP_FRAME.ErrCode]
 									mov					r8,  [rbp + _KTRAP_FRAME.Rip]
 									and					r9d, 2
-									call				BdDispatch
+									call				_BdDispatch
 
 .loop_forever:
 									jmp					.loop_forever
 
 									align				16
-%ifdef APPLE
-PUBLIC_ROUTINE _Z8BdTrap2dv
-%else
-PUBLIC_ROUTINE ?BdTrap2d@@YAXXZ
-%endif
+PUBLIC_ROUTINE BdTrap2d
 									TRAP_FRAME_ENTER	1
 
 									mov					ecx, 80000003h
@@ -185,24 +157,17 @@ PUBLIC_ROUTINE ?BdTrap2d@@YAXXZ
 									mov					r9,  [rbp + _KTRAP_FRAME.Rax]
 									mov					r10, [rbp + _KTRAP_FRAME.Rcx]
 									mov					r11, [rbp + _KTRAP_FRAME.Rdx]
-									call				BdDispatch
+									call				_BdDispatch
 
 .loop_forever:
 									jmp					.loop_forever
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z13DbgBreakPointv
-%else
-PUBLIC_ROUTINE ?DbgBreakPoint@@YAXXZ
-%endif
+PUBLIC_ROUTINE DbgBreakPoint
 									int3
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z10DbgServiceyyyyy
-%else
-PUBLIC_ROUTINE ?DbgService@@YAX_K0000@Z
-%endif
+global _DbgService
+_DbgService:
 									mov					rax, rcx
 									mov					rcx, rdx
 									mov					rdx, r8
@@ -212,21 +177,14 @@ PUBLIC_ROUTINE ?DbgService@@YAX_K0000@Z
 									int3
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z10DbgServicePvS_y
-%else
-PUBLIC_ROUTINE ?DbgService@@YAXPEAX0_K@Z
-%endif
+global _DbgService2
+_DbgService2:
 									mov					rax, r8
 									int					2dh
 									int3
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z28BdpSaveProcessorControlStateP19_KSPECIAL_REGISTERS
-%else
-PUBLIC_ROUTINE ?BdpSaveProcessorControlState@@YAXPEAU_KSPECIAL_REGISTERS@@@Z
-%endif
+PUBLIC_ROUTINE BdpSaveProcessorControlState
 									mov					rax, cr0
 									mov					[rcx + _KSPECIAL_REGISTERS.Cr0], rax
 									mov					rax, cr2
@@ -257,11 +215,7 @@ PUBLIC_ROUTINE ?BdpSaveProcessorControlState@@YAXPEAU_KSPECIAL_REGISTERS@@@Z
 									mov					dr7, rax
 									retn
 
-%ifdef APPLE
-PUBLIC_ROUTINE _Z31BdpRestoreProcessorControlStateP19_KSPECIAL_REGISTERS
-%else
-PUBLIC_ROUTINE ?BdpRestoreProcessorControlState@@YAXPEAU_KSPECIAL_REGISTERS@@@Z
-%endif
+PUBLIC_ROUTINE BdpRestoreProcessorControlState
 									mov					rax, [rcx + _KSPECIAL_REGISTERS.Cr0]
 									mov					cr0, rax
 									mov					rax, [rcx + _KSPECIAL_REGISTERS.Cr3]

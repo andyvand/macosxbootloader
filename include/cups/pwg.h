@@ -1,21 +1,22 @@
 /*
- * "$Id: pwg.h 4219 2013-03-11 16:20:41Z msweet $"
+ * PWG media API definitions for CUPS.
  *
- *   PWG media API definitions for CUPS.
+ * Copyright 2009-2017 by Apple Inc.
  *
- *   Copyright 2009-2013 by Apple Inc.
- *
- *   These coded instructions, statements, and computer programs are the
- *   property of Apple Inc. and are protected by Federal copyright
- *   law.  Distribution and use rights are outlined in the file "LICENSE.txt"
- *   which should have been included with this file.  If this file is
- *   file is missing or damaged, see the license at "http://www.cups.org/".
- *
- *   This file is subject to the Apple OS-Developed Software exception.
+ * Licensed under Apache License v2.0.  See the file "LICENSE" for more information.
  */
 
 #ifndef _CUPS_PWG_H_
 #  define _CUPS_PWG_H_
+
+
+/*
+ * Include necessary headers...
+ */
+
+#  include <stddef.h>
+#  include <cups/ipp.h>
+#  include <cups/versioning.h>
 
 
 /*
@@ -41,7 +42,7 @@ extern "C" {
  * Types and structures...
  */
 
-typedef struct pwg_map_s		/**** Map element - PPD to/from PWG */
+typedef struct pwg_map_s		/**** Map element - PPD to/from PWG @exclude all@ */
 {
   char		*pwg,			/* PWG media keyword */
 		*ppd;			/* PPD option keyword */
@@ -56,7 +57,7 @@ typedef struct pwg_media_s		/**** Common media size data ****/
 		length;			/* Length in 2540ths */
 } pwg_media_t;
 
-typedef struct pwg_size_s		/**** Size element - PPD to/from PWG */
+typedef struct pwg_size_s		/**** Size element - PPD to/from PWG @exclude all@ */
 {
   pwg_map_t	map;			/* Map element */
   int		width,			/* Width in 2540ths */
@@ -88,7 +89,3 @@ extern pwg_media_t	*pwgMediaForSize(int width, int length) _CUPS_API_1_7;
 #  endif /* __cplusplus */
 
 #endif /* !_CUPS_PWG_H_ */
-
-/*
- * End of "$Id: pwg.h 4219 2013-03-11 16:20:41Z msweet $".
- */

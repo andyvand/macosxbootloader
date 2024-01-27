@@ -26,34 +26,18 @@
 
 /*
  * Portions Copyright (c) 2013, Joyent, Inc. All rights reserved.
+ * Portions Copyright (c) 2014, 2016 by Delphix. All rights reserved.
  */
 
 #ifndef	_DTRACE_H
 #define	_DTRACE_H
 
 #if !defined(__APPLE__)
-/*
- * clang does not understand this pragma, and it is included in system headers
- */
-#pragma ident	"@(#)dtrace.h	1.17	07/11/12 SMI"
-#endif
-
-#if !defined(__APPLE__)
 #include <sys/dtrace.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <gelf.h>
-#else /* is Apple Mac OS X */
-
-#if defined(__LP64__)
-#if !defined(_LP64)
-#define _LP64 /* Solaris vs. Darwin */
-#endif
-#else
-#if !defined(_ILP32)
-#define _ILP32 /* Solaris vs. Darwin */
-#endif
-#endif
+#else /* !defined(__APPLE__) */
 
 #include <mach/machine.h>
 #include <sys/dtrace.h>
@@ -61,7 +45,7 @@
 #include <stdio.h>
 
 /*
- * In lieu of gelf.h. 
+ * In lieu of gelf.h.
  * dtrace.h is a publicly exported header.
  * It makes glancing reference to some GElf types.
  * Rather than haul in all the undelying Elf typing machinery, we'll
@@ -98,10 +82,21 @@ typedef struct {
 	GElf_Half	st_shndx;	/* SHN_... */
 	GElf_Addr	st_value;
 	GElf_Xword	st_size;
+#if defined(__arm__) || defined(__arm64__)
 	uint32_t	st_arch_subinfo;/* Needed for arm function info */		
+#endif
 } GElf_Sym;
 
+#include <TargetConditionals.h>
+
+#if TARGET_OS_OSX
+#define DTRACE_TARGET_APPLE_MAC 1
+#elif TARGET_OS_IPHONE
+#define DTRACE_TARGET_APPLE_EMBEDDED 1
+#endif
+
 extern char* demangleSymbolCString(const char*);
+extern char *ctf_type_name(ctf_file_t *, ctf_id_t, char *, size_t);
 
 #endif /* __APPLE__ */
 
@@ -123,6 +118,9 @@ extern "C" {
 #define	DTRACE_VERSION	3		/* library ABI interface version */
 
 struct ps_prochandle;
+typedef struct pstatus pstatus_t;
+typedef struct prsyminfo prsyminfo_t;
+
 typedef struct dtrace_hdl dtrace_hdl_t;
 typedef struct dtrace_prog dtrace_prog_t;
 typedef struct dtrace_vector dtrace_vector_t;
@@ -141,6 +139,7 @@ extern dtrace_hdl_t *dtrace_vopen(int, int, int *,
 extern int dtrace_go(dtrace_hdl_t *);
 extern int dtrace_stop(dtrace_hdl_t *);
 extern void dtrace_sleep(dtrace_hdl_t *);
+extern int dtrace_signal(dtrace_hdl_t *);
 extern void dtrace_close(dtrace_hdl_t *);
 
 extern int dtrace_errno(dtrace_hdl_t *);
@@ -153,7 +152,7 @@ extern int dtrace_getopt(dtrace_hdl_t *, const char *, dtrace_optval_t *);
 
 extern void dtrace_update(dtrace_hdl_t *);
 extern int dtrace_ctlfd(dtrace_hdl_t *);
-
+extern int dtrace_kernel_path(char*, size_t);
 /*
  * DTrace Program Interface
  *
@@ -202,8 +201,10 @@ extern void dtrace_program_info(dtrace_hdl_t *, dtrace_prog_t *,
 #define	DTRACE_D_PROBES	0x02	/* include provider and probe definitions */
 #define	DTRACE_D_MASK	0x03	/* mask of valid flags to dtrace_dof_create */
 
+#if !defined(__APPLE__)
 extern int dtrace_program_link(dtrace_hdl_t *, dtrace_prog_t *,
     uint_t, const char *, int, char *const []);
+#endif /* !defined(__APPLE__) */
 
 extern int dtrace_program_header(dtrace_hdl_t *, FILE *, const char *);
 
@@ -219,6 +220,7 @@ typedef struct dtrace_stmtdesc {
 	dtrace_actdesc_t *dtsd_action_last;	/* last action in action list */
 	void *dtsd_aggdata;			/* aggregation data */
 	void *dtsd_fmtdata;			/* type-specific output data */
+	void *dtsd_strdata;			/* type-specific string data */
 	void (*dtsd_callback)();		/* callback function for EPID */
 	void *dtsd_data;			/* callback data pointer */
 	dtrace_attribute_t dtsd_descattr;	/* probedesc attributes */
@@ -309,6 +311,18 @@ extern int dtrace_system(dtrace_hdl_t *, FILE *, void *,
 extern int dtrace_freopen(dtrace_hdl_t *, FILE *, void *,
     const dtrace_probedata_t *, const dtrace_recdesc_t *, uint_t,
     const void *, size_t);
+
+/*
+ * Type-specific output printing
+ *
+ * The print() action will associate a string data record that is actually the
+ * fully-qualified type name of the data traced by the DIFEXPR action.  This is
+ * stored in the same 'format' record from the kernel, but we know by virtue of
+ * the fact that the action is still DIFEXPR that it is actually a reference to
+ * plain string data.
+ */
+extern int dtrace_print(dtrace_hdl_t *, FILE *, const char *,
+    caddr_t, size_t);
 
 /*
  * DTrace Work Interface
@@ -500,6 +514,10 @@ extern struct ps_prochandle *dtrace_proc_grab(dtrace_hdl_t *, pid_t, int);
 extern struct ps_prochandle *dtrace_proc_waitfor(dtrace_hdl_t *, char const *);
 extern void dtrace_proc_release(dtrace_hdl_t *, struct ps_prochandle *);
 extern void dtrace_proc_continue(dtrace_hdl_t *, struct ps_prochandle *);
+extern int dtrace_proc_state(dtrace_hdl_t *, struct ps_prochandle *);
+extern const pstatus_t* dtrace_proc_status(dtrace_hdl_t *, struct ps_prochandle *);
+extern int dtrace_proc_lookup_by_addr(dtrace_hdl_t *, struct ps_prochandle *,
+    mach_vm_address_t, char *, size_t, GElf_Sym *, prsyminfo_t *);
 
 /*
  * DTrace Object, Symbol, and Type Interfaces
@@ -562,12 +580,15 @@ extern int dtrace_lookup_by_addr(dtrace_hdl_t *dtp,
                                  GElf_Sym *symp,
                                  dtrace_syminfo_t *sip);
 #endif
-        
+
 typedef struct dtrace_typeinfo {
 	const char *dtt_object;			/* object containing type */
 	ctf_file_t *dtt_ctfp;			/* CTF container handle */
 	ctf_id_t dtt_type;			/* CTF type identifier */
+	uint_t dtt_flags;			/* Misc. flags */
 } dtrace_typeinfo_t;
+
+#define	DTT_FL_USER	0x1			/* user type */
 
 extern int dtrace_lookup_by_type(dtrace_hdl_t *, const char *, const char *,
     dtrace_typeinfo_t *);
@@ -652,13 +673,14 @@ extern const char *dtrace_class_name(dtrace_class_t);
 
 extern int dtrace_provider_modules(dtrace_hdl_t *, const char **, int);
 
+extern cpu_type_t dtrace_str2arch(const char*);
+
+extern int _dtrace_disallow_dsym;
 extern const char *const _dtrace_version;
-extern int _dtrace_debug;
-#if defined(__APPLE__)
-extern int _dtrace_scanalzyer;
-extern int _dtrace_mangled;
-#endif /* __APPLE__ */
-	
+
+void* dtrace_ld_create_dof(cpu_type_t cpu, unsigned int, const char*[],
+    unsigned int, const char*[], const char*[], uint64_t[], size_t*);
+
 #ifdef	__cplusplus
 }
 #endif

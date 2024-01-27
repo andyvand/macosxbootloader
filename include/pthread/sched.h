@@ -24,8 +24,8 @@
 #ifndef _SCHED_H_
 #define _SCHED_H_
 
-#include <pthread_impl.h>
 #include <sys/cdefs.h>
+#include <pthread/pthread_impl.h>
 
 __BEGIN_DECLS
 /*
@@ -33,6 +33,8 @@ __BEGIN_DECLS
  */
 #ifndef __POSIX_LIB__
 struct sched_param { int sched_priority;  char __opaque[__SCHED_PARAM_SIZE__]; };
+#else
+struct sched_param;
 #endif
 
 extern int sched_yield(void);

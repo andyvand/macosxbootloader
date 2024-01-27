@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 by Apple Inc.. All rights reserved.
+ * Copyright (c) 2007-2016 by Apple Inc.. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -116,38 +116,60 @@
 
 */
 
-#define __MAC_10_0            1000
-#define __MAC_10_1            1010
-#define __MAC_10_2            1020
-#define __MAC_10_3            1030
-#define __MAC_10_4            1040
-#define __MAC_10_5            1050
-#define __MAC_10_6            1060
-#define __MAC_10_7            1070
-#define __MAC_10_8            1080
-#define __MAC_10_9            1090
-#define __MAC_10_10         101000
-/* __MAC_NA is not defined to a value but is uses as a token by macros to indicate that the API is unavailable */
+/* 
+ * __API_TO_BE_DEPRECATED is used as a version number in API that will be deprecated 
+ * in an upcoming release. This soft deprecation is an intermediate step before formal 
+ * deprecation to notify developers about the API before compiler warnings are generated.
+ * You can find all places in your code that use soft deprecated API by redefining the 
+ * value of this macro to your current minimum deployment target, for example:
+ * (macOS)
+ *   clang -D__API_TO_BE_DEPRECATED=10.12 <other compiler flags>
+ * (iOS)
+ *   clang -D__API_TO_BE_DEPRECATED=11.0 <other compiler flags>
+ */
+ 
+ #ifndef __API_TO_BE_DEPRECATED
+ #define __API_TO_BE_DEPRECATED 100000
+ #endif
+ 
+#ifndef __API_TO_BE_DEPRECATED_MACOS
+#define __API_TO_BE_DEPRECATED_MACOS 100000
+#endif
 
-#define __IPHONE_2_0     20000
-#define __IPHONE_2_1     20100
-#define __IPHONE_2_2     20200
-#define __IPHONE_3_0     30000
-#define __IPHONE_3_1     30100
-#define __IPHONE_3_2     30200
-#define __IPHONE_4_0     40000
-#define __IPHONE_4_1     40100
-#define __IPHONE_4_2     40200
-#define __IPHONE_4_3     40300
-#define __IPHONE_5_0     50000
-#define __IPHONE_5_1     50100
-#define __IPHONE_6_0     60000
-#define __IPHONE_6_1     60100
-#define __IPHONE_7_0     70000
-#define __IPHONE_7_1     70100
-#define __IPHONE_8_0     80000
-/* __IPHONE_NA is not defined to a value but is uses as a token by macros to indicate that the API is unavailable */
+#ifndef __API_TO_BE_DEPRECATED_IOS
+#define __API_TO_BE_DEPRECATED_IOS 100000
+#endif
+#ifndef __API_TO_BE_DEPRECATED_MACCATALYST
+#define __API_TO_BE_DEPRECATED_MACCATALYST 100000
+#endif
 
+#ifndef __API_TO_BE_DEPRECATED_WATCHOS
+#define __API_TO_BE_DEPRECATED_WATCHOS 100000
+#endif
+
+#ifndef __API_TO_BE_DEPRECATED_TVOS
+#define __API_TO_BE_DEPRECATED_TVOS 100000
+#endif
+
+#ifndef __API_TO_BE_DEPRECATED_BRIDGEOS
+
+#endif
+
+#ifndef __API_TO_BE_DEPRECATED_DRIVERKIT
+#define __API_TO_BE_DEPRECATED_DRIVERKIT 100000
+#endif
+
+#ifndef __API_TO_BE_DEPRECATED_VISIONOS
+#define __API_TO_BE_DEPRECATED_VISIONOS 100000
+#endif
+
+
+
+#ifndef __OPEN_SOURCE__
+
+#endif /* __OPEN_SOURCE__ */
+
+#include <AvailabilityVersions.h>
 #include <AvailabilityInternal.h>
 
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
@@ -158,11 +180,48 @@
                                                     __AVAILABILITY_INTERNAL##_iosIntro##_DEP##_iosDep##_MSG(_msg)
 
 #elif defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
-    #define __OSX_AVAILABLE_STARTING(_osx, _ios) __AVAILABILITY_INTERNAL##_osx
-    #define __OSX_AVAILABLE_BUT_DEPRECATED(_osxIntro, _osxDep, _iosIntro, _iosDep) \
-                                                    __AVAILABILITY_INTERNAL##_osxIntro##_DEP##_osxDep
-    #define __OSX_AVAILABLE_BUT_DEPRECATED_MSG(_osxIntro, _osxDep, _iosIntro, _iosDep, _msg) \
-                                                    __AVAILABILITY_INTERNAL##_osxIntro##_DEP##_osxDep##_MSG(_msg)
+
+   #if defined(__has_builtin)
+    #if __has_builtin(__is_target_arch)
+     #if __has_builtin(__is_target_vendor)
+      #if __has_builtin(__is_target_os)
+       #if __has_builtin(__is_target_environment)
+        #if __has_builtin(__is_target_variant_os)
+         #if __has_builtin(__is_target_variant_environment)
+          #if (__is_target_arch(x86_64) && __is_target_vendor(apple) && ((__is_target_os(ios) && __is_target_environment(macabi)) || (__is_target_variant_os(ios) && __is_target_variant_environment(macabi))))
+            #define __OSX_AVAILABLE_STARTING(_osx, _ios) __AVAILABILITY_INTERNAL##_osx __AVAILABILITY_INTERNAL##_ios
+            #define __OSX_AVAILABLE_BUT_DEPRECATED(_osxIntro, _osxDep, _iosIntro, _iosDep) \
+                                                            __AVAILABILITY_INTERNAL##_osxIntro##_DEP##_osxDep __AVAILABILITY_INTERNAL##_iosIntro##_DEP##_iosDep
+            #define __OSX_AVAILABLE_BUT_DEPRECATED_MSG(_osxIntro, _osxDep, _iosIntro, _iosDep, _msg) \
+                                                            __AVAILABILITY_INTERNAL##_osxIntro##_DEP##_osxDep##_MSG(_msg) __AVAILABILITY_INTERNAL##_iosIntro##_DEP##_iosDep##_MSG(_msg)
+          #endif /* # if __is_target_arch... */
+         #endif /* #if __has_builtin(__is_target_variant_environment) */
+        #endif /* #if __has_builtin(__is_target_variant_os) */
+       #endif /* #if __has_builtin(__is_target_environment) */
+      #endif /* #if __has_builtin(__is_target_os) */
+     #endif /* #if __has_builtin(__is_target_vendor) */
+    #endif /* #if __has_builtin(__is_target_arch) */
+   #endif /* #if defined(__has_builtin) */
+
+    #ifndef __OSX_AVAILABLE_STARTING
+      #if defined(__has_attribute) && defined(__has_feature)
+          #if __has_attribute(availability)      
+        #define __OSX_AVAILABLE_STARTING(_osx, _ios) __AVAILABILITY_INTERNAL##_osx
+        #define __OSX_AVAILABLE_BUT_DEPRECATED(_osxIntro, _osxDep, _iosIntro, _iosDep) \
+                                                        __AVAILABILITY_INTERNAL##_osxIntro##_DEP##_osxDep
+        #define __OSX_AVAILABLE_BUT_DEPRECATED_MSG(_osxIntro, _osxDep, _iosIntro, _iosDep, _msg) \
+                                                        __AVAILABILITY_INTERNAL##_osxIntro##_DEP##_osxDep##_MSG(_msg)
+        #else
+        #define __OSX_AVAILABLE_STARTING(_osx, _ios)
+        #define __OSX_AVAILABLE_BUT_DEPRECATED(_osxIntro, _osxDep, _iosIntro, _iosDep)
+        #define __OSX_AVAILABLE_BUT_DEPRECATED_MSG(_osxIntro, _osxDep, _iosIntro, _iosDep, _msg)
+        #endif
+      #else
+      #define __OSX_AVAILABLE_STARTING(_osx, _ios)
+      #define __OSX_AVAILABLE_BUT_DEPRECATED(_osxIntro, _osxDep, _iosIntro, _iosDep)
+      #define __OSX_AVAILABLE_BUT_DEPRECATED_MSG(_osxIntro, _osxDep, _iosIntro, _iosDep, _msg)
+    #endif
+#endif /* __OSX_AVAILABLE_STARTING */
 
 #else
     #define __OSX_AVAILABLE_STARTING(_osx, _ios)
@@ -175,6 +234,9 @@
   #if __has_feature(attribute_availability_with_message)
     #define __OS_AVAILABILITY(_target, _availability)            __attribute__((availability(_target,_availability)))
     #define __OS_AVAILABILITY_MSG(_target, _availability, _msg)  __attribute__((availability(_target,_availability,message=_msg)))
+  #elif __has_feature(attribute_availability)
+    #define __OS_AVAILABILITY(_target, _availability)            __attribute__((availability(_target,_availability)))
+    #define __OS_AVAILABILITY_MSG(_target, _availability, _msg)  __attribute__((availability(_target,_availability)))
   #else
     #define __OS_AVAILABILITY(_target, _availability)
     #define __OS_AVAILABILITY_MSG(_target, _availability, _msg)
@@ -203,4 +265,277 @@
 
 
 
+/* for use marking APIs available info for Mac OSX */
+#if defined(__has_attribute)
+  #if __has_attribute(availability)
+    #define __OSX_UNAVAILABLE                    __OS_AVAILABILITY(macosx,unavailable)
+    #define __OSX_AVAILABLE(_vers)               __OS_AVAILABILITY(macosx,introduced=_vers)
+    #define __OSX_DEPRECATED(_start, _dep, _msg) __OSX_AVAILABLE(_start) __OS_AVAILABILITY_MSG(macosx,deprecated=_dep,_msg)
+  #endif
+#endif
+
+#ifndef __OSX_UNAVAILABLE
+  #define __OSX_UNAVAILABLE
+#endif
+
+#ifndef __OSX_AVAILABLE
+  #define __OSX_AVAILABLE(_vers)
+#endif
+
+#ifndef __OSX_DEPRECATED
+  #define __OSX_DEPRECATED(_start, _dep, _msg)
+#endif
+
+
+#if __has_include(<AvailabilityProhibitedInternal.h>)
+  #include <AvailabilityProhibitedInternal.h>
+#endif
+
+/* for use marking APIs available info for iOS */
+#if defined(__has_attribute)
+  #if __has_attribute(availability)
+    #define __IOS_UNAVAILABLE                    __OS_AVAILABILITY(ios,unavailable)
+    #ifndef __IOS_PROHIBITED
+      #define __IOS_PROHIBITED                     __OS_AVAILABILITY(ios,unavailable)
+    #endif
+    #define __IOS_AVAILABLE(_vers)               __OS_AVAILABILITY(ios,introduced=_vers)
+    #define __IOS_DEPRECATED(_start, _dep, _msg) __IOS_AVAILABLE(_start) __OS_AVAILABILITY_MSG(ios,deprecated=_dep,_msg)
+  #endif
+#endif
+
+#ifndef __IOS_UNAVAILABLE
+  #define __IOS_UNAVAILABLE
+#endif
+
+#ifndef __IOS_PROHIBITED
+  #define __IOS_PROHIBITED
+#endif
+
+#ifndef __IOS_AVAILABLE
+  #define __IOS_AVAILABLE(_vers)
+#endif
+
+#ifndef __IOS_DEPRECATED
+  #define __IOS_DEPRECATED(_start, _dep, _msg)
+#endif
+
+
+/* for use marking APIs available info for tvOS */
+#if defined(__has_feature)
+  #if __has_feature(attribute_availability_tvos)
+    #define __TVOS_UNAVAILABLE                    __OS_AVAILABILITY(tvos,unavailable)
+    #ifndef __TVOS_PROHIBITED
+      #define __TVOS_PROHIBITED                     __OS_AVAILABILITY(tvos,unavailable)
+    #endif
+    #define __TVOS_AVAILABLE(_vers)               __OS_AVAILABILITY(tvos,introduced=_vers)
+    #define __TVOS_DEPRECATED(_start, _dep, _msg) __TVOS_AVAILABLE(_start) __OS_AVAILABILITY_MSG(tvos,deprecated=_dep,_msg)
+  #endif
+#endif
+
+#ifndef __TVOS_UNAVAILABLE
+  #define __TVOS_UNAVAILABLE
+#endif
+
+#ifndef __TVOS_PROHIBITED
+  #define __TVOS_PROHIBITED
+#endif
+
+#ifndef __TVOS_AVAILABLE
+  #define __TVOS_AVAILABLE(_vers)
+#endif
+
+#ifndef __TVOS_DEPRECATED
+  #define __TVOS_DEPRECATED(_start, _dep, _msg)
+#endif
+
+
+/* for use marking APIs available info for Watch OS */
+#if defined(__has_feature)
+  #if __has_feature(attribute_availability_watchos)
+    #define __WATCHOS_UNAVAILABLE                    __OS_AVAILABILITY(watchos,unavailable)
+    #ifndef __WATCHOS_PROHIBITED
+      #define __WATCHOS_PROHIBITED                     __OS_AVAILABILITY(watchos,unavailable)
+    #endif
+    #define __WATCHOS_AVAILABLE(_vers)               __OS_AVAILABILITY(watchos,introduced=_vers)
+    #define __WATCHOS_DEPRECATED(_start, _dep, _msg) __WATCHOS_AVAILABLE(_start) __OS_AVAILABILITY_MSG(watchos,deprecated=_dep,_msg)
+  #endif
+#endif
+
+#ifndef __WATCHOS_UNAVAILABLE
+  #define __WATCHOS_UNAVAILABLE
+#endif
+
+#ifndef __WATCHOS_PROHIBITED
+  #define __WATCHOS_PROHIBITED
+#endif
+
+#ifndef __WATCHOS_AVAILABLE
+  #define __WATCHOS_AVAILABLE(_vers)
+#endif
+
+#ifndef __WATCHOS_DEPRECATED
+  #define __WATCHOS_DEPRECATED(_start, _dep, _msg)
+#endif
+
+/* for use marking APIs unavailable for swift */
+#if defined(__has_feature)
+  #if __has_feature(attribute_availability_swift)
+    #define __SWIFT_UNAVAILABLE                   __OS_AVAILABILITY(swift,unavailable)
+    #define __SWIFT_UNAVAILABLE_MSG(_msg)         __OS_AVAILABILITY_MSG(swift,unavailable,_msg)
+  #endif
+#endif
+
+#ifndef __SWIFT_UNAVAILABLE
+  #define __SWIFT_UNAVAILABLE
+#endif
+
+#ifndef __SWIFT_UNAVAILABLE_MSG
+  #define __SWIFT_UNAVAILABLE_MSG(_msg)
+#endif
+
+/*
+ Macros for defining which versions/platform a given symbol can be used.
+ 
+ @see http://clang.llvm.org/docs/AttributeReference.html#availability
+ 
+ * Note that these macros are only compatible with clang compilers that
+ * support the following target selection options:
+ *
+ * -mmacosx-version-min
+ * -miphoneos-version-min
+ * -mwatchos-version-min
+ * -mtvos-version-min
+ */
+
+#if defined(__has_feature) && defined(__has_attribute)
+ #if __has_attribute(availability)
+
+    /*
+     * API Introductions
+     *
+     * Use to specify the release that a particular API became available.
+     *
+     * Platform names:
+     *   macos, ios, tvos, watchos
+     *
+     * Examples:
+     *    __API_AVAILABLE(macos(10.10))
+     *    __API_AVAILABLE(macos(10.9), ios(10.0))
+     *    __API_AVAILABLE(macos(10.4), ios(8.0), watchos(2.0), tvos(10.0))
+     *    __API_AVAILABLE(driverkit(19.0))
+     */
+    #define __API_AVAILABLE(...) __API_AVAILABLE_GET_MACRO(__VA_ARGS__,__API_AVAILABLE7,__API_AVAILABLE6,__API_AVAILABLE5,__API_AVAILABLE4,__API_AVAILABLE3,__API_AVAILABLE2,__API_AVAILABLE1,__API_AVAILABLE0,0)(__VA_ARGS__)
+
+    #define __API_AVAILABLE_BEGIN(...) _Pragma("clang attribute push") __API_AVAILABLE_BEGIN_GET_MACRO(__VA_ARGS__,__API_AVAILABLE_BEGIN7,__API_AVAILABLE_BEGIN6,__API_AVAILABLE_BEGIN5,__API_AVAILABLE_BEGIN4,__API_AVAILABLE_BEGIN3,__API_AVAILABLE_BEGIN2,__API_AVAILABLE_BEGIN1,__API_AVAILABLE_BEGIN0,0)(__VA_ARGS__)
+    #define __API_AVAILABLE_END _Pragma("clang attribute pop")
+
+    /*
+     * API Deprecations
+     *
+     * Use to specify the release that a particular API became unavailable.
+     *
+     * Platform names:
+     *   macos, ios, tvos, watchos
+     *
+     * Examples:
+     *
+     *    __API_DEPRECATED("No longer supported", macos(10.4, 10.8))
+     *    __API_DEPRECATED("No longer supported", macos(10.4, 10.8), ios(2.0, 3.0), watchos(2.0, 3.0), tvos(9.0, 10.0))
+     *
+     *    __API_DEPRECATED_WITH_REPLACEMENT("-setName:", tvos(10.0, 10.4), ios(9.0, 10.0))
+     *    __API_DEPRECATED_WITH_REPLACEMENT("SomeClassName", macos(10.4, 10.6), watchos(2.0, 3.0))
+     */
+    #define __API_DEPRECATED(...) __API_DEPRECATED_MSG_GET_MACRO(__VA_ARGS__,__API_DEPRECATED_MSG7,__API_DEPRECATED_MSG6,__API_DEPRECATED_MSG5,__API_DEPRECATED_MSG4,__API_DEPRECATED_MSG3,__API_DEPRECATED_MSG2,__API_DEPRECATED_MSG1,__API_DEPRECATED_MSG0,0,0)(__VA_ARGS__)
+    #define __API_DEPRECATED_WITH_REPLACEMENT(...) __API_DEPRECATED_REP_GET_MACRO(__VA_ARGS__,__API_DEPRECATED_REP7,__API_DEPRECATED_REP6,__API_DEPRECATED_REP5,__API_DEPRECATED_REP4,__API_DEPRECATED_REP3,__API_DEPRECATED_REP2,__API_DEPRECATED_REP1,__API_DEPRECATED_REP0,0,0)(__VA_ARGS__)
+
+    #define __API_DEPRECATED_BEGIN(...) _Pragma("clang attribute push") __API_DEPRECATED_BEGIN_GET_MACRO(__VA_ARGS__,__API_DEPRECATED_BEGIN7,__API_DEPRECATED_BEGIN6,__API_DEPRECATED_BEGIN5,__API_DEPRECATED_BEGIN4,__API_DEPRECATED_BEGIN3,__API_DEPRECATED_BEGIN2,__API_DEPRECATED_BEGIN1,__API_DEPRECATED_BEGIN0,0,0)(__VA_ARGS__)
+    #define __API_DEPRECATED_END _Pragma("clang attribute pop")
+
+    #define __API_DEPRECATED_WITH_REPLACEMENT_BEGIN(...) _Pragma("clang attribute push") __API_DEPRECATED_WITH_REPLACEMENT_BEGIN_GET_MACRO(__VA_ARGS__,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN7,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN6,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN5,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN4,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN3,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN2,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN1,__API_DEPRECATED_WITH_REPLACEMENT_BEGIN0,0,0)(__VA_ARGS__)
+    #define __API_DEPRECATED_WITH_REPLACEMENT_END _Pragma("clang attribute pop")
+
+    /*
+     * API Unavailability
+     * Use to specify that an API is unavailable for a particular platform.
+     *
+     * Example:
+     *    __API_UNAVAILABLE(macos)
+     *    __API_UNAVAILABLE(watchos, tvos)
+     */
+    #define __API_UNAVAILABLE(...) __API_UNAVAILABLE_GET_MACRO(__VA_ARGS__,__API_UNAVAILABLE7,__API_UNAVAILABLE6,__API_UNAVAILABLE5,__API_UNAVAILABLE4,__API_UNAVAILABLE3,__API_UNAVAILABLE2,__API_UNAVAILABLE1,__API_UNAVAILABLE0,0)(__VA_ARGS__)
+  
+    #define __API_UNAVAILABLE_BEGIN(...) _Pragma("clang attribute push") __API_UNAVAILABLE_BEGIN_GET_MACRO(__VA_ARGS__,__API_UNAVAILABLE_BEGIN7,__API_UNAVAILABLE_BEGIN6,__API_UNAVAILABLE_BEGIN5,__API_UNAVAILABLE_BEGIN4,__API_UNAVAILABLE_BEGIN3,__API_UNAVAILABLE_BEGIN2,__API_UNAVAILABLE_BEGIN1,__API_UNAVAILABLE_BEGIN0,0)(__VA_ARGS__)
+    #define __API_UNAVAILABLE_END _Pragma("clang attribute pop")
+ #endif /* __has_attribute(availability) */
+#endif /*  #if defined(__has_feature) && defined(__has_attribute) */
+
+/* 
+ * Evaluate to nothing for compilers that don't support availability.
+ */
+
+#ifndef __API_AVAILABLE
+  #define __API_AVAILABLE(...)
+#endif
+
+#ifndef __API_AVAILABLE_BEGIN
+  #define __API_AVAILABLE_BEGIN(...)
+#endif
+
+#ifndef __API_AVAILABLE_END
+  #define __API_AVAILABLE_END(...)
+#endif
+
+#ifndef __API_DEPRECATED
+  #define __API_DEPRECATED(...)
+#endif
+
+#ifndef __API_DEPRECATED_BEGIN
+  #define __API_DEPRECATED_BEGIN(...)
+#endif
+
+#ifndef __API_DEPRECATED_END
+  #define __API_DEPRECATED_END(...)
+#endif
+
+#ifndef __API_DEPRECATED_WITH_REPLACEMENT
+  #define __API_DEPRECATED_WITH_REPLACEMENT(...)
+#endif
+
+#ifndef __API_DEPRECATED_WITH_REPLACEMENT_BEGIN
+  #define __API_DEPRECATED_WITH_REPLACEMENT_BEGIN(...)
+#endif
+
+#ifndef __API_DEPRECATED_WITH_REPLACEMENT_END
+  #define __API_DEPRECATED_WITH_REPLACEMENT_END(...)
+#endif
+
+#ifndef __API_UNAVAILABLE
+  #define __API_UNAVAILABLE(...)
+#endif
+
+#ifndef __API_UNAVAILABLE_BEGIN
+  #define __API_UNAVAILABLE_BEGIN(...)
+#endif
+
+#ifndef __API_UNAVAILABLE_END
+  #define __API_UNAVAILABLE_END(...)
+#endif
+
+/*
+ * If SPI decorations have not been defined elsewhere, disable them.
+ */
+
+#ifndef __SPI_AVAILABLE
+  #define __SPI_AVAILABLE(...)
+#endif
+
+#ifndef __SPI_DEPRECATED
+  #define __SPI_DEPRECATED(...)
+#endif
+
+#ifndef __SPI_DEPRECATED_WITH_REPLACEMENT
+  #define __SPI_DEPRECATED_WITH_REPLACEMENT(...)
+#endif
+
 #endif /* __AVAILABILITY__ */
+

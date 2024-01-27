@@ -7,17 +7,11 @@
 
 #pragma once
 
-#ifndef _BOOTARGS_H_
-#define _BOOTARGS_H_
-
 //
 // video
 //
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
-#define PACKGNU
-#else
-#define PACKGNU __attribute__((packed))
 #endif
 
 typedef struct _BOOT_VIDEO
@@ -51,7 +45,7 @@ typedef struct _BOOT_VIDEO
 	// color depth
 	//
 	UINT32																	ColorDepth;
-} PACKGNU BOOT_VIDEO;
+}BOOT_VIDEO;
 
 //
 // boot arg
@@ -244,14 +238,14 @@ typedef struct _BOOT_ARGS
 	//
 	UINT32																	Reserved4[726];
 #else // #if (TARGET_OS == EL_CAPITAN)
-  	//
-  	// padding
-  	//
+	//
+	// padding
+	//
 	UINT32																	Reserved4[730];
 #endif // #if (TARGET_OS == EL_CAPITAN)
-} PACKGNU BOOT_ARGS;
+}BOOT_ARGS;
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -281,5 +275,3 @@ EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs);
 // Mimic boot.efi and set boot.efi info properties.
 //
 EFI_STATUS BlAddBooterInfo(DEVICE_TREE_NODE* chosenNode);
-
-#endif

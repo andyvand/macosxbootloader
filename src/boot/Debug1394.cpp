@@ -44,7 +44,7 @@
 //	yes,it is POLL mode,not INTERRUPT mode
 //
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
 #endif
 
@@ -80,7 +80,7 @@ typedef union _DBG1394_SEND_BUFFER
 	// padding to page size
 	//
 	UINT8																	Padding[EFI_PAGE_SIZE];
-} GNUPACK DBG1394_SEND_BUFFER;
+}DBG1394_SEND_BUFFER;
 
 //
 // receive buffer
@@ -114,7 +114,7 @@ typedef union _DBG1394_RECEIVE_BUFFER
 	// padding to page size
 	//
 	UINT8																	Padding[EFI_PAGE_SIZE];
-} GNUPACK DBG1394_RECEIVE_BUFFER;
+}DBG1394_RECEIVE_BUFFER;
 
 //
 // config info,shared between debuggee and debugger
@@ -155,7 +155,7 @@ typedef struct _DBG1394_DEBUG_CONFIG_INFO
 	// receive buffer physical address
 	//
 	UINT64																	ReceiveBuffer;
-} GNUPACK DBG1394_DEBUG_CONFIG_INFO;
+}DBG1394_DEBUG_CONFIG_INFO;
 
 typedef struct _SAVED_INFO
 {
@@ -202,7 +202,7 @@ typedef union _IEEE1394_CONFIG_ROM_INFO
 	// whole UINT32
 	//
 	UINT32																	AsULong;
-} GNUPACK IEEE1394_CONFIG_ROM_INFO;
+}IEEE1394_CONFIG_ROM_INFO;
 
 //
 // config rom
@@ -263,7 +263,7 @@ typedef struct _DBG1394_DEBUG_CONFIG_ROM
 	// padding
 	//
 	UINT8																	Padding[212];
-} GNUPACK DBG1394_DEBUG_CONFIG_ROM;
+}DBG1394_DEBUG_CONFIG_ROM;
 
 //
 // debugger data,must be page algined
@@ -289,9 +289,9 @@ typedef struct _DBG1394_GLOBAL_DATA
 	// debug info
 	//
 	DBG1394_DEBUG_CONFIG_INFO												DebugConfigInfo;
-} GNUPACK DBG1394_GLOBAL_DATA;
+}DBG1394_GLOBAL_DATA;
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -498,11 +498,7 @@ STATIC BOOLEAN Bd1394pInitializeController(UINT32 channel)
 	//
 	// set singnatuer
 	//
-#if defined (__ppc__) || defined(__ppc64__)
-	Bd1394pGlobalData->DebugConfigRom.Singnature                                                    = 0x31333934;
-#else
-	Bd1394pGlobalData->DebugConfigRom.Singnature							= 0x34393331;
-#endif
+	Bd1394pGlobalData->DebugConfigRom.Singnature							= '1394';
 
 	//
 	// set bus options
@@ -1001,18 +997,31 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		if(!loaderOptions || !loaderOptions[0])
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// get channel
 		//
 		UINT32 channel														= 12;
 		CHAR8 CONST* channleParam											= strstr(loaderOptions, CHAR8_CONST_STRING("/channel="));
-		if(!channleParam)
-			try_leave(status = EFI_INVALID_PARAMETER);
+        if(!channleParam) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_INVALID_PARAMETER);
+#else
+            status = EFI_INVALID_PARAMETER;
+            return status;
+#endif
+        }
+
 		channel																= static_cast<UINT32>(atoi(channleParam + 9));
 
 		//
@@ -1026,7 +1035,11 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		// connect all
 		//
 		if(strstr(loaderOptions, CHAR8_CONST_STRING("/connectall")) && EFI_ERROR(status = BlConnectAllController()))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// parse location
@@ -1044,12 +1057,16 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		EFI_HANDLE controllerHandle											= nullptr;
 
 		if(EFI_ERROR(status = BlFindPciDevice(segment, bus, device, func, PCI_CLASS_SERIAL, PCI_CLASS_SERIAL_FIREWIRE, 0x10, &pciIoProtocol, &controllerHandle)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// disconnect from efi
 		//
-		EFI_GUID firewireProtocolGuid										= {0x67708aa8, 0x2079, 0x4e4f, { 0xb1, 0x58, 0xb1, 0x5b, 0x1f, 0x6a, 0x6c, 0x92 } };
+		EFI_GUID firewireProtocolGuid										= {0x67708aa8, 0x2079, 0x4e4f, {0xb1, 0x58, 0xb1, 0x5b, 0x1f, 0x6a, 0x6c, 0x92}};
 		VOID* protocol														= nullptr;
 		status																= EfiBootServices->HandleProtocol(controllerHandle, &firewireProtocolGuid, &protocol);
 		CsPrintf(CHAR8_CONST_STRING("handle protocol %08x, %08x\n"), status, protocol);
@@ -1064,33 +1081,58 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		UINT64 barLength													= 0;
 		BOOLEAN isMemorySpace												= FALSE;
 		if(EFI_ERROR(status = BlGetPciBarAttribute(pciIoProtocol, 0, &phyAddress, &barLength, &isMemorySpace)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// check bar length
 		//
 		if(barLength < 0x800 || !isMemorySpace)
+#if defined(_MSC_VER)
 			try_leave(status = EFI_NOT_FOUND);
+#else
+            return -1;
+#endif
 
 		//
 		// start device
 		//
 		if(EFI_ERROR(status = BlStartPciDevice(pciIoProtocol, FALSE, TRUE, TRUE)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// 4GB check
 		//
-		if(phyAddress >= 4 * 1024 * 1024 * 1024ULL)
-			try_leave(status = EFI_NOT_FOUND);
+        if(phyAddress >= 4 * 1024 * 1024 * 1024ULL) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_NOT_FOUND);
+#else
+            status = EFI_NOT_FOUND;
+            return status;
+#endif
+        }
 
 		//
 		// allocate physical page
 		//
 		Bd1394pControllerRegisterBase										= ArchConvertAddressToPointer(phyAddress, VOID*);
 		Bd1394pDataPhysicalAddress											= 1 * 1024 * 1024 - 1;
-		if(!MmAllocatePages(AllocateMaxAddress, EfiReservedMemoryType, EFI_SIZE_TO_PAGES(sizeof(DBG1394_GLOBAL_DATA)), &Bd1394pDataPhysicalAddress))
-			try_leave(Bd1394pDataPhysicalAddress = 0;status = EFI_OUT_OF_RESOURCES);
+        if(!MmAllocatePages(AllocateMaxAddress, EfiReservedMemoryType, EFI_SIZE_TO_PAGES(sizeof(DBG1394_GLOBAL_DATA)), &Bd1394pDataPhysicalAddress)) {
+#if defined(_MSC_VER)
+            try_leave(Bd1394pDataPhysicalAddress = 0;status = EFI_OUT_OF_RESOURCES);
+#else
+            Bd1394pDataPhysicalAddress = 0;
+            status = EFI_OUT_OF_RESOURCES;
+            return status;
+#endif
+        }
 
 		//
 		// zero it out
@@ -1101,17 +1143,25 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		//
 		// initialize controller
 		//
-		if(!Bd1394pInitializeController(channel))
-			try_leave(status = EFI_DEVICE_ERROR);
+        if(!Bd1394pInitializeController(channel)) {
+#if defined(_MSC_VER)
+            try_leave(status = EFI_DEVICE_ERROR);
+#else
+            status = EFI_DEVICE_ERROR;
+            return status;
+#endif
+        }
 
 		//
 		// set next packet id
 		//
 		BdNextPacketIdToSend												= 0;
 		status																= EFI_SUCCESS;
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		//
 		// clean up
 		//
@@ -1127,7 +1177,9 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 			Bd1394pDataPhysicalAddress										= 0;
 			Bd1394pControllerRegisterBase									= nullptr;
 		}
+#if defined(_MSC_VER)
 	}
+#endif
 	return status;
 }
 

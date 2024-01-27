@@ -5,8 +5,6 @@
 //	purpose:	debugger routine
 //********************************************************************
 
-#include "stdafx.h"
-
 #include "../stdafx.h"
 #include "../BootDebuggerPrivate.h"
 
@@ -34,7 +32,7 @@ VOID __declspec(naked) BOOTAPI DbgBreakPoint()
 //
 // debug service
 //
-VOID __declspec(naked) BOOTAPI DbgService(UINTN serviceType, UINTN info1, UINTN info2, UINTN info3, UINTN info4)
+extern "C" VOID __declspec(naked) BOOTAPI DbgService(UINTN serviceType, UINTN info1, UINTN info2, UINTN info3, UINTN info4)
 {
 #ifdef _MSC_VER
 	__asm
@@ -78,7 +76,7 @@ VOID __declspec(naked) BOOTAPI DbgService(UINTN serviceType, UINTN info1, UINTN 
 //
 // debug service
 //
-VOID __declspec(naked) BOOTAPI DbgService(VOID* info1, VOID* info2, UINTN serviceType)
+extern "C" VOID __declspec(naked) BOOTAPI DbgService2(VOID* info1, VOID* info2, UINTN serviceType)
 {
 #ifdef _MSC_VER
 	__asm

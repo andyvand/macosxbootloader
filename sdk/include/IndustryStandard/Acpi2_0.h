@@ -30,13 +30,7 @@ Abstract:
 //
 // Ensure proper structure formats
 //
-#ifdef _MSC_VER
 #pragma pack(1)
-#define GNUPACK
-#else
-#define GNUPACK __attribute__((packed))
-#endif
-
 //
 // ACPI Specification Revision
 //
@@ -51,7 +45,7 @@ typedef struct {
   UINT8   RegisterBitOffset;
   UINT8   Reserved;
   UINT64  Address;
-} GNUPACK EFI_ACPI_2_0_GENERIC_ADDRESS_STRUCTURE;
+} EFI_ACPI_2_0_GENERIC_ADDRESS_STRUCTURE;
 
 //
 // Generic Address Space Address IDs
@@ -79,7 +73,7 @@ typedef struct {
   UINT64  XsdtAddress;
   UINT8   ExtendedChecksum;
   UINT8   Reserved[3];
-} GNUPACK EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER;
+} EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER;
 
 //
 // RSD_PTR Revision (as defined in ACPI 2.0 spec.)
@@ -171,7 +165,7 @@ typedef struct {
   EFI_ACPI_2_0_GENERIC_ADDRESS_STRUCTURE  XPmTmrBlk;
   EFI_ACPI_2_0_GENERIC_ADDRESS_STRUCTURE  XGpe0Blk;
   EFI_ACPI_2_0_GENERIC_ADDRESS_STRUCTURE  XGpe1Blk;
-} GNUPACK EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE;
+} EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE;
 
 //
 // FADT Version (as defined in ACPI 2.0 spec.)
@@ -217,7 +211,7 @@ typedef struct {
   UINT64  XFirmwareWakingVector;
   UINT8   Version;
   UINT8   Reserved[31];
-} GNUPACK EFI_ACPI_2_0_FIRMWARE_ACPI_CONTROL_STRUCTURE;
+} EFI_ACPI_2_0_FIRMWARE_ACPI_CONTROL_STRUCTURE;
 
 //
 // FACS Version (as defined in ACPI 2.0 spec.)
@@ -238,7 +232,7 @@ typedef struct {
   EFI_ACPI_DESCRIPTION_HEADER Header;
   UINT32                      LocalApicAddress;
   UINT32                      Flags;
-} GNUPACK EFI_ACPI_2_0_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER;
+} EFI_ACPI_2_0_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER;
 
 //
 // MADT Revision (as defined in ACPI 2.0 spec.)
@@ -278,7 +272,7 @@ typedef struct {
   UINT8   AcpiProcessorId;
   UINT8   ApicId;
   UINT32  Flags;
-} GNUPACK EFI_ACPI_2_0_PROCESSOR_LOCAL_APIC_STRUCTURE;
+} EFI_ACPI_2_0_PROCESSOR_LOCAL_APIC_STRUCTURE;
 
 //
 // Local APIC Flags.  All other bits are reserved and must be 0.
@@ -295,7 +289,7 @@ typedef struct {
   UINT8   Reserved;
   UINT32  IoApicAddress;
   UINT32  GlobalSystemInterruptBase;
-} GNUPACK EFI_ACPI_2_0_IO_APIC_STRUCTURE;
+} EFI_ACPI_2_0_IO_APIC_STRUCTURE;
 
 //
 // Interrupt Source Override Structure
@@ -307,7 +301,7 @@ typedef struct {
   UINT8   Source;
   UINT32  GlobalSystemInterrupt;
   UINT16  Flags;
-} GNUPACK EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE;
+} EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE;
 
 //
 // Non-Maskable Interrupt Source Structure
@@ -317,7 +311,7 @@ typedef struct {
   UINT8   Length;
   UINT16  Flags;
   UINT32  GlobalSystemInterrupt;
-} GNUPACK EFI_ACPI_2_0_NON_MASKABLE_INTERRUPT_SOURCE_STRUCTURE;
+} EFI_ACPI_2_0_NON_MASKABLE_INTERRUPT_SOURCE_STRUCTURE;
 
 //
 // Local APIC NMI Structure
@@ -328,7 +322,7 @@ typedef struct {
   UINT8   AcpiProcessorId;
   UINT16  Flags;
   UINT8   LocalApicLint;
-} GNUPACK EFI_ACPI_2_0_LOCAL_APIC_NMI_STRUCTURE;
+} EFI_ACPI_2_0_LOCAL_APIC_NMI_STRUCTURE;
 
 //
 // Local APIC Address Override Structure
@@ -338,7 +332,7 @@ typedef struct {
   UINT8   Length;
   UINT16  Reserved;
   UINT64  LocalApicAddress;
-} GNUPACK EFI_ACPI_2_0_LOCAL_APIC_ADDRESS_OVERRIDE_STRUCTURE;
+} EFI_ACPI_2_0_LOCAL_APIC_ADDRESS_OVERRIDE_STRUCTURE;
 
 //
 // IO SAPIC Structure
@@ -350,7 +344,7 @@ typedef struct {
   UINT8   Reserved;
   UINT32  GlobalSystemInterruptBase;
   UINT64  IoSapicAddress;
-} GNUPACK EFI_ACPI_2_0_IO_SAPIC_STRUCTURE;
+} EFI_ACPI_2_0_IO_SAPIC_STRUCTURE;
 
 //
 // Local SAPIC Structure
@@ -363,7 +357,7 @@ typedef struct {
   UINT8   LocalSapicEid;
   UINT8   Reserved[3];
   UINT32  Flags;
-} GNUPACK EFI_ACPI_2_0_PROCESSOR_LOCAL_SAPIC_STRUCTURE;
+} EFI_ACPI_2_0_PROCESSOR_LOCAL_SAPIC_STRUCTURE;
 
 //
 // Platform Interrupt Sources Structure
@@ -378,7 +372,7 @@ typedef struct {
   UINT8   IoSapicVector;
   UINT32  GlobalSystemInterrupt;
   UINT32  Reserved;
-} GNUPACK EFI_ACPI_2_0_PLATFORM_INTERRUPT_SOURCES_STRUCTURE;
+} EFI_ACPI_2_0_PLATFORM_INTERRUPT_SOURCES_STRUCTURE;
 
 //
 // Smart Battery Description Table (SBST)
@@ -388,7 +382,7 @@ typedef struct {
   UINT32                      WarningEnergyLevel;
   UINT32                      LowEnergyLevel;
   UINT32                      CriticalEnergyLevel;
-} GNUPACK EFI_ACPI_2_0_SMART_BATTERY_DESCRIPTION_TABLE;
+} EFI_ACPI_2_0_SMART_BATTERY_DESCRIPTION_TABLE;
 
 //
 // SBST Version (as defined in ACPI 2.0 spec.)
@@ -406,7 +400,7 @@ typedef struct {
   EFI_ACPI_2_0_GENERIC_ADDRESS_STRUCTURE  EcData;
   UINT32                                  Uid;
   UINT8                                   GpeBit;
-} GNUPACK EFI_ACPI_2_0_EMBEDDED_CONTROLLER_BOOT_RESOURCES_TABLE;
+} EFI_ACPI_2_0_EMBEDDED_CONTROLLER_BOOT_RESOURCES_TABLE;
 
 //
 // ECDT Version (as defined in ACPI 2.0 spec.)
@@ -514,8 +508,6 @@ typedef struct {
 //
 #define EFI_ACPI_2_0_EXTENDED_SYSTEM_DESCRIPTION_TABLE_SIGNATURE  0x54445358
 
-#ifdef _MSC_VER
 #pragma pack()
-#endif
 
 #endif

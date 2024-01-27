@@ -5,11 +5,15 @@
 //	purpose:	boot debugger
 //********************************************************************
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "BootDebuggerPrivate.h"
 #include "Debug1394.h"
 #include "DebugUsb.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 UINT8 BdDebuggerType														= KDP_TYPE_NONE;
 BOOLEAN BdSubsystemInitialized												= FALSE;
 BOOLEAN	BdConnectionActive													= FALSE;
@@ -27,23 +31,16 @@ UINT32 BdPacketIdExpected													= 0;
 UINT32 BdNumberRetries														= 5;
 UINT32 BdRetryCount															= 5;
 KDP_BREAKPOINT_TYPE	BdBreakpointInstruction									= KDP_BREAKPOINT_VALUE;
-
-#if defined(_MSC_VER)
 BREAKPOINT_ENTRY BdBreakpointTable[BREAKPOINT_TABLE_SIZE]					= {{0}};
 UINT64 BdRemoteFiles[0x10]													= {0};
 CHAR8 BdFileTransferBuffer[0x2000]											= {0};
 LIST_ENTRY BdModuleList														= {0};
 LDR_DATA_TABLE_ENTRY BdModuleDataTableEntry									= {{0}};
-#else
-BREAKPOINT_ENTRY BdBreakpointTable[BREAKPOINT_TABLE_SIZE];
-UINT64 BdRemoteFiles[0x10];
-CHAR8 BdFileTransferBuffer[0x2000];
-LIST_ENTRY BdModuleList;
-LDR_DATA_TABLE_ENTRY BdModuleDataTableEntry;
+#ifdef __cplusplus
+}
 #endif
-
 //
-// check write access
+// Check write access.
 //
 STATIC BOOLEAN BdpWriteCheck(VOID* writeBuffer)
 {
@@ -210,24 +207,25 @@ STATIC VOID BdpSetStateChange(DBGKD_WAIT_STATE_CHANGE64* waitStateChange, EXCEPT
 }
 
 //
-// convert exception record
+// Convert exception record.
 //
 STATIC VOID BdpExceptionRecord32To64(EXCEPTION_RECORD* exceptionRecord, EXCEPTION_RECORD64* exceptionRecord64)
 {
 	//
-	// sign extend
+	// Sign extend.
 	//
 	exceptionRecord64->ExceptionAddress										= static_cast<UINT64>(reinterpret_cast<INTN>(exceptionRecord->ExceptionAddress));
 	exceptionRecord64->ExceptionCode										= exceptionRecord->ExceptionCode;
 	exceptionRecord64->ExceptionFlags										= exceptionRecord->ExceptionFlags;
-	exceptionRecord64->ExceptionRecord										= (UINT32)reinterpret_cast<UINT64>(exceptionRecord->ExceptionRecord);
+	exceptionRecord64->ExceptionRecord										= reinterpret_cast<UINT64>(exceptionRecord->ExceptionRecord);
 	exceptionRecord64->NumberParameters										= exceptionRecord->NumberParameters;
-	for(UINT32 i = 0; i < ARRAYSIZE(exceptionRecord->ExceptionInformation); i ++)
+
+	for (UINT32 i = 0; i < ARRAYSIZE(exceptionRecord->ExceptionInformation); i ++)
 		exceptionRecord64->ExceptionInformation[i]							= static_cast<UINT64>(static_cast<INTN>(exceptionRecord->ExceptionInformation[i]));
 }
 
 //
-// read virtual memory
+// Read virtual memory.
 //
 STATIC VOID BdpReadVirtualMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* additionalData, CONTEXT* contextRecord)
 {
@@ -511,7 +509,7 @@ STATIC VOID BdpReadPhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, STR
 				break;
 			}
 
-			UINT32 lengthThisRun											= EFI_PAGE_SIZE - BYTE_OFFSET((UINT64)address);
+			UINT32 lengthThisRun											= (UINT32)(EFI_PAGE_SIZE - BYTE_OFFSET(address));
 			additionalData->Length											= static_cast<UINT16>(BdMoveMemory(buffer, address, lengthThisRun));
 			leftCount														-= lengthThisRun;
 			startAddress													+= lengthThisRun;
@@ -560,7 +558,7 @@ STATIC VOID BdpWritePhysicalMemory(DBGKD_MANIPULATE_STATE64* manipulateState, ST
 		UINT32 leftCount													= writeMemory->TransferCount;
 		CHAR8* buffer														= additionalData->Buffer;
 		VOID* address														= BdTranslatePhysicalAddress(startAddress);
-		UINT32 lengthThisRun												= EFI_PAGE_SIZE - BYTE_OFFSET((UINT64)address);
+		UINT32 lengthThisRun												= (UINT32)(EFI_PAGE_SIZE - BYTE_OFFSET(address));
 		UINT32 thisRun														= BdMoveMemory(address, buffer, lengthThisRun);
 		writtenCount														+= thisRun;
 		leftCount															-= lengthThisRun;
@@ -694,73 +692,78 @@ STATIC VOID BdpRestoreBreakPointEx(DBGKD_MANIPULATE_STATE64* manipulateState, ST
 	BdMoveMemory(bpBuf, additionalData->Buffer, breakpointEx->BreakPointCount * sizeof(DBGKD_RESTORE_BREAKPOINT));
 	manipulateState->ReturnStatus											= STATUS_SUCCESS;
 	DBGKD_RESTORE_BREAKPOINT* b												= bpBuf;
-	for(UINT32 i = 0; i < breakpointEx->BreakPointCount; i ++, b ++)
+
+	for (UINT32 i = 0; i < breakpointEx->BreakPointCount; i ++, b ++)
 	{
-		if(!BdpDeleteBreakpoint(b->BreakPointHandle))
+		if (!BdpDeleteBreakpoint(b->BreakPointHandle))
 			manipulateState->ReturnStatus									= STATUS_UNSUCCESSFUL;
 	}
+
 	BdSendPacket(PACKET_TYPE_KD_STATE_MANIPULATE, &messageHeader, additionalData);
 }
 
 //
-// validate pci slot
+// Validate PCI slot.
 //
 STATIC VOID BdpReadPciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT32 offset, VOID* dataBuffer, UINT32 length);
 STATIC BOOLEAN BdpValidatePciSlot(UINT32 bus, UINT32 device, UINT32 func)
 {
-	if(bus > PCI_MAX_BUS || device > PCI_MAX_DEVICE || func > PCI_MAX_FUNC)
+	if (bus > PCI_MAX_BUS || device > PCI_MAX_DEVICE || func > PCI_MAX_FUNC)
 		return FALSE;
 
-	if(!func)
+	if (!func)
 		return TRUE;
 
 	UINT8 headerType														= 0;
 	UINT32 length															= sizeof(headerType);
 	BdpReadPciConfigSpace(bus, device, 0, EFI_FIELD_OFFSET(PCI_DEVICE_INDEPENDENT_REGION, HeaderType), &headerType, length);
+
 	return headerType != 0xff && (headerType & HEADER_TYPE_MULTI_FUNCTION);
 }
 
 //
-// read pci config
+// Read PCI config.
 //
 STATIC VOID BdpReadWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT32 offset, VOID* dataBuffer, UINT32 length, BOOLEAN readMode)
 {
 	UINT32 cf8BaseValue														= 0x80000000 | ((bus & 0xff) << 16) | ((device & 0x1f) << 11) | ((func & 0x07) << 8);
-	while(length)
+
+	while (length)
 	{
 		ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(0xcf8, UINT32*), cf8BaseValue | (offset & 0xfc));
 		STATIC UINT32 pciReadWriteLength[3]									= {sizeof(UINT32), sizeof(UINT8), sizeof(UINT16)};
 		STATIC UINT32 pciReadWriteType[4][4]								= {{0, 1, 2, 2}, {1, 1, 1, 1}, {2, 1, 2, 2}, {1, 1, 1, 1}};
 		UINT32 type															= pciReadWriteType[offset % sizeof(UINT32)][length % sizeof(UINT32)];
-		switch(type)
+
+		switch (type)
 		{
-		case 0:
-			if(readMode)
-				*static_cast<UINT32*>(dataBuffer)							= ARCH_READ_PORT_UINT32(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT32*));
-			else
-				ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT32*), *static_cast<UINT32*>(dataBuffer));
-			break;
+			case 0:
+				if (readMode)
+					*static_cast<UINT32*>(dataBuffer)						= ARCH_READ_PORT_UINT32(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT32*));
+				else
+					ARCH_WRITE_PORT_UINT32(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT32*), *static_cast<UINT32*>(dataBuffer));
+				break;
 
-		case 1:
-			if(readMode)
-				*static_cast<UINT8*>(dataBuffer)							= ARCH_READ_PORT_UINT8(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT8*));
-			else
-				ARCH_WRITE_PORT_UINT8(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT8*), *static_cast<UINT8*>(dataBuffer));
-			break;
+			case 1:
+				if (readMode)
+					*static_cast<UINT8*>(dataBuffer)						= ARCH_READ_PORT_UINT8(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT8*));
+				else
+					ARCH_WRITE_PORT_UINT8(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT8*), *static_cast<UINT8*>(dataBuffer));
+				break;
 
-		case 2:
-			if(readMode)
-				*static_cast<UINT16*>(dataBuffer)							= ARCH_READ_PORT_UINT16(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT16*));
-			else
-				ARCH_WRITE_PORT_UINT16(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT16*), *static_cast<UINT16*>(dataBuffer));
-			break;
+			case 2:
+				if (readMode)
+					*static_cast<UINT16*>(dataBuffer)						= ARCH_READ_PORT_UINT16(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT16*));
+				else
+					ARCH_WRITE_PORT_UINT16(ArchConvertAddressToPointer(0xcfc + (offset % sizeof(UINT32)), UINT16*), *static_cast<UINT16*>(dataBuffer));
+				break;
 		}
 
 		if (type < 3)
- 		{
-			length -= pciReadWriteLength[type];
-			offset += pciReadWriteLength[type];
-			dataBuffer = Add2Ptr(dataBuffer, pciReadWriteLength[type], VOID*);
+		{
+			length															-= pciReadWriteLength[type];
+			offset															+= pciReadWriteLength[type];
+			dataBuffer														= Add2Ptr(dataBuffer, pciReadWriteLength[type], VOID*);
 		}
 	}
 
@@ -768,39 +771,34 @@ STATIC VOID BdpReadWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, U
 }
 
 //
-// read pci config
+// Read CPI config.
 //
 STATIC VOID BdpReadPciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT32 offset, VOID* dataBuffer, UINT32 length)
 {
-	if(!BdpValidatePciSlot(bus, device, func))
+	if (!BdpValidatePciSlot(bus, device, func))
 		memset(dataBuffer, 0xff, length);
 	else
 		BdpReadWritePciConfigSpace(bus, device, func, offset, dataBuffer, length, TRUE);
 }
 
 //
-// read pci config space
+// Read PCI config space.
 //
 STATIC UINT32 BdpReadPciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT32 offset, UINT32 length, VOID* dataBuffer)
 {
-	if(offset >= PCI_MAX_CONFIG_OFFSET)
+	if (offset >= PCI_MAX_CONFIG_OFFSET)
 		return 0;
 
-	if(length + offset > PCI_MAX_CONFIG_OFFSET)
+	if (length + offset > PCI_MAX_CONFIG_OFFSET)
 		length																= PCI_MAX_CONFIG_OFFSET - offset;
 
 	UINT32 readLength														= 0;
+	PCI_TYPE_GENERIC localHeader											= {{{0}}};
 
-#if defined(_MSC_VER)
-	PCI_TYPE_GENERIC localHeader											= {0};
-#else
-	PCI_TYPE_GENERIC localHeader;
-#endif
-
-	if(offset >= sizeof(localHeader))
+	if (offset >= sizeof(localHeader))
 	{
 		BdpReadPciConfigSpace(bus, device, func, 0, &localHeader, EFI_FIELD_OFFSET(PCI_DEVICE_INDEPENDENT_REGION, Command));
-		if(localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
+		if (localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
 			return 0;
 	}
 	else
@@ -875,49 +873,48 @@ STATIC VOID BdpGetBusData(DBGKD_MANIPULATE_STATE64* manipulateState, STRING* add
 }
 
 //
-// write pci config
+// Write CPI config.
 //
 STATIC VOID BdpWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT32 offset, VOID* dataBuffer, UINT32 length)
 {
-	if(BdpValidatePciSlot(bus, device, func))
+	if (BdpValidatePciSlot(bus, device, func))
 		BdpReadWritePciConfigSpace(bus, device, func, offset, dataBuffer, length, FALSE);
 }
 
 //
-// write pci config space
+// Write PCI config space.
 //
 STATIC UINT32 BdpWritePciConfigSpace(UINT32 bus, UINT32 device, UINT32 func, UINT32 offset, UINT32 length, VOID* dataBuffer)
 {
-	if(offset >= PCI_MAX_CONFIG_OFFSET)
+	if (offset >= PCI_MAX_CONFIG_OFFSET)
 		return 0;
 
-	if(length + offset > PCI_MAX_CONFIG_OFFSET)
+	if (length + offset > PCI_MAX_CONFIG_OFFSET)
 		length																= PCI_MAX_CONFIG_OFFSET - offset;
 
 	UINT32 writeLength														= 0;
+	PCI_TYPE_GENERIC localHeader											= {{{0}}};
 
-#if defined(_MSC_VER)
-	PCI_TYPE_GENERIC localHeader                                                                                    = {0};
-#else
-	PCI_TYPE_GENERIC localHeader;
-#endif
-
-	if(offset >= sizeof(localHeader))
+	if (offset >= sizeof(localHeader))
 	{
 		BdpReadPciConfigSpace(bus, device, func, 0, &localHeader, EFI_FIELD_OFFSET(PCI_DEVICE_INDEPENDENT_REGION, Command));
-		if(localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
+
+		if (localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
 			return 0;
 	}
 	else
 	{
 		writeLength															= sizeof(localHeader);
 		BdpReadPciConfigSpace(bus, device, func, 0, &localHeader, sizeof(localHeader));
-		if(localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
+
+		if (localHeader.Device.Hdr.VendorId == 0xffff || localHeader.Device.Hdr.VendorId == 0)
 			return 0;
 
 		writeLength															-= offset;
-		if(writeLength > length)
+
+		if (writeLength > length)
 			writeLength														= length;
+
 		memcpy(Add2Ptr(&localHeader, offset, VOID*), dataBuffer, writeLength);
 
 		BdpWritePciConfigSpace(bus, device, func, 0, Add2Ptr(&localHeader, offset, VOID*), writeLength);
@@ -1174,7 +1171,7 @@ STATIC EFI_STATUS BdpPopulateDataTableEntry(LDR_DATA_TABLE_ENTRY* loaderDataEntr
 	loaderDataEntry->SizeOfImage											= PeImageGetSize(ntHeaders);
 	loaderDataEntry->EntryPoint												= PeImageGetEntryPoint(imageBase);
 	loaderDataEntry->SectionAndCheckSum.CheckSum							= PeImageGetChecksum(ntHeaders);
-	loaderDataEntry->BaseDllName.Buffer										= CHAR16_STRING((VOID *)L"boot.efi");
+	loaderDataEntry->BaseDllName.Buffer										= CHAR16_STRING(L"boot.efi");
 	loaderDataEntry->BaseDllName.Length										= 16;
 	loaderDataEntry->BaseDllName.MaximumLength								= loaderDataEntry->BaseDllName.Length;
 	loaderDataEntry->FullDllName.Buffer										= loaderDataEntry->BaseDllName.Buffer;
@@ -1247,7 +1244,7 @@ STATIC VOID BdpStop()
 	//
 	// Special unload symbols packet to tell debugger we are stopping.
 	//
-	DbgUnLoadImageSymbols(static_cast<STRING*>(nullptr), ArchConvertAddressToPointer(-1, VOID*), 0);
+	DbgUnLoadImageSymbols2(static_cast<STRING*>(nullptr), ArchConvertAddressToPointer(-1, VOID*), 0);
 	BdConnectionActive														= FALSE;
 }
 
@@ -1516,13 +1513,19 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 {
 	EFI_STATUS status														= EFI_SUCCESS;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// Already initialised.
 		//
 		if (BdSubsystemInitialized || !loaderOptions || !loaderOptions[0])
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// Case on debug type.
@@ -1543,14 +1546,23 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		}
 		else
 		{
+#if defined(_MSC_VER)
 			try_leave(status = EFI_SUCCESS);
+#else
+            status = EFI_SUCCESS;
+            return status;
+#endif
 		}
 
 		//
 		// Setup debug device failed.
 		//
 		if (EFI_ERROR(status))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// Initialise breakpoint table.
@@ -1563,7 +1575,11 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		BdBreakpointInstruction												= KDP_BREAKPOINT_VALUE;
 		BdDebugTrap															= &BdTrap;
 		if (EFI_ERROR(status = BdpPopulateDataTableEntry(&BdModuleDataTableEntry)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// Link debugger module to modules list.
@@ -1577,22 +1593,30 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		// Initialise arch.
 		//
 		if (EFI_ERROR(status = BdArchInitialize()))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return -1;
+#endif
 
 		//
 		// Start debugger.
 		//
 		BdSubsystemInitialized												= TRUE;
 		status																= BdpStart(loaderOptions);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if (EFI_ERROR(status))
 		{
 			BdpCloseDebuggerDevice();
 			BdpFreeDataTableEntry(&BdModuleDataTableEntry);
 		}
+#if defined(_MSC_VER)
 	}
+#endif
 
 	return status;
 }
@@ -1692,7 +1716,7 @@ VOID DbgLoadImageSymbols(UNICODE_STRING* fileName, VOID* imageBase, UINTN proces
 	ansiName.Buffer															= BdDebugMessage;
 
 	if (!EFI_ERROR(BlUnicodeToAnsi(fileName->Buffer, fileName->Length / sizeof(CHAR16), ansiName.Buffer, ansiName.MaximumLength)))
-		DbgLoadImageSymbols(&ansiName, imageBase, processId);
+		DbgLoadImageSymbols2(&ansiName, imageBase, processId);
 }
 
 //
@@ -1706,13 +1730,13 @@ VOID DbgUnLoadImageSymbols(UNICODE_STRING* fileName, VOID* imageBase, UINTN proc
 	ansiName.Buffer															= BdDebugMessage;
 
 	if (!EFI_ERROR(BlUnicodeToAnsi(fileName->Buffer, fileName->Length / sizeof(CHAR16), ansiName.Buffer, ansiName.MaximumLength)))
-		DbgUnLoadImageSymbols(&ansiName, imageBase, processId);
+		DbgUnLoadImageSymbols2(&ansiName, imageBase, processId);
 }
 
 //
 // Load symbols.
 //
-VOID DbgLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
+VOID DbgLoadImageSymbols2(STRING* fileName, VOID* imageBase, UINTN processId)
 {
 	KD_SYMBOLS_INFO symbolsInfo;
 	EFI_IMAGE_NT_HEADERS* imageNtHeader										= PeImageNtHeader(imageBase);
@@ -1721,13 +1745,13 @@ VOID DbgLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
 	symbolsInfo.CheckSum													= imageNtHeader ? PeImageGetChecksum(imageNtHeader) : 0;
 	symbolsInfo.SizeOfImage													= imageNtHeader ? PeImageGetSize(imageNtHeader) : 0x100000;
 
-	DbgService(fileName, &symbolsInfo, BREAKPOINT_LOAD_SYMBOLS);
+	DbgService2(fileName, &symbolsInfo, BREAKPOINT_LOAD_SYMBOLS);
 }
 
 //
 // Unload symbols.
 //
-VOID DbgUnLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
+VOID DbgUnLoadImageSymbols2(STRING* fileName, VOID* imageBase, UINTN processId)
 {
 	KD_SYMBOLS_INFO symbolsInfo;
 	symbolsInfo.BaseOfDll													= imageBase;
@@ -1735,7 +1759,7 @@ VOID DbgUnLoadImageSymbols(STRING* fileName, VOID* imageBase, UINTN processId)
 	symbolsInfo.CheckSum													= 0;
 	symbolsInfo.SizeOfImage													= 0;
 
-	DbgService(fileName, &symbolsInfo, BREAKPOINT_UNLOAD_SYMBOLS);
+	DbgService2(fileName, &symbolsInfo, BREAKPOINT_UNLOAD_SYMBOLS);
 }
 
 //

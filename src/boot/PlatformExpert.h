@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef _PLATFORMEXPERT_H_
-#define _PLATFORMEXPERT_H_
-
 //
 // init platform node
 //
@@ -24,5 +21,3 @@ CHAR8 CONST* PeGetModelName();
 // setup device tree
 //
 EFI_STATUS PeSetupDeviceTree();
-
-#endif

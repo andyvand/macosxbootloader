@@ -12,13 +12,39 @@
 #include <mach/message.h>
 #include <mach/mig_errors.h>
 #include <mach/port.h>
+	
+/* BEGIN MIG_STRNCPY_ZEROFILL CODE */
+
+#if defined(__has_include)
+#if __has_include(<mach/mig_strncpy_zerofill_support.h>)
+#ifndef USING_MIG_STRNCPY_ZEROFILL
+#define USING_MIG_STRNCPY_ZEROFILL
+#endif
+#ifndef __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS__
+#define __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS__
+#ifdef __cplusplus
+extern "C" {
+#endif
+#ifndef __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_ATTR
+#define __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_COUNTEDBY_ATTR(C) __unsafe_indexable
+#endif
+	extern int mig_strncpy_zerofill(char * dest, const char * src, int len) __attribute__((weak_import));
+#ifdef __cplusplus
+}
+#endif
+#endif /* __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS__ */
+#endif /* __has_include(<mach/mig_strncpy_zerofill_support.h>) */
+#endif /* __has_include */
+	
+/* END MIG_STRNCPY_ZEROFILL CODE */
+
 
 #ifdef AUTOTEST
 #ifndef FUNCTION_PTR_T
 #define FUNCTION_PTR_T
 typedef void (*function_ptr_t)(mach_port_t, char *, mach_msg_type_number_t);
 typedef struct {
-        char            *name;
+        char            * name;
         function_ptr_t  function;
 } function_table_entry;
 typedef function_table_entry   *function_table_t;
@@ -26,9 +52,10 @@ typedef function_table_entry   *function_table_t;
 #endif /* AUTOTEST */
 
 #ifndef	vm_map_MSG_COUNT
-#define	vm_map_MSG_COUNT	31
+#define	vm_map_MSG_COUNT	33
 #endif	/* vm_map_MSG_COUNT */
 
+#include <Availability.h>
 #include <mach/std_types.h>
 #include <mach/mig.h>
 #include <mach/mig.h>
@@ -51,7 +78,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_region
 (
-	vm_map_t target_task,
+	vm_map_read_t target_task,
 	vm_address_t *address,
 	vm_size_t *size,
 	vm_region_flavor_t flavor,
@@ -124,7 +151,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_read
 (
-	vm_map_t target_task,
+	vm_map_read_t target_task,
 	vm_address_t address,
 	vm_size_t size,
 	vm_offset_t *data,
@@ -139,7 +166,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_read_list
 (
-	vm_map_t target_task,
+	vm_map_read_t target_task,
 	vm_read_entry_t data_list,
 	natural_t count
 );
@@ -180,7 +207,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_read_overwrite
 (
-	vm_map_t target_task,
+	vm_map_read_t target_task,
 	vm_address_t address,
 	vm_size_t size,
 	vm_address_t data,
@@ -278,6 +305,7 @@ mig_external
 #else
 extern
 #endif	/* mig_external */
+__TVOS_PROHIBITED __WATCHOS_PROHIBITED
 kern_return_t task_wire
 (
 	vm_map_t target_task,
@@ -308,7 +336,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_map_page_query
 (
-	vm_map_t target_map,
+	vm_map_read_t target_map,
 	vm_offset_t offset,
 	integer_t *disposition,
 	integer_t *ref_count
@@ -322,7 +350,7 @@ extern
 #endif	/* mig_external */
 kern_return_t mach_vm_region_info
 (
-	vm_map_t task,
+	vm_map_read_t task,
 	vm_address_t address,
 	vm_info_region_t *region,
 	vm_info_object_array_t *objects,
@@ -337,7 +365,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_mapped_pages_info
 (
-	vm_map_t task,
+	vm_map_read_t task,
 	page_address_array_t *pages,
 	mach_msg_type_number_t *pagesCnt
 );
@@ -350,7 +378,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_region_recurse
 (
-	vm_map_t target_task,
+	vm_map_read_t target_task,
 	vm_address_t *address,
 	vm_size_t *size,
 	natural_t *nesting_depth,
@@ -366,7 +394,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_region_recurse_64
 (
-	vm_map_t target_task,
+	vm_map_read_t target_task,
 	vm_address_t *address,
 	vm_size_t *size,
 	natural_t *nesting_depth,
@@ -382,7 +410,7 @@ extern
 #endif	/* mig_external */
 kern_return_t mach_vm_region_info_64
 (
-	vm_map_t task,
+	vm_map_read_t task,
 	vm_address_t address,
 	vm_info_region_64_t *region,
 	vm_info_object_array_t *objects,
@@ -397,7 +425,7 @@ extern
 #endif	/* mig_external */
 kern_return_t vm_region_64
 (
-	vm_map_t target_task,
+	vm_map_read_t target_task,
 	vm_address_t *address,
 	vm_size_t *size,
 	vm_region_flavor_t flavor,
@@ -457,6 +485,38 @@ kern_return_t vm_purgable_control
 	int *state
 );
 
+/* Routine vm_map_exec_lockdown */
+#ifdef	mig_external
+mig_external
+#else
+extern
+#endif	/* mig_external */
+kern_return_t vm_map_exec_lockdown
+(
+	vm_map_t target_task
+);
+
+/* Routine vm_remap_new */
+#ifdef	mig_external
+mig_external
+#else
+extern
+#endif	/* mig_external */
+kern_return_t vm_remap_new
+(
+	vm_map_t target_task,
+	vm_address_t *target_address,
+	vm_size_t size,
+	vm_address_t mask,
+	int flags,
+	vm_map_read_t src_task,
+	vm_address_t src_address,
+	boolean_t copy,
+	vm_prot_t *cur_protection,
+	vm_prot_t *max_protection,
+	vm_inherit_t inheritance
+);
+
 __END_DECLS
 
 /********************** Caution **************************/
@@ -476,7 +536,7 @@ __END_DECLS
 #define __Request__vm_map_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -484,13 +544,13 @@ __END_DECLS
 		vm_address_t address;
 		vm_region_flavor_t flavor;
 		mach_msg_type_number_t infoCnt;
-	} __Request__vm_region_t;
+	} __Request__vm_region_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -498,26 +558,26 @@ __END_DECLS
 		vm_address_t address;
 		vm_size_t size;
 		int flags;
-	} __Request__vm_allocate_t;
+	} __Request__vm_allocate_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		vm_address_t address;
 		vm_size_t size;
-	} __Request__vm_deallocate_t;
+	} __Request__vm_deallocate_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -526,13 +586,13 @@ __END_DECLS
 		vm_size_t size;
 		boolean_t set_maximum;
 		vm_prot_t new_protection;
-	} __Request__vm_protect_t;
+	} __Request__vm_protect_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -540,39 +600,39 @@ __END_DECLS
 		vm_address_t address;
 		vm_size_t size;
 		vm_inherit_t new_inheritance;
-	} __Request__vm_inherit_t;
+	} __Request__vm_inherit_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		vm_address_t address;
 		vm_size_t size;
-	} __Request__vm_read_t;
+	} __Request__vm_read_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		vm_read_entry_t data_list;
 		natural_t count;
-	} __Request__vm_read_list_t;
+	} __Request__vm_read_list_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -583,13 +643,13 @@ __END_DECLS
 		NDR_record_t NDR;
 		vm_address_t address;
 		mach_msg_type_number_t dataCnt;
-	} __Request__vm_write_t;
+	} __Request__vm_write_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -597,13 +657,13 @@ __END_DECLS
 		vm_address_t source_address;
 		vm_size_t size;
 		vm_address_t dest_address;
-	} __Request__vm_copy_t;
+	} __Request__vm_copy_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -611,13 +671,13 @@ __END_DECLS
 		vm_address_t address;
 		vm_size_t size;
 		vm_address_t data;
-	} __Request__vm_read_overwrite_t;
+	} __Request__vm_read_overwrite_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -625,13 +685,13 @@ __END_DECLS
 		vm_address_t address;
 		vm_size_t size;
 		vm_sync_t sync_flags;
-	} __Request__vm_msync_t;
+	} __Request__vm_msync_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -639,13 +699,13 @@ __END_DECLS
 		vm_address_t address;
 		vm_size_t size;
 		vm_behavior_t new_behavior;
-	} __Request__vm_behavior_set_t;
+	} __Request__vm_behavior_set_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -663,13 +723,13 @@ __END_DECLS
 		vm_prot_t cur_protection;
 		vm_prot_t max_protection;
 		vm_inherit_t inheritance;
-	} __Request__vm_map_t;
+	} __Request__vm_map_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -678,13 +738,13 @@ __END_DECLS
 		vm_size_t size;
 		vm_machine_attribute_t attribute;
 		vm_machine_attribute_val_t value;
-	} __Request__vm_machine_attribute_t;
+	} __Request__vm_machine_attribute_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -700,25 +760,25 @@ __END_DECLS
 		vm_address_t src_address;
 		boolean_t copy;
 		vm_inherit_t inheritance;
-	} __Request__vm_remap_t;
+	} __Request__vm_remap_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		boolean_t must_wire;
-	} __Request__task_wire_t;
+	} __Request__task_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -730,61 +790,47 @@ __END_DECLS
 		vm_size_t size;
 		vm_offset_t offset;
 		vm_prot_t permission;
-	} __Request__mach_make_memory_entry_t;
+	} __Request__mach_make_memory_entry_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		vm_offset_t offset;
-	} __Request__vm_map_page_query_t;
+	} __Request__vm_map_page_query_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		vm_address_t address;
-	} __Request__mach_vm_region_info_t;
+	} __Request__mach_vm_region_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
-	} __Request__vm_mapped_pages_info_t;
+	} __Request__vm_mapped_pages_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
-#endif
-	typedef struct {
-		mach_msg_header_t Head;
-		NDR_record_t NDR;
-		vm_address_t address;
-		natural_t nesting_depth;
-		mach_msg_type_number_t infoCnt;
-	} __Request__vm_region_recurse_t;
-#ifdef  __MigPackStructs
-#pragma pack()
-#endif
-
-#ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -792,25 +838,39 @@ __END_DECLS
 		vm_address_t address;
 		natural_t nesting_depth;
 		mach_msg_type_number_t infoCnt;
-	} __Request__vm_region_recurse_64_t;
+	} __Request__vm_region_recurse_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		vm_address_t address;
-	} __Request__mach_vm_region_info_64_t;
+		natural_t nesting_depth;
+		mach_msg_type_number_t infoCnt;
+	} __Request__vm_region_recurse_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		NDR_record_t NDR;
+		vm_address_t address;
+	} __Request__mach_vm_region_info_64_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack(pop)
+#endif
+
+#ifdef  __MigPackStructs
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -818,13 +878,13 @@ __END_DECLS
 		vm_address_t address;
 		vm_region_flavor_t flavor;
 		mach_msg_type_number_t infoCnt;
-	} __Request__vm_region_64_t;
+	} __Request__vm_region_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -836,13 +896,13 @@ __END_DECLS
 		memory_object_size_t size;
 		memory_object_offset_t offset;
 		vm_prot_t permission;
-	} __Request__mach_make_memory_entry_64_t;
+	} __Request__mach_make_memory_entry_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -860,13 +920,13 @@ __END_DECLS
 		vm_prot_t cur_protection;
 		vm_prot_t max_protection;
 		vm_inherit_t inheritance;
-	} __Request__vm_map_64_t;
+	} __Request__vm_map_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -874,9 +934,43 @@ __END_DECLS
 		vm_address_t address;
 		vm_purgable_t control;
 		int state;
-	} __Request__vm_purgable_control_t;
+	} __Request__vm_purgable_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
+#endif
+
+#ifdef  __MigPackStructs
+#pragma pack(push, 4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+	} __Request__vm_map_exec_lockdown_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack(pop)
+#endif
+
+#ifdef  __MigPackStructs
+#pragma pack(push, 4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		/* start of the kernel processed data */
+		mach_msg_body_t msgh_body;
+		mach_msg_port_descriptor_t src_task;
+		/* end of the kernel processed data */
+		NDR_record_t NDR;
+		vm_address_t target_address;
+		vm_size_t size;
+		vm_address_t mask;
+		int flags;
+		vm_address_t src_address;
+		boolean_t copy;
+		vm_prot_t cur_protection;
+		vm_prot_t max_protection;
+		vm_inherit_t inheritance;
+	} __Request__vm_remap_new_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack(pop)
 #endif
 #endif /* !__Request__vm_map_subsystem__defined */
 
@@ -912,6 +1006,8 @@ union __RequestUnion__vm_map_subsystem {
 	__Request__mach_make_memory_entry_64_t Request_mach_make_memory_entry_64;
 	__Request__vm_map_64_t Request_vm_map_64;
 	__Request__vm_purgable_control_t Request_vm_purgable_control;
+	__Request__vm_map_exec_lockdown_t Request_vm_map_exec_lockdown;
+	__Request__vm_remap_new_t Request_vm_remap_new;
 };
 #endif /* !__RequestUnion__vm_map_subsystem__defined */
 /* typedefs for all replies */
@@ -920,7 +1016,7 @@ union __RequestUnion__vm_map_subsystem {
 #define __Reply__vm_map_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -933,62 +1029,62 @@ union __RequestUnion__vm_map_subsystem {
 		vm_size_t size;
 		mach_msg_type_number_t infoCnt;
 		int info[10];
-	} __Reply__vm_region_t;
+	} __Reply__vm_region_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		vm_address_t address;
-	} __Reply__vm_allocate_t;
+	} __Reply__vm_allocate_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_deallocate_t;
+	} __Reply__vm_deallocate_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_protect_t;
+	} __Reply__vm_protect_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_inherit_t;
+	} __Reply__vm_inherit_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -998,113 +1094,113 @@ union __RequestUnion__vm_map_subsystem {
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		mach_msg_type_number_t dataCnt;
-	} __Reply__vm_read_t;
+	} __Reply__vm_read_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		vm_read_entry_t data_list;
-	} __Reply__vm_read_list_t;
+	} __Reply__vm_read_list_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_write_t;
+	} __Reply__vm_write_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_copy_t;
+	} __Reply__vm_copy_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		vm_size_t outsize;
-	} __Reply__vm_read_overwrite_t;
+	} __Reply__vm_read_overwrite_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_msync_t;
+	} __Reply__vm_msync_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__vm_behavior_set_t;
+	} __Reply__vm_behavior_set_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		vm_address_t address;
-	} __Reply__vm_map_t;
+	} __Reply__vm_map_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		vm_machine_attribute_val_t value;
-	} __Reply__vm_machine_attribute_t;
+	} __Reply__vm_machine_attribute_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1113,25 +1209,25 @@ union __RequestUnion__vm_map_subsystem {
 		vm_address_t target_address;
 		vm_prot_t cur_protection;
 		vm_prot_t max_protection;
-	} __Reply__vm_remap_t;
+	} __Reply__vm_remap_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
-	} __Reply__task_wire_t;
+	} __Reply__task_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1141,13 +1237,13 @@ union __RequestUnion__vm_map_subsystem {
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		vm_size_t size;
-	} __Reply__mach_make_memory_entry_t;
+	} __Reply__mach_make_memory_entry_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1155,13 +1251,13 @@ union __RequestUnion__vm_map_subsystem {
 		kern_return_t RetCode;
 		integer_t disposition;
 		integer_t ref_count;
-	} __Reply__vm_map_page_query_t;
+	} __Reply__vm_map_page_query_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1172,13 +1268,13 @@ union __RequestUnion__vm_map_subsystem {
 		NDR_record_t NDR;
 		vm_info_region_t region;
 		mach_msg_type_number_t objectsCnt;
-	} __Reply__mach_vm_region_info_t;
+	} __Reply__mach_vm_region_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1188,13 +1284,13 @@ union __RequestUnion__vm_map_subsystem {
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		mach_msg_type_number_t pagesCnt;
-	} __Reply__vm_mapped_pages_info_t;
+	} __Reply__vm_mapped_pages_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1205,13 +1301,13 @@ union __RequestUnion__vm_map_subsystem {
 		natural_t nesting_depth;
 		mach_msg_type_number_t infoCnt;
 		int info[19];
-	} __Reply__vm_region_recurse_t;
+	} __Reply__vm_region_recurse_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1222,13 +1318,13 @@ union __RequestUnion__vm_map_subsystem {
 		natural_t nesting_depth;
 		mach_msg_type_number_t infoCnt;
 		int info[19];
-	} __Reply__vm_region_recurse_64_t;
+	} __Reply__vm_region_recurse_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1239,13 +1335,13 @@ union __RequestUnion__vm_map_subsystem {
 		NDR_record_t NDR;
 		vm_info_region_64_t region;
 		mach_msg_type_number_t objectsCnt;
-	} __Reply__mach_vm_region_info_64_t;
+	} __Reply__mach_vm_region_info_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1258,13 +1354,13 @@ union __RequestUnion__vm_map_subsystem {
 		vm_size_t size;
 		mach_msg_type_number_t infoCnt;
 		int info[10];
-	} __Reply__vm_region_64_t;
+	} __Reply__vm_region_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1274,35 +1370,62 @@ union __RequestUnion__vm_map_subsystem {
 		/* end of the kernel processed data */
 		NDR_record_t NDR;
 		memory_object_size_t size;
-	} __Reply__mach_make_memory_entry_64_t;
+	} __Reply__mach_make_memory_entry_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		vm_address_t address;
-	} __Reply__vm_map_64_t;
+	} __Reply__vm_map_64_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(4)
+#pragma pack(push, 4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 		NDR_record_t NDR;
 		kern_return_t RetCode;
 		int state;
-	} __Reply__vm_purgable_control_t;
+	} __Reply__vm_purgable_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack()
+#pragma pack(pop)
+#endif
+
+#ifdef  __MigPackStructs
+#pragma pack(push, 4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		NDR_record_t NDR;
+		kern_return_t RetCode;
+	} __Reply__vm_map_exec_lockdown_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack(pop)
+#endif
+
+#ifdef  __MigPackStructs
+#pragma pack(push, 4)
+#endif
+	typedef struct {
+		mach_msg_header_t Head;
+		NDR_record_t NDR;
+		kern_return_t RetCode;
+		vm_address_t target_address;
+		vm_prot_t cur_protection;
+		vm_prot_t max_protection;
+	} __Reply__vm_remap_new_t __attribute__((unused));
+#ifdef  __MigPackStructs
+#pragma pack(pop)
 #endif
 #endif /* !__Reply__vm_map_subsystem__defined */
 
@@ -1338,6 +1461,8 @@ union __ReplyUnion__vm_map_subsystem {
 	__Reply__mach_make_memory_entry_64_t Reply_mach_make_memory_entry_64;
 	__Reply__vm_map_64_t Reply_vm_map_64;
 	__Reply__vm_purgable_control_t Reply_vm_purgable_control;
+	__Reply__vm_map_exec_lockdown_t Reply_vm_map_exec_lockdown;
+	__Reply__vm_remap_new_t Reply_vm_remap_new;
 };
 #endif /* !__RequestUnion__vm_map_subsystem__defined */
 
@@ -1369,7 +1494,9 @@ union __ReplyUnion__vm_map_subsystem {
     { "vm_region_64", 3824 },\
     { "mach_make_memory_entry_64", 3825 },\
     { "vm_map_64", 3826 },\
-    { "vm_purgable_control", 3830 }
+    { "vm_purgable_control", 3830 },\
+    { "vm_map_exec_lockdown", 3831 },\
+    { "vm_remap_new", 3832 }
 #endif
 
 #ifdef __AfterMigUserHeader

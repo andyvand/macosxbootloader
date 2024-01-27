@@ -423,9 +423,178 @@
  * 20120211.26 (2.4.7-dev) Add util_fcgi.h, FastCGI protocol support
  * 20120211.27 (2.4.7-dev) Add ap_podx_restart_t and ap_mpm_podx_*
  * 20120211.28 (2.4.7-dev) Add ap_regname
- * 20120211.29 (2.4.7-dev) Add uds_path to proxy_conn_rec
+ * 20120211.29 (2.4.7-dev) Add uds_path to proxy_conn_rec and proxy_worker_shared.
+ *                         The change to proxy_worker_shared is an
+ *                         unintended API break, especially for balancer
+ *                         lbmethod modules.
  * 20120211.30 (2.4.7-dev) REWRITE_REDIRECT_HANDLER_NAME in mod_rewrite.h
  * 20120211.31 (2.4.7-dev) Add ap_proxy_port_of_scheme()
+ * 20120211.32 (2.4.10-dev) Add SSL reusable SNI to mod_proxy.h's proxy_conn_rec
+ * 20120211.33 (2.4.10-dev) Add suspend_connection and resume_connection hooks
+ * 20120211.34 (2.4.10-dev) AP_DEFAULT_HANDLER_NAME/AP_IS_DEFAULT_HANDLER_NAME
+ * 20120211.35 (2.4.10-dev) Add "r", "must_rebind", and last_backend_conn
+                            to util_ldap_connection_t
+ * 20120211.36 (2.4.10-dev) Add ap_copy_scoreboard_worker()
+ * 20120211.37 (2.4.11-dev) Add r->trailers_{in,out}
+ * 20120211.38 (2.4.11-dev) Added ap_shutdown_conn().
+ * 20120211.39 (2.4.11-dev) Add ap_proxy_connect_uds().
+ * 20120211.40 (2.4.11-dev) Add ap_log_data(), ap_log_rdata(), etc.
+ * 20120211.41 (2.4.11-dev) Add ap_proxy_de_socketfy to mod_proxy.h
+ * 20120211.42 (2.4.13-dev) Add response_code_exprs to http_core.h
+ * 20120211.43 (2.4.13-dev) Add keep_alive_timeout_set to server_rec
+ * 20120211.44 (2.4.13-dev) Add cgi_pass_auth and AP_CGI_PASS_AUTH_* to
+ *                          core_dir_config
+ * 20120211.45 (2.4.13-dev) Add ap_proxy_connection_reusable()
+ * 20120211.46 (2.4.13-dev) Add ap_map_http_request_error()
+ * 20120211.47 (2.4.13-dev) Add ap_some_authn_required, ap_force_authn hook.
+ *                          Deprecate broken ap_some_auth_required.
+ * 20120211.48 (2.4.17-dev) Added ap_log_mpm_common().
+ * 20120211.49 (2.4.17-dev) Add listener bucket in scoreboard.h's process_score.
+ * 20120211.50 (2.4.17-dev) Add ap_set_listencbratio(), ap_close_listeners_ex(),
+ *                          ap_duplicate_listeners(), ap_num_listen_buckets and
+ *                          ap_have_so_reuseport to ap_listen.h.
+ * 20120211.51 (2.4.17-dev) Add protocols and protocols_honor_order to
+ *                          core_server_config. Add hooks protocol_propose
+ *                          protocol_switch and protocol_get. Add
+ *                          ap_select_protocol(), ap_switch_protocol(),
+ *                          ap_get_protocol(). Add HTTP_MISDIRECTED_REQUEST.
+ *                          Added ap_parse_token_list_strict() to httpd.h
+ * 20120211.52 (2.4.17-dev) Add master conn_rec* member in conn_rec.
+ * 20120211.53 (2.4.19-dev) Add expr_handler to core_dir_config.
+ * 20120211.54 (2.4.19-dev) Add ap_proxy_buckets_lifetime_transform and
+ *                          ap_proxy_transfer_between_connections to
+ *                          mod_proxy.h
+ * 20120211.55 (2.4.19-dev) Add new ap_update_child_status...() methods,
+ *                          add protocol to worker_score in scoreboard.h,
+ *                          Add pre_close connection hook and
+ *                          ap_prep_lingering_close().
+ * 20120211.56 (2.4.19-dev) Split useragent_host from the conn_rec into
+ *                          the request_rec, with ap_get_useragent_host()
+ * 20120211.57 (2.4.19-dev) Add mod_ssl_openssl.h and OpenSSL-specific hooks
+ * 20120211.58 (2.4.21-dev) Add cgi_var_rules to core_dir_config.
+ * 20120211.59 (2.4.21-dev) Add ap_getword_conf2[_nc](),
+ *                          ap_proxy_is_socket_connected() and
+ *                          extended proxy_worker_shared.
+ * 20120211.60 (2.4.21-dev) Add dav_get_provider_name.
+ * 20120211.61 (2.4.21-dev) Add ap_cstr_casecmp[n]() - placeholder of apr_ fns
+ * 20120211.62 (2.4.24-dev) Add childtags to dav_error.
+ * 20120211.63 (2.4.24-dev) Add dav_begin_multistatus, dav_send_one_response,
+ *                          dav_finish_multistatus, dav_send_multistatus,
+ *                          dav_handle_err, dav_failed_proppatch,
+ *                          dav_success_proppatch.
+ * 20120211.64 (2.4.24-dev) Add ap_proxy_check_backend(), and tmp_bb to struct
+ *                          proxy_conn_rec.
+ * 20120211.65 (2.4.24-dev) Add ap_check_pipeline().
+ * 20120211.66 (2.4.24-dev) Rename ap_proxy_check_backend() to
+ *                          ap_proxy_check_connection().
+ * 20120211.67 (2.4.24-dev) Add http09_enable, http_conformance, and
+ *                          http_methods to core_server_config
+ *                          Add ap_scan_http_field_token(),
+ *                          ap_scan_http_field_content(),
+ *                          and ap_scan_vchar_obstext()
+ *                          Replaced fold boolean with with multiple bit flags
+ *                          to ap_[r]getline()
+ * 20120211.68 (2.4.26-dev) Add ap_get_basic_auth_components() and deprecate
+ *                          ap_get_basic_auth_pw()
+ * 20120211.69 (2.4.30-dev) Add ap_update_sb_handle()
+ * 20120211.70 (2.4.30-dev) Add flags field to module_struct and function
+ *                          ap_get_module_flags()
+ * 20120211.71 (2.4.30-dev) Add optional proxy_{hook,run}_section_post_config(),
+ *                          ap_proxy_connection_create_ex() and section_config
+ *                          to struct proxy_{worker,balancer} in mod_proxy.h,
+ *                          and optional ssl_engine_set() to mod_ssl.h.
+ * 20120211.72 (2.4.30-dev) Add NOT_IN_DIR_CONTEXT replacing NOT_IN_DIR_LOC_FILE
+ *                          semantics
+ * 20120211.73 (2.4.30-dev) Add failontimeout_set, growth_set and lbmethod_set
+ *                          to proxy_balancer struct
+ * 20120211.74 (2.4.30-dev) Add AP_REG_DOLLAR_ENDONLY, ap_regcomp_get_default_cflags
+ *                          ap_regcomp_set_default_cflags and
+ *                          ap_regcomp_default_cflag_by_name
+ * 20120211.75 (2.4.30-dev) Add hostname_ex to proxy_worker_shared
+ * 20120211.76 (2.4.30-dev) Add CONN_STATE_NUM to enum conn_state_e
+ * 20120211.77 (2.4.34-dev) Add ap_exists_directive()
+ * 20120211.78 (2.4.34-dev) Add response_field_size to proxy_worker_shared 
+ * 20120211.79 (2.4.34-dev) Add AP_GETLINE_NOSPC_EOL flag to http_protocol.h
+ * 20120211.80 (2.4.35-dev) Add new ap_update_global_status() method and
+ *                          times field in the global_score structure in
+ *                          scoreboard.h.
+ * 20120211.81 (2.4.35-dev) Add new duration field to worker_score struct in
+ *                          scoreboard.h
+ * 20120211.82 (2.4.35-dev) Add optional function declaration for
+ *                          ap_proxy_balancer_get_best_worker to mod_proxy.h.
+ * 20120211.83 (2.4.35-dev) Add client64 field to worker_score struct
+ * 20120211.84 (2.4.35-dev) Add ap_no2slash_ex() and merge_slashes to 
+ *                          core_server_conf.
+ * 20120211.85 (2.4.40-dev) add ap_set_conn_count().
+ * 20120211.86 (2.4.40-dev) Add forward_100_continue{,_set} to proxy_dir_conf
+ * 20120211.87 (2.4.40-dev) Add dav_popen_propdb
+ * 20120211.88 (2.4.40-dev) Add ap_dir_nofnmatch() and ap_dir_fnmatch().
+ * 20120211.89 (2.4.42-dev) Add add dns_pool to proxy_conn_pool and define
+ *                          AP_VOLATILIZE_T.
+ * 20120211.90 (2.4.42-dev) AP_REG_DEFAULT macro in ap_regex.h
+ * 20120211.91 (2.4.42-dev) Add ap_is_chunked() in httpd.h
+ * 20120211.92 (2.4.42-dev) AP_REG_NO_DEFAULT macro in ap_regex.h
+ * 20120211.93 (2.4.44-dev) Add ap_parse_strict_length()
+ * 20120211.94 (2.4.47-dev) Add ap_proxy_define_match_worker()
+ * 20120211.95 (2.4.47-dev) Add proxy check_trans hook
+ * 20120211.96 (2.4.47-dev) Add ap_get_status_line_ex()
+ * 20120211.97 (2.4.47-dev) Add read_buf_size member to core_dir_config,
+ *                          flush_max_threshold and flush_max_pipelined to
+ *                          core_server_config, and ap_get_read_buf_size().
+ * 20120211.98 (2.4.47-dev) Add ap_proxy_should_override to mod_proxy.h
+ * 20120211.99 (2.4.47-dev) Add proxy_tunnel_rec, ap_proxy_tunnel_create()
+ *                          and ap_proxy_tunnel_run() to proxy_util.
+ * 20120211.99 (2.4.47-dev) Add ap_proxy_worker_can_upgrade()
+ * 20120211.100 (2.4.47-dev) Add ap_proxy_prefetch_input(),
+ *                           ap_proxy_spool_input() and
+ *                           ap_proxy_read_input().
+ * 20120211.101 (2.4.47-dev) ETAG_DIGEST in http_core.h. struct etag_rec,
+ *                           ap_make_etag_ex() and ap_set_etag_fd() in
+ *                           http_protocol.h. ap_request_bnotes_t,
+ *                           AP_REQUEST_STRONG_ETAG, AP_REQUEST_GET_BNOTE,
+ *                           AP_REQUEST_SET_BNOTE and AP_REQUEST_IS_STRONG_ETAG
+ *                           in httpd.h.
+ * 20120211.102 (2.4.47-dev) Add ap_ssl_conn_is_ssl()/ap_ssl_var_lookup() and hooks
+ * 20120211.103 (2.4.47-dev) Add ap_ssl_add_cert_files, ap_ssl_add_fallback_cert_files
+ *                           and ap_ssl_answer_challenge and hooks.
+ * 20120211.104 (2.4.47-dev) Move ap_ssl_* into new http_ssl.h header file
+ * 20120211.105 (2.4.47-dev) Add ap_ssl_ocsp* hooks and functions to http_ssl.h.
+ * 20120211.106 (2.4.49-dev) Add ap_create_request().
+ * 20120211.107 (2.4.49-dev) Add ap_parse_request_line() and
+ *                           ap_check_request_header()
+ * 20120211.108 (2.4.49-dev) Add ajp_handle_cping_cpong
+ * 20120211.109 (2.4.49-dev) Add ap_normalize_path(),
+ *                           pre_translate_name hook and
+ *                           Add map_encoded_one and map_encoded_all bits to
+ *                           proxy_server_conf.
+ * 20120211.110 (2.4.49-dev) Add hook child_stopping to get informed that a child
+ *                           is being shut down.
+ * 20120211.111 (2.4.49-dev) Add dav_get_provider(), dav_open_lockdb(),
+ *                           dav_close_lockdb() and dav_get_resource() to
+ *                           mod_dav.h.
+ * 20120211.112 (2.4.49-dev) Add deliver_report and gather_reports hooks.
+ * 20120211.113 (2.4.49-dev) Add method_precondition hook.
+ * 20120211.114 (2.4.49-dev) Add optional balancer_manage function.
+ * 20120211.115 (2.4.49-dev) Add ap_proxy_get_worker_ex() and
+ *                           ap_proxy_define_worker_ex() to mod_proxy.h
+ * 20120211.116 (2.4.49-dev) add conn_rec->outgoing and ap_ssl_bind_outgoing()
+ * 20120211.117 (2.4.50-dev) Add ap_pre_connection
+ * 20120211.118 (2.4.51-dev) Add ap_unescape_url_ex() and deprecate
+ *                           AP_NORMALIZE_DROP_PARAMETERS
+ * 20120211.119 (2.4.51-dev) Add dav_validate_root_ns(), dav_find_child_ns(),
+ *                           dav_find_next_ns(), dav_find_attr_ns() and
+ *                           dav_find_attr().
+ * 20120211.120 (2.4.51-dev) Add dav_liveprop_elem structure and
+ *                           dav_get_liveprop_element().
+ * 20120211.121 (2.4.51-dev) Add ap_post_read_request()
+ * 20120211.122 (2.4.51-dev) Add ap_thread_create(), ap_thread_main_create()
+ *                           and ap_thread_current()
+ * 20120211.123 (2.4.51-dev) Added ap_pcre_version_string(), AP_REG_PCRE_COMPILED
+ *                           and AP_REG_PCRE_LOADED to ap_regex.h.
+ * 20120211.124 (2.4.51-dev) Add name_ex to struct proxy_worker_shared
+ * 20120211.125 (2.4.55-dev) Export mod_http2.h as public header
+ * 20120211.126 (2.4.55-dev) Add additional hcmethod_t enums and PROXY_WORKER_IS_ERROR
+ *
  */
 
 #define MODULE_MAGIC_COOKIE 0x41503234UL /* "AP24" */
@@ -433,7 +602,7 @@
 #ifndef MODULE_MAGIC_NUMBER_MAJOR
 #define MODULE_MAGIC_NUMBER_MAJOR 20120211
 #endif
-#define MODULE_MAGIC_NUMBER_MINOR 31                   /* 0...n */
+#define MODULE_MAGIC_NUMBER_MINOR 126                 /* 0...n */
 
 /**
  * Determine if the server's current MODULE_MAGIC_NUMBER is at least a

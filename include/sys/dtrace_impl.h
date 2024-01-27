@@ -22,12 +22,13 @@
 /*
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Portions Copyright (c) 2012 by Delphix. All rights reserved.
+ * Portions Copyright (c) 2016 by Joyent, Inc.
  */
 
 #ifndef _SYS_DTRACE_IMPL_H
 #define	_SYS_DTRACE_IMPL_H
-
-/* #pragma ident	"@(#)dtrace_impl.h	1.23	07/02/16 SMI" */
 
 #ifdef	__cplusplus
 extern "C" {
@@ -45,10 +46,13 @@ extern "C" {
  */
 
 #include <sys/dtrace.h>
+#include <kern/kalloc.h>
 
 /*
  * DTrace Implementation Locks
  */
+extern lck_attr_t dtrace_lck_attr;
+extern lck_grp_t dtrace_lck_grp;
 extern lck_mtx_t dtrace_procwaitfor_lock;
 
 /*
@@ -107,6 +111,8 @@ struct dtrace_probe {
 	char *dtpr_mod;				/* probe's module name */
 	char *dtpr_func;			/* probe's function name */
 	char *dtpr_name;			/* probe's name */
+	dtrace_probe_t *dtpr_nextprov;		/* next in provider hash */
+	dtrace_probe_t *dtpr_prevprov;		/* previous in provider hash */
 	dtrace_probe_t *dtpr_nextmod;		/* next in module hash */
 	dtrace_probe_t *dtpr_prevmod;		/* previous in module hash */
 	dtrace_probe_t *dtpr_nextfunc;		/* next in function hash */
@@ -132,18 +138,21 @@ typedef struct dtrace_probekey {
 
 typedef struct dtrace_hashbucket {
 	struct dtrace_hashbucket *dthb_next;	/* next on hash chain */
-	dtrace_probe_t *dthb_chain;		/* chain of probes */
+	void *dthb_chain;			/* chain of elements */
 	int dthb_len;				/* number of probes here */
 } dtrace_hashbucket_t;
 
+typedef const char* dtrace_strkey_f(void*, uintptr_t);
+
 typedef struct dtrace_hash {
-	dtrace_hashbucket_t **dth_tab;		/* hash table */
-	int dth_size;				/* size of hash table */
-	int dth_mask;				/* mask to index into table */
-	int dth_nbuckets;			/* total number of buckets */
-	uintptr_t dth_nextoffs;			/* offset of next in probe */
-	uintptr_t dth_prevoffs;			/* offset of prev in probe */
-	uintptr_t dth_stroffs;			/* offset of str in probe */
+	dtrace_hashbucket_t **dth_tab;	/* hash table */
+	int dth_size;			/* size of hash table */
+	int dth_mask;			/* mask to index into table */
+	int dth_nbuckets;		/* total number of buckets */
+	uintptr_t dth_nextoffs;		/* offset of next in element */
+	uintptr_t dth_prevoffs;		/* offset of prev in element */
+	dtrace_strkey_f *dth_getstr;	/* func to retrieve str in element */
+	uintptr_t dth_stroffs;		/* offset of str in element */
 } dtrace_hash_t;
 
 /*
@@ -202,15 +211,18 @@ typedef struct dtrace_hash {
  * predicate is non-NULL, the DIF object is executed.  If the result is
  * non-zero, the action list is processed, with each action being executed
  * accordingly.  When the action list has been completely executed, processing
- * advances to the next ECB.  processing advances to the next ECB.  If the
- * result is non-zero; For each ECB, it first determines the The ECB
- * abstraction allows disjoint consumers to multiplex on single probes.
+ * advances to the next ECB. The ECB abstraction allows disjoint consumers
+ * to multiplex on single probes.
+ *
+ * Execution of the ECB results in consuming dte_size bytes in the buffer
+ * to record data.  During execution, dte_needed bytes must be available in
+ * the buffer.  This space is used for both recorded data and tuple data.
  */
 struct dtrace_ecb {
 	dtrace_epid_t dte_epid;			/* enabled probe ID */
 	uint32_t dte_alignment;			/* required alignment */
-	size_t dte_needed;			/* bytes needed */
-	size_t dte_size;			/* total size of payload */
+	size_t dte_needed;			/* space needed for execution */
+	size_t dte_size;			/* size of recorded payload */
 	dtrace_predicate_t *dte_predicate;	/* predicate, if any */
 	dtrace_action_t *dte_action;		/* actions, if any */
 	dtrace_ecb_t *dte_next;			/* next ECB on probe */
@@ -268,27 +280,30 @@ typedef struct dtrace_aggregation {
  * the EPID, the consumer can determine the data layout.  (The data buffer
  * layout is shown schematically below.)  By assuring that one can determine
  * data layout from the EPID, the metadata stream can be separated from the
- * data stream -- simplifying the data stream enormously.
+ * data stream -- simplifying the data stream enormously.  The ECB always
+ * proceeds the recorded data as part of the dtrace_rechdr_t structure that
+ * includes the EPID and a high-resolution timestamp used for output ordering
+ * consistency.
  *
- *      base of data buffer --->  +------+--------------------+------+
- *                                | EPID | data               | EPID |
- *                                +------+--------+------+----+------+
- *                                | data          | EPID | data      |
- *                                +---------------+------+-----------+
- *                                | data, cont.                      |
- *                                +------+--------------------+------+
- *                                | EPID | data               |      |
- *                                +------+--------------------+      |
- *                                |                ||                |
- *                                |                ||                |
- *                                |                \/                |
- *                                :                                  :
- *                                .                                  .
- *                                .                                  .
- *                                .                                  .
- *                                :                                  :
- *                                |                                  |
- *     limit of data buffer --->  +----------------------------------+
+ *      base of data buffer --->  +--------+--------------------+--------+
+ *                                | rechdr | data               | rechdr |
+ *                                +--------+------+--------+----+--------+
+ *                                | data          | rechdr | data        |
+ *                                +---------------+--------+-------------+
+ *                                | data, cont.                          |
+ *                                +--------+--------------------+--------+
+ *                                | rechdr | data               |        |
+ *                                +--------+--------------------+        |
+ *                                |                ||                    |
+ *                                |                ||                    |
+ *                                |                \/                    |
+ *                                :                                      :
+ *                                .                                      .
+ *                                .                                      .
+ *                                .                                      .
+ *                                :                                      :
+ *                                |                                      |
+ *     limit of data buffer --->  +--------------------------------------+
  *
  * When evaluating an ECB, dtrace_probe() determines if the ECB's needs of the
  * principal buffer (both scratch and payload) exceed the available space.  If
@@ -413,6 +428,8 @@ typedef struct dtrace_aggregation {
 
 typedef struct dtrace_buffer {
 	uint64_t dtb_offset;			/* current offset in buffer */
+	uint64_t dtb_cur_limit;			/* current limit before signaling/dropping */
+	uint64_t dtb_limit;			/* limit before signaling */
 	uint64_t dtb_size;			/* size of buffer */
 	uint32_t dtb_flags;			/* flags */
 	uint32_t dtb_drops;			/* number of drops */
@@ -426,6 +443,9 @@ typedef struct dtrace_buffer {
 #ifndef _LP64
 	uint64_t dtb_pad1;
 #endif
+	uint64_t dtb_switched;			/* time of last switch */
+	uint64_t dtb_interval;			/* observed switch interval */
+	uint64_t dtb_pad2[4];			/* pad to avoid false sharing */
 } dtrace_buffer_t;
 
 /*
@@ -803,11 +823,6 @@ typedef struct dtrace_dstate_percpu {
 	uint64_t dtdsc_drops;			/* number of capacity drops */
 	uint64_t dtdsc_dirty_drops;		/* number of dirty drops */
 	uint64_t dtdsc_rinsing_drops;		/* number of rinsing drops */
-#ifdef _LP64
-	uint64_t dtdsc_pad;			/* pad to avoid false sharing */
-#else
-	uint64_t dtdsc_pad[2];			/* pad to avoid false sharing */
-#endif
 } dtrace_dstate_percpu_t;
 
 typedef enum dtrace_dstate_state {
@@ -824,7 +839,7 @@ typedef struct dtrace_dstate {
 	size_t dtds_chunksize;			/* size of each chunk */
 	dtrace_dynhash_t *dtds_hash;		/* pointer to hash table */
 	dtrace_dstate_state_t dtds_state;	/* current dynamic var. state */
-	dtrace_dstate_percpu_t *dtds_percpu;	/* per-CPU dyn. var. state */
+	dtrace_dstate_percpu_t *__zpercpu dtds_percpu;	/* per-CPU dyn. var. state */
 } dtrace_dstate_t;
 
 /*
@@ -898,6 +913,7 @@ typedef struct dtrace_vstate {
 #define	DTRACE_MSTATE_USTACKDEPTH	0x00000200
 #define	DTRACE_MSTATE_UCALLER		0x00000400
 #define	DTRACE_MSTATE_MACHTIMESTAMP	0x00000800
+#define	DTRACE_MSTATE_MACHCTIMESTAMP	0x00001000
 
 typedef struct dtrace_mstate {
 	uintptr_t dtms_scratch_base;		/* base of scratch space */
@@ -909,6 +925,7 @@ typedef struct dtrace_mstate {
 	uint64_t dtms_timestamp;		/* cached timestamp */
 	hrtime_t dtms_walltimestamp;		/* cached wall timestamp */
 	uint64_t dtms_machtimestamp;		/* cached mach absolute timestamp */
+	uint64_t dtms_machctimestamp;		/* cached mach continuous timestamp */
 	int dtms_stackdepth;			/* cached stackdepth */
 	int dtms_ustackdepth;			/* cached ustackdepth */
 	struct dtrace_probe *dtms_probe;	/* current probe */
@@ -917,6 +934,7 @@ typedef struct dtrace_mstate {
 	int dtms_ipl;				/* cached interrupt pri lev */
 	int dtms_fltoffs;			/* faulting DIFO offset */
 	uintptr_t dtms_strtok;			/* saved strtok() pointer */
+	uintptr_t dtms_strtok_limit;		/* upper bound of strtok ptr */
 	uint32_t dtms_access;			/* memory access rights */
 	dtrace_difo_t *dtms_difo;		/* current dif object */
 } dtrace_mstate_t;
@@ -942,6 +960,7 @@ typedef struct dtrace_mstate {
  * dtrace_stop() (from DTRACIOCSTOP) and on the exit() action.  Activities may
  * only transition in one direction; the activity transition diagram is a
  * directed acyclic graph.  The activity transition diagram is as follows:
+ *
  *
  *
  * +----------+                   +--------+                   +--------+
@@ -1115,6 +1134,7 @@ typedef struct dtrace_helpers {
 #define	DTRACE_HELPTRACE_DONE	(-2)
 #define	DTRACE_HELPTRACE_ERR	(-3)
 
+
 typedef struct dtrace_helptrace {
 	dtrace_helper_action_t	*dtht_helper;	/* helper action */
 	int dtht_where;				/* where in helper action */
@@ -1165,6 +1185,13 @@ typedef struct dtrace_cred {
 	uint16_t		dcr_action;
 } dtrace_cred_t;
 
+typedef struct dtrace_format {
+	uint64_t dtf_refcount;
+	char dtf_str[];
+} dtrace_format_t;
+
+#define DTRACE_FORMAT_SIZE(fmt) (strlen(fmt->dtf_str) + 1 + sizeof(dtrace_format_t))
+
 /*
  * DTrace Consumer State
  *
@@ -1204,11 +1231,13 @@ struct dtrace_state {
 	char dts_speculates;			/* boolean: has speculations */
 	char dts_destructive;			/* boolean: has dest. actions */
 	int dts_nformats;			/* number of formats */
-	char **dts_formats;			/* format string array */
+	dtrace_format_t **dts_formats;		/* format string array */
 	dtrace_optval_t dts_options[DTRACEOPT_MAX]; /* options */
 	dtrace_cred_t dts_cred;			/* credentials */
 	size_t dts_nretained;			/* number of retained enabs */
 	uint64_t dts_arg_error_illval;
+	uint32_t dts_buf_over_limit;		/* number of bufs over dtb_limit */
+	uint64_t **dts_rstate;			/* per-CPU random state */
 };
 
 struct dtrace_provider {
@@ -1292,6 +1321,27 @@ typedef struct dtrace_errhash {
 
 #endif	/* DTRACE_ERRDEBUG */
 
+typedef struct dtrace_string dtrace_string_t;
+
+typedef struct dtrace_string {
+	dtrace_string_t *dtst_next;
+	dtrace_string_t *dtst_prev;
+	uint32_t dtst_refcount;
+	char dtst_str[];
+} dtrace_string_t;
+
+/**
+ * DTrace Matching pre-conditions
+ *
+ * Used when matching new probes to discard matching of enablings that
+ * doesn't match the condition tested by dmc_func
+ */
+typedef struct dtrace_match_cond {
+	int (*dmc_func)(dtrace_probedesc_t*, void*);
+	void *dmc_data;
+} dtrace_match_cond_t;
+
+
 /*
  * DTrace Toxic Ranges
  *
@@ -1313,7 +1363,7 @@ typedef struct dtrace_toxrange {
 	uintptr_t	dtt_limit;		/* limit of toxic range */
 } dtrace_toxrange_t;
 
-extern uint64_t dtrace_getarg(int, int);
+extern uint64_t dtrace_getarg(int, int, dtrace_mstate_t*, dtrace_vstate_t*);
 extern int dtrace_getipl(void);
 extern uintptr_t dtrace_caller(int);
 extern uint32_t dtrace_cas32(uint32_t *, uint32_t, uint32_t);
@@ -1323,7 +1373,11 @@ extern void dtrace_copyinstr(user_addr_t, uintptr_t, size_t, volatile uint16_t *
 extern void dtrace_copyout(uintptr_t, user_addr_t, size_t, volatile uint16_t *);
 extern void dtrace_copyoutstr(uintptr_t, user_addr_t, size_t, volatile uint16_t *);
 extern void dtrace_getpcstack(pc_t *, int, int, uint32_t *);
+extern uint64_t dtrace_load64(uintptr_t);
+extern int dtrace_canload(uint64_t, size_t, dtrace_mstate_t*, dtrace_vstate_t*);
+
 extern uint64_t dtrace_getreg(struct regs *, uint_t);
+extern uint64_t dtrace_getvmreg(uint_t);
 extern int dtrace_getstackdepth(int);
 extern void dtrace_getupcstack(uint64_t *, int);
 extern void dtrace_getufpstack(uint64_t *, uint64_t *, int);
@@ -1339,30 +1393,56 @@ extern void dtrace_probe_error(dtrace_state_t *, dtrace_epid_t, int, int,
 extern int dtrace_assfail(const char *, const char *, int);
 extern int dtrace_attached(void);
 extern hrtime_t dtrace_gethrestime(void);
-extern void dtrace_isa_init(void);
+
+extern void dtrace_flush_caches(void);
 
 extern void dtrace_copy(uintptr_t, uintptr_t, size_t);
 extern void dtrace_copystr(uintptr_t, uintptr_t, size_t, volatile uint16_t *);
 
+extern void* dtrace_ptrauth_strip(void*, uint64_t);
+extern int dtrace_is_valid_ptrauth_key(uint64_t);
+
+extern uint64_t dtrace_physmem_read(uint64_t, size_t);
+extern void dtrace_physmem_write(uint64_t, uint64_t, size_t);
+
+extern void dtrace_livedump(char *, size_t);
+
+/*
+ * DTrace state handling
+ */
+extern minor_t dtrace_state_reserve(void);
+extern dtrace_state_t* dtrace_state_allocate(minor_t minor);
+extern dtrace_state_t* dtrace_state_get(minor_t minor);
+extern void dtrace_state_free(minor_t minor);
+
 /*
  * DTrace restriction checks
  */
+extern void dtrace_restriction_policy_load(void);
 extern boolean_t dtrace_is_restricted(void);
+extern boolean_t dtrace_are_restrictions_relaxed(void);
+extern boolean_t dtrace_fbt_probes_restricted(void);
+extern boolean_t dtrace_sdt_probes_restricted(void);
 extern boolean_t dtrace_can_attach_to_proc(proc_t);
 
 /*
  * DTrace Assertions
  *
- * DTrace calls ASSERT from probe context.  To assure that a failed ASSERT
- * does not induce a markedly more catastrophic failure (e.g., one from which
- * a dump cannot be gleaned), DTrace must define its own ASSERT to be one that
- * may safely be called from probe context.  This header file must thus be
- * included by any DTrace component that calls ASSERT from probe context, and
- * _only_ by those components.  (The only exception to this is kernel
- * debugging infrastructure at user-level that doesn't depend on calling
- * ASSERT.)
+ * DTrace calls ASSERT and VERIFY from probe context.  To assure that a failed
+ * ASSERT or VERIFYdoes not induce a markedly more catastrophic failure (e.g.,
+ * one from which a dump cannot be gleaned), DTrace must define its own ASSERT
+ * and VERIFY macros to be ones that may safely be called from probe context.
+ * This header file must thus be included by any DTrace component that calls
+ * ASSERT and/or VERIFY from probe context, and _only_ by those components.
+ * (The only exception to this is kernel debugging infrastructure at user-level
+ * that doesn't depend on calling ASSERT.)
  */
 #undef ASSERT
+#undef VERIFY
+
+#define	VERIFY(EX)	((void)((EX) || \
+			dtrace_assfail(#EX, __FILE__, __LINE__)))
+
 #if DEBUG
 #define	ASSERT(EX)	((void)((EX) || \
 			dtrace_assfail(#EX, __FILE__, __LINE__)))

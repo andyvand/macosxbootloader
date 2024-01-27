@@ -7,6 +7,7 @@
 
 #include "StdAfx.h"
 #include "Hibernate.h"
+
 #include "../rijndael/aes.h"
 
 #define HIBERNATE_HEADER_SIGNATURE											0x73696d65
@@ -21,7 +22,7 @@
 //
 // rtc hibernate vars
 //
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <pshpack1.h>
 #endif
 
@@ -46,7 +47,7 @@ typedef struct _RTC_HIBERNATE_VARS
 	// wired crypt key
 	//
 	UINT8																	WiredCryptKey[16];
-} GNUPACK RTC_HIBERNATE_VARS;
+}RTC_HIBERNATE_VARS;
 
 //
 // file extent
@@ -62,7 +63,7 @@ typedef struct _POLLED_FILE_EXTENT
 	// length
 	//
 	UINT64																	Length;
-} GNUPACK POLLED_FILE_EXTENT;
+}POLLED_FILE_EXTENT;
 
 //
 // hibernate image header
@@ -278,7 +279,7 @@ typedef struct _HIBERNATE_IMAGE_HEADER
 	// file extent map
 	//
 	POLLED_FILE_EXTENT														FileExtentMap[2];
-} GNUPACK HIBERNATE_IMAGE_HEADER;
+}HIBERNATE_IMAGE_HEADER;
 
 //
 // handoff
@@ -294,7 +295,7 @@ typedef struct _HIBERNATE_HANDOFF
 	// size
 	//
 	UINT32																	Size;
-} GNUPACK HIBERNATE_HANDOFF;
+}HIBERNATE_HANDOFF;
 
 //
 // graphics handoff
@@ -340,7 +341,7 @@ typedef struct _HIBERNATE_HANDOFF_GRAPHICS
 	// padding
 	//
 	UINT8																	Reserved[2];
-} GNUPACK HIBERNATE_HANDOFF_GRAPHICS;
+}HIBERNATE_HANDOFF_GRAPHICS;
 
 //
 // crypt wake vars
@@ -351,9 +352,9 @@ typedef struct _HIBERNATE_HANDOFF_CRYPT_VARS
 	// init vector
 	//
 	UINT8																	InitVector[16];
-} GNUPACK HIBERNATE_HANDOFF_CRYPT_VARS;
+}HIBERNATE_HANDOFF_CRYPT_VARS;
 
-#ifndef __APPLE__
+#if defined(_MSC_VER)
 #include <poppack.h>
 #endif
 
@@ -372,27 +373,41 @@ STATIC APPLE_SMC_PROTOCOL* HbpAppleSMCProtocol								= nullptr;
 //
 VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength, BOOLEAN resumeFromCoreStorage)
 {
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// read image head
 		//
 		STATIC HIBERNATE_IMAGE_HEADER localHeader							= {0};
 		if(EFI_ERROR(HbpDiskIoProtocol->ReadDisk(HbpDiskIoProtocol, HbpBlockIoProtocol->Media->MediaId, HbpDiskOffset, sizeof(localHeader), &localHeader)))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// check signature
 		//
 		if(localHeader.Signature != HIBERNATE_HEADER_SIGNATURE)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// check machine signature
 		//
 		UINT32 machineSignature												= 0;
 		if(!EFI_ERROR(AcpiGetMachineSignature(&machineSignature)) && machineSignature != localHeader.MachineSignature)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// get options
@@ -417,13 +432,21 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		UINTN descriptorSize												= 0;
 		UINT32 descriptorVersion											= 0;
 		if(EFI_ERROR(MmGetMemoryMap(&memoryMapSize, &memoryMap, &memoryMapKey, &descriptorSize, &descriptorVersion)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// remove non-runtime pages
 		//
 		if(EFI_ERROR(MmRemoveNonRuntimeDescriptors(memoryMap, &memoryMapSize, descriptorSize)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// allocate restore1 pages
@@ -432,7 +455,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		UINT64 restore1PhysicalAddress										= EFI_PAGES_TO_SIZE(static_cast<UINT64>(localHeader.Restore1CodePhysicalPage));
 		VOID* restore1Code													= MmAllocatePages(AllocateAddress, EfiLoaderData, localHeader.Restore1PageCount, &restore1PhysicalAddress);
 		if(!restore1Code)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// allocate runtime pages
@@ -440,7 +467,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		UINT64 runtimePagesPhysicalAddress									= EFI_PAGES_TO_SIZE(static_cast<UINT64>(localHeader.RuntimePages));
 		VOID* runtimePages													= MmAllocatePages(AllocateAddress, EfiLoaderData, localHeader.RuntimePageCount, &runtimePagesPhysicalAddress);
 		if(!runtimePages)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// allocate image1 buffer
@@ -449,7 +480,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		UINT64 image1PhysicalAddress										= 0;
 		VOID* image1Buffer													= MmAllocatePages(AllocateAnyPages, EfiLoaderData, static_cast<UINTN>(EFI_SIZE_TO_PAGES(image1Size)), &image1PhysicalAddress);
 		if(!image1Buffer)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// copy image header
@@ -468,13 +503,7 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		//
 		UINT8 progressSaveUnder[HIBERNATE_PROGRESS_COUNT][HIBERNATE_PROGRESS_SAVE_UNDER_SIZE];
 		UINT8 initVector[16]												= {0};
-
-#ifdef _MSC_VER
 		aes_decrypt_ctx aesContext											= {{0}};
-#else
-        aes_decrypt_ctx aesContext;
-#endif
-
 		UINT64 imageTotalLength												= image1Size + 1 * 1024 * 1024;
 		UINT64 leftLength													= image1Size - sizeof(HIBERNATE_IMAGE_HEADER);
 		UINT64 readOffset													= imageHeader->FileExtentMap[0].Offset + sizeof(HIBERNATE_IMAGE_HEADER);
@@ -504,7 +533,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		if(imageHeader->EncryptStart)
 		{
 			if(!imageKeyLength || !imageKey)
-				try_leave(NOTHING);
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return;
+#endif
 
 			//
 			// setup key
@@ -590,7 +623,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 				if(useDiskIoProtocol)
 				{
 					if(EFI_ERROR(HbpDiskIoProtocol->ReadDisk(HbpDiskIoProtocol, HbpBlockIoProtocol->Media->MediaId, readOffset, static_cast<UINTN>(lengthThisRun), readBuffer)))
-						try_leave(NOTHING);
+#if defined(_MSC_VER)
+                        try_leave(NOTHING);
+#else
+                        return;
+#endif
 					readSomething											= TRUE;
 					needFlush												= FALSE;
 				}
@@ -599,10 +636,18 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 					readSomething											= TRUE;
 					UINT64 offset											= imageHeader->DeviceBase + readOffset;
 					if((offset % HbpBlockIoProtocol->Media->BlockSize) || (lengthThisRun & (HbpBlockIoProtocol->Media->BlockSize - 1)))
-						try_leave(NOTHING);
+#if defined(_MSC_VER)
+                        try_leave(NOTHING);
+#else
+                        return;
+#endif
 
 					if(EFI_ERROR(HbpAppleDiskIoProtocol->ReadDisk(HbpAppleDiskIoProtocol, HbpBlockIoProtocol->Media->MediaId, offset / HbpBlockIoProtocol->Media->BlockSize, static_cast<UINTN>(lengthThisRun), readBuffer)))
+#if defined(_MSC_VER)
 						try_leave(NOTHING);
+#else
+                        return;
+#endif
 				}
 			}
 
@@ -709,7 +754,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		UINTN handoffPageCount												= (handoffSize >> EFI_PAGE_SHIFT) + 1;
 		VOID* handoffPages													= MmAllocatePages(AllocateAnyPages, EfiLoaderData, handoffPageCount, &handoffPhysicalAddress);
 		if(!handoffPages)
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// save handoff page info
@@ -779,9 +828,17 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		handoffHeader->Type													= HIBERNATE_HANDOFF_TYPE_MEMORY_MAP;
 		UINTN oldSize														= memoryMapSize;
 		if(EFI_ERROR(MmGetMemoryMap(&memoryMapSize, &memoryMap, &memoryMapKey, &descriptorSize, &descriptorVersion)) || EFI_ERROR(MmRemoveNonRuntimeDescriptors(memoryMap, &memoryMapSize, descriptorSize)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 		if(memoryMapSize > oldSize)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 		memcpy(handoffHeader + 1, memoryMap, memoryMapSize);
 
 		//
@@ -794,7 +851,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		// exit boot service
 		//
 		if(EFI_ERROR(EfiBootServices->ExitBootServices(EfiImageHandle, memoryMapKey)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// convert efi structure
@@ -803,7 +864,11 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		UINT64 rtVirtual													= EFI_PAGES_TO_SIZE(imageHeader->RuntimeVirtualPages);
 		memoryMap															= reinterpret_cast<EFI_MEMORY_DESCRIPTOR*>(handoffHeader + 1);
 		if(EFI_ERROR(MmConvertPointers(memoryMap, &memoryMapSize, descriptorSize, descriptorVersion, runtimePagesPhysicalAddress, imageHeader->RuntimePageCount, rtVirtual, &sysTablePhysicalAddress, FALSE, nullptr)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return;
+#endif
 
 		//
 		// clear serives pointer
@@ -842,10 +907,13 @@ VOID HbpContinueResumeFromHibernate(UINT8 CONST* imageKey, UINTN imageKeyLength,
 		// transfer to kernel
 		//
 		ArchStartKernel(Add2Ptr(restore1Code, imageHeader->Restore1CodeOffset, VOID*), ArchConvertAddressToPointer((ArchConvertPointerToAddress(imageHeader) >> EFI_PAGE_SHIFT), VOID*));
+#if defined(_MSC_VER)
+
 	}
 	__finally
 	{
 	}
+#endif
 }
 
 //
@@ -858,35 +926,49 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 	EFI_DEVICE_PATH_PROTOCOL* bootImagePath									= nullptr;
 	CHAR8* filePath															= nullptr;
 
+#if defined(_MSC_VER)
 	__try
 	{
+#endif
 		//
 		// skip safe mode
 		//
 		if(BlTestBootMode(BOOT_MODE_SAFE))
+#if defined(_MSC_VER)
 			try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read boot-switch-vars
 		//
 		UINTN dataSize														= sizeof(HbpHibernateVars);
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-switch-vars"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &HbpHibernateVars)))
+		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-switch-vars"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &HbpHibernateVars)))
 		{
 			//
 			// read boot-signature
 			//
 			dataSize														= sizeof(HbpHibernateVars.BootSignature);
-			if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-signature"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.BootSignature)))
-				try_leave(NOTHING);
-			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"boot-signature"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
+			if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-signature"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.BootSignature)))
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                return FALSE;
+#endif
+			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"boot-signature"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
 
 			//
 			// read boot-image-key
 			//
 			dataSize														= sizeof(HbpHibernateVars.WiredCryptKey);
-			if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-image-key"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.WiredCryptKey)))
-				try_leave(NOTHING);
-			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"boot-image-key"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
+			if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image-key"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.WiredCryptKey)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
+			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"boot-image-key"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
 
 			//
 			// setup default value
@@ -896,7 +978,7 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		}
 		else
 		{
-			EfiRuntimeServices->SetVariable(CHAR16_STRING((VOID *)L"boot-switch-vars"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
+			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"boot-switch-vars"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
 		}
 
 		//
@@ -906,7 +988,11 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		HbpBootImageKeyLength												= sizeof(HbpHibernateVars.WiredCryptKey);
 		HbpBootImageKey														= static_cast<UINT8*>(MmAllocatePool(HbpBootImageKeyLength));
 		if(!HbpBootImageKey)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 		memcpy(HbpBootImageKey, HbpHibernateVars.WiredCryptKey, sizeof(HbpHibernateVars.WiredCryptKey));
 
 		//
@@ -918,21 +1004,33 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		// get boot image size
 		//
 		dataSize															= 0;
-		if(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, nullptr) != EFI_BUFFER_TOO_SMALL || !dataSize)
-			try_leave(NOTHING);
-		
+		if(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, nullptr) != EFI_BUFFER_TOO_SMALL || !dataSize)
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
+
 		//
 		// allocate boot image buffer
 		//
 		bootImagePath														= static_cast<EFI_DEVICE_PATH_PROTOCOL*>(MmAllocatePool(dataSize));
 		if(!bootImagePath)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// read boot image
 		//
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING((VOID *)L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, bootImagePath)))
-			try_leave(NOTHING);
+		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, bootImagePath)))
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// locate block io protocol
@@ -940,19 +1038,31 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		EFI_DEVICE_PATH_PROTOCOL* blockIoDevicePath							= bootImagePath;
 		EFI_HANDLE deviceHandle												= nullptr;
 		if(EFI_ERROR(EfiBootServices->LocateDevicePath(&EfiBlockIoProtocolGuid, &blockIoDevicePath, &deviceHandle)))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// get disk io protocol
 		//
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiDiskIoProtocolGuid, reinterpret_cast<VOID**>(&HbpDiskIoProtocol))))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// get block io protocol
 		//
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiBlockIoProtocolGuid, reinterpret_cast<VOID**>(&HbpBlockIoProtocol))))
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// get apple disk io protocol
@@ -977,14 +1087,22 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		//
 		FILEPATH_DEVICE_PATH* filePathNode									= _CR(DevPathGetNode(bootImagePath, MEDIA_DEVICE_PATH, MEDIA_FILEPATH_DP), FILEPATH_DEVICE_PATH, Header);
 		if(!filePathNode)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// get file path
 		//
 		filePath															= BlAllocateUtf8FromUnicode(filePathNode->PathName, static_cast<UINTN>(-1));
 		if(!filePath)
-			try_leave(NOTHING);
+#if defined(_MSC_VER)
+            try_leave(NOTHING);
+#else
+            return FALSE;
+#endif
 
 		//
 		// get disk offset, hibernate key
@@ -1005,16 +1123,23 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 			}
 
 			if(resumeFromCoreStorage)
+#if defined(_MSC_VER)
 				try_leave(needReset = FALSE);
+#else
+            needReset = FALSE;
+            return needReset;
+#endif
 		}
 
 		//
 		// continue resume from hibernate
 		//
 		HbpContinueResumeFromHibernate(HbpBootImageKey, HbpBootImageKeyLength, FALSE);
+#if defined(_MSC_VER)
 	}
 	__finally
 	{
+#endif
 		if(bootImagePath)
 			MmFreePool(bootImagePath);
 
@@ -1023,7 +1148,9 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 
 		if(needReset)
 			EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
-	}
+#if defined(_MSC_VER)
+    }
+#endif
 
 	return resumeFromCoreStorage;
 }
