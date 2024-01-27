@@ -391,7 +391,7 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 #if defined(_MSC_VER)
 					try_leave(NOTHING);
 #else
-                    return -1;
+                    return EFI_SUCCESS;
 #endif
 				}
 
