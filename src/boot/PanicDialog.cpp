@@ -57,12 +57,13 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 	{
 #endif
 		panicInfoBuffer														= static_cast<UINT8*>(MmAllocatePool(totalInfoLength));
-		if(!panicInfoBuffer)
+        if(!panicInfoBuffer) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
+        }
 
 		//
 		// read all info
@@ -73,12 +74,16 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		for(UINT8 i = 0; i <= maxPanicInfoIndex && leftLength; i ++)
 		{
 			BlpPanicInfoName[17]											= static_cast<CHAR16>(i < 10 ? L'0' + i : L'A' + i - 10);
-			if(EFI_ERROR(EfiRuntimeServices->GetVariable(BlpPanicInfoName, &AppleNVRAMVariableGuid, nullptr, &dataSize, readBuffer)))
+            if(EFI_ERROR(EfiRuntimeServices->GetVariable(BlpPanicInfoName, &AppleNVRAMVariableGuid, nullptr, &dataSize, readBuffer))) {
 #if defined(_MSC_VER)
-				try_leave(NOTHING);
+                try_leave(NOTHING);
 #else
-                return FALSE;
+                if(panicInfoBuffer)
+                    MmFreePool(panicInfoBuffer);
+
+                return retValue;
 #endif
+            }
 
 			leftLength														-= dataSize;
 			readBuffer														= Add2Ptr(readBuffer, dataSize, VOID*);
@@ -113,7 +118,10 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            if(panicInfoBuffer)
+                MmFreePool(panicInfoBuffer);
+
+            return retValue;
 #endif
 		}
 		else if(EFI_ERROR(status) || panicInfoLog.Signature != 0x1234)
@@ -122,7 +130,10 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            if(panicInfoBuffer)
+                MmFreePool(panicInfoBuffer);
+
+            return retValue;
 #endif
 		}
 
@@ -149,12 +160,16 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 		panicInfoLog.CheckSum												= checkSum;
 		panicInfoLog.WriteIndex												= (panicInfoLog.WriteIndex + 1) % ARRAYSIZE(panicInfoLog.RebootTime);
 		panicInfoLog.RebootTime[panicInfoLog.WriteIndex]					= nowEfiTime;
-		if(EFI_ERROR(EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog)))
+        if(EFI_ERROR(EfiRuntimeServices->SetVariable(CHAR16_STRING(L"AAPL,PanicInfoLog"), &AppleNVRAMVariableGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE, sizeof(panicInfoLog), &panicInfoLog))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(panicInfoBuffer)
+                MmFreePool(panicInfoBuffer);
+            
+            return retValue;
 #endif
+        }
 
 		//
 		// check the same
@@ -164,6 +179,10 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
             try_leave(retValue = TRUE);
 #else
             retValue = TRUE;
+
+            if(panicInfoBuffer)
+                MmFreePool(panicInfoBuffer);
+
             return retValue;
 #endif
         }
@@ -175,7 +194,10 @@ STATIC BOOLEAN BlpDetectPanicLoop(UINT8 maxPanicInfoIndex, UINTN totalInfoLength
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(panicInfoBuffer)
+                MmFreePool(panicInfoBuffer);
+
+            return retValue;
 #endif
         }
 
@@ -235,24 +257,26 @@ VOID BlShowPanicDialog(CHAR8** kernelCommandLine)
 		//
 		UINTN dataSize														= 0;
 		BlpPanicInfoName[17]												= L'0';
-		if(EfiRuntimeServices->GetVariable(BlpPanicInfoName, &AppleNVRAMVariableGuid, nullptr, &dataSize, nullptr) != EFI_BUFFER_TOO_SMALL || !dataSize)
+        if(EfiRuntimeServices->GetVariable(BlpPanicInfoName, &AppleNVRAMVariableGuid, nullptr, &dataSize, nullptr) != EFI_BUFFER_TOO_SMALL || !dataSize) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
             return;
 #endif
+        }
 
 		//
 		// read Panic flags ?
 		//
 		UINT8 systemVolume													= 0;
 		dataSize															= sizeof(systemVolume);
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"SystemAudioVolume"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &systemVolume)) || !(systemVolume & 0x80))
+        if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"SystemAudioVolume"), &AppleNVRAMVariableGuid, nullptr, &dataSize, &systemVolume)) || !(systemVolume & 0x80)) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
             return;
 #endif
+        }
 
 		//
 		// get all info length
@@ -276,12 +300,13 @@ VOID BlShowPanicDialog(CHAR8** kernelCommandLine)
 		//
 		// detect panic loop
 		//
-		if(!EFI_ERROR(status) && totalLength && BlpDetectPanicLoop(maxIndex, totalLength))
+        if(!EFI_ERROR(status) && totalLength && BlpDetectPanicLoop(maxIndex, totalLength)) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
             return;
 #endif
+        }
 
 		CsPrintf(CHAR8_CONST_STRING("\n"));
 		CsPrintf(CHAR8_CONST_STRING("***************************************************************\n"));

@@ -369,6 +369,10 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
             return status;
 #endif
         }
@@ -378,12 +382,16 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		//
 		if(EFI_ERROR(status = IoReadWholeFile(nullptr, CHAR8_CONST_STRING("System\\Library\\Caches\\com.apple.corestorage\\EncryptedRoot.plist.wipekey"), &fileBuffer, &fileSize, TRUE)))
 		{
-			if(EFI_ERROR(status = IoReadWholeFile(nullptr, CHAR8_CONST_STRING("EncryptedRoot.plist.wipekey"), &fileBuffer, &fileSize, TRUE)))
+            if(EFI_ERROR(status = IoReadWholeFile(nullptr, CHAR8_CONST_STRING("EncryptedRoot.plist.wipekey"), &fileBuffer, &fileSize, TRUE))) {
 #if defined(_MSC_VER)
-				try_leave(NOTHING);
+                try_leave(NOTHING);
 #else
-                return -1;
+                if(fileBuffer)
+                    MmFreePool(fileBuffer);
+
+                return status;
 #endif
+            }
 		}
 
 		//
@@ -394,6 +402,10 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
             return status;
 #endif
         }
@@ -402,23 +414,31 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		// open core storage block io protocol
 		//
 		EFI_BLOCK_IO_PROTOCOL* blockIoProtocol								= nullptr;
-		if(EFI_ERROR(status = EfiBootServices->HandleProtocol(coreStoragePartitionHandle, &EfiBlockIoProtocolGuid, reinterpret_cast<VOID**>(&blockIoProtocol))))
+        if(EFI_ERROR(status = EfiBootServices->HandleProtocol(coreStoragePartitionHandle, &EfiBlockIoProtocolGuid, reinterpret_cast<VOID**>(&blockIoProtocol)))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            return status;
 #endif
+        }
 
 		//
 		// open disk io protocol
 		//
 		EFI_DISK_IO_PROTOCOL* diskIoProtocol								= nullptr;
-		if(EFI_ERROR(status = EfiBootServices->HandleProtocol(coreStoragePartitionHandle, &EfiDiskIoProtocolGuid, reinterpret_cast<VOID**>(&diskIoProtocol))))
+        if(EFI_ERROR(status = EfiBootServices->HandleProtocol(coreStoragePartitionHandle, &EfiDiskIoProtocolGuid, reinterpret_cast<VOID**>(&diskIoProtocol)))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            return status;
 #endif
+        }
 
 		//
 		// read volume header
@@ -427,12 +447,16 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		UINT64 offset														= blockIoProtocol->Media->LastBlock * blockIoProtocol->Media->BlockSize;
 		if(EFI_ERROR(status = diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, offset, sizeof(localHeader), &localHeader)))
 		{
-			if(EFI_ERROR(status = diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, 0, sizeof(localHeader), &localHeader)))
+            if(EFI_ERROR(status = diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, 0, sizeof(localHeader), &localHeader))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                if(fileBuffer)
+                    MmFreePool(fileBuffer);
+
+                return status;
 #endif
+            }
 		}
 
 		//
@@ -443,6 +467,10 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
             try_leave(status = EFI_VOLUME_CORRUPTED);
 #else
             status = EFI_VOLUME_CORRUPTED;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
             return status;
 #endif
         }
@@ -459,12 +487,16 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		//
 		// load as plist
 		//
-		if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, &FvpEncryptedRootPlistTag)))
+        if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, &FvpEncryptedRootPlistTag))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            return status;
 #endif
+        }
 
 		//
 		// get wrapped volume key list
@@ -475,6 +507,10 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
             try_leave(status = EFI_VOLUME_CORRUPTED);
 #else
             status = EFI_VOLUME_CORRUPTED;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
             return status;
 #endif
         }
@@ -488,6 +524,10 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
             try_leave(status = EFI_VOLUME_CORRUPTED);
 #else
             status = EFI_VOLUME_CORRUPTED;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
             return status;
 #endif
         }
@@ -496,13 +536,18 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
 		// get user list
 		//
 		XML_TAG* cryptoUserListTag											= CmGetTagValueForKey(FvpEncryptedRootPlistTag, CHAR8_CONST_STRING("CryptoUsers"));
-		if(!cryptoUserListTag || cryptoUserListTag->Type != XML_TAG_ARRAY)
+        if(!cryptoUserListTag || cryptoUserListTag->Type != XML_TAG_ARRAY) {
 #if defined(_MSC_VER)
-			try_leave(status = EFI_NOT_FOUND);
+            try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
             return status;
 #endif
+        }
 
 		//
 		// check count
@@ -513,6 +558,10 @@ STATIC EFI_STATUS FvpLoadCoreStorageConfig(EFI_HANDLE coreStoragePartitionHandle
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
             return status;
 #endif
         }

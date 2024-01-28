@@ -193,7 +193,17 @@ EFI_STATUS CspLoadLogoFile(CHAR8 CONST* logoFileName, EFI_UGA_PIXEL** logoImage,
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (fileBuffer)
+            {
+                MmFreePool(fileBuffer);
+            }
+
+            if (handleArray)
+            {
+                EfiBootServices->FreePool(handleArray);
+            }
+
+            return status;
 #endif
 		}
 
@@ -207,7 +217,17 @@ EFI_STATUS CspLoadLogoFile(CHAR8 CONST* logoFileName, EFI_UGA_PIXEL** logoImage,
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if (fileBuffer)
+            {
+                MmFreePool(fileBuffer);
+            }
+
+            if (handleArray)
+            {
+                EfiBootServices->FreePool(handleArray);
+            }
+
+            return status;
 #endif
 		}
 
@@ -232,9 +252,19 @@ EFI_STATUS CspLoadLogoFile(CHAR8 CONST* logoFileName, EFI_UGA_PIXEL** logoImage,
 			if (EFI_ERROR(status = EfiBootServices->HandleProtocol(theHandle, &AppleImageCodecProtocolGuid, reinterpret_cast<VOID**>(&imageCodecProtocol))))
 			{
 #if defined(_MSC_VER)
-            try_leave(NOTHING);
+                try_leave(NOTHING);
 #else
-            return -1;
+                if (fileBuffer)
+                {
+                    MmFreePool(fileBuffer);
+                }
+
+                if (handleArray)
+                {
+                    EfiBootServices->FreePool(handleArray);
+                }
+
+                return status;
 #endif
 			}
 
@@ -255,7 +285,17 @@ EFI_STATUS CspLoadLogoFile(CHAR8 CONST* logoFileName, EFI_UGA_PIXEL** logoImage,
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if (fileBuffer)
+            {
+                MmFreePool(fileBuffer);
+            }
+
+            if (handleArray)
+            {
+                EfiBootServices->FreePool(handleArray);
+            }
+
+            return status;
 #endif
 		}
 
@@ -267,7 +307,17 @@ EFI_STATUS CspLoadLogoFile(CHAR8 CONST* logoFileName, EFI_UGA_PIXEL** logoImage,
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if (fileBuffer)
+            {
+                MmFreePool(fileBuffer);
+            }
+
+            if (handleArray)
+            {
+                EfiBootServices->FreePool(handleArray);
+            }
+
+            return status;
 #endif
 		}
 
@@ -281,7 +331,17 @@ EFI_STATUS CspLoadLogoFile(CHAR8 CONST* logoFileName, EFI_UGA_PIXEL** logoImage,
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if (fileBuffer)
+            {
+                MmFreePool(fileBuffer);
+            }
+
+            if (handleArray)
+            {
+                EfiBootServices->FreePool(handleArray);
+            }
+
+            return status;
 #endif
 		}
 
@@ -382,6 +442,24 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 					try_leave(status = *logoImage ? EFI_SUCCESS : EFI_OUT_OF_RESOURCES);
 #else
                     status = *logoImage ? EFI_SUCCESS : EFI_OUT_OF_RESOURCES;
+
+                    if (imageData)
+                    {
+                        MmFreePool(imageData);
+                    }
+
+                    if (efiAllocatedData)
+                    {
+                        EfiBootServices->FreePool(efiAllocatedData);
+                    }
+
+                    if (EFI_ERROR(status))
+                    {
+                        *imageWidth                                                        = 0;
+                        *imageHeight                                                    = 0;
+                        *logoImage                                                        = nullptr;
+                    }
+
                     return status;
 #endif
 				}
@@ -391,7 +469,24 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 #if defined(_MSC_VER)
 					try_leave(NOTHING);
 #else
-                    return EFI_SUCCESS;
+                    if (imageData)
+                    {
+                        MmFreePool(imageData);
+                    }
+
+                    if (efiAllocatedData)
+                    {
+                        EfiBootServices->FreePool(efiAllocatedData);
+                    }
+
+                    if (EFI_ERROR(status))
+                    {
+                        *imageWidth                                                        = 0;
+                        *imageHeight                                                    = 0;
+                        *logoImage                                                        = nullptr;
+                    }
+
+                    return status;
 #endif
 				}
 
@@ -450,6 +545,24 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 			try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if (imageData)
+            {
+                MmFreePool(imageData);
+            }
+
+            if (efiAllocatedData)
+            {
+                EfiBootServices->FreePool(efiAllocatedData);
+            }
+
+            if (EFI_ERROR(status))
+            {
+                *imageWidth                                                        = 0;
+                *imageHeight                                                    = 0;
+                *logoImage                                                        = nullptr;
+            }
+
             return status;
 #endif
 		}
@@ -462,7 +575,24 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return -1;
+                if (imageData)
+                {
+                    MmFreePool(imageData);
+                }
+
+                if (efiAllocatedData)
+                {
+                    EfiBootServices->FreePool(efiAllocatedData);
+                }
+
+                if (EFI_ERROR(status))
+                {
+                    *imageWidth                                                        = 0;
+                    *imageHeight                                                    = 0;
+                    *logoImage                                                        = nullptr;
+                }
+
+                return status;
 #endif
 			}
 		}
@@ -474,7 +604,24 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return -1;
+                if (imageData)
+                {
+                    MmFreePool(imageData);
+                }
+
+                if (efiAllocatedData)
+                {
+                    EfiBootServices->FreePool(efiAllocatedData);
+                }
+
+                if (EFI_ERROR(status))
+                {
+                    *imageWidth                                                        = 0;
+                    *imageHeight                                                    = 0;
+                    *logoImage                                                        = nullptr;
+                }
+
+                return status;
 #endif
 			}
 #if (TARGET_OS >= YOSMITE)
@@ -488,7 +635,24 @@ STATIC EFI_STATUS CspConvertLogoImage(BOOLEAN normalLogo, EFI_UGA_PIXEL** logoIm
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (imageData)
+            {
+                MmFreePool(imageData);
+            }
+
+            if (efiAllocatedData)
+            {
+                EfiBootServices->FreePool(efiAllocatedData);
+            }
+
+            if (EFI_ERROR(status))
+            {
+                *imageWidth                                                        = 0;
+                *imageHeight                                                    = 0;
+                *logoImage                                                        = nullptr;
+            }
+
+            return status;
 #endif
 		}
 #if defined(_MSC_VER)
@@ -669,6 +833,32 @@ STATIC EFI_STATUS CspDecodeAndDrawPreviewBuffer(HIBERNATE_PREVIEW* previewBuffer
 			try_leave(status = EFI_INVALID_PARAMETER);
 #else
             status = EFI_INVALID_PARAMETER;
+
+            if (sc0)
+            {
+                MmFreePool(sc0);
+            }
+
+            if (sc1)
+            {
+                MmFreePool(sc1);
+            }
+
+            if (sc2)
+            {
+                MmFreePool(sc2);
+            }
+
+            if (sc3)
+            {
+                MmFreePool(sc3);
+            }
+
+            if (row)
+            {
+                MmFreePool(row);
+            }
+
             return status;
 #endif
 		}
@@ -682,7 +872,33 @@ STATIC EFI_STATUS CspDecodeAndDrawPreviewBuffer(HIBERNATE_PREVIEW* previewBuffer
 			try_leave(CspDecodeAndDrawPreviewBufferColored(previewBuffer, imageIndex, horzRes, vertRes, bytesPerRow / sizeof(UINT32), frameBuffer, config));
 #else
             CspDecodeAndDrawPreviewBufferColored(previewBuffer, imageIndex, horzRes, vertRes, bytesPerRow / sizeof(UINT32), frameBuffer, config);
-            return 0;
+
+            if (sc0)
+            {
+                MmFreePool(sc0);
+            }
+
+            if (sc1)
+            {
+                MmFreePool(sc1);
+            }
+
+            if (sc2)
+            {
+                MmFreePool(sc2);
+            }
+
+            if (sc3)
+            {
+                MmFreePool(sc3);
+            }
+
+            if (row)
+            {
+                MmFreePool(row);
+            }
+
+            return status;
 #endif
 		}
 
@@ -703,6 +919,32 @@ STATIC EFI_STATUS CspDecodeAndDrawPreviewBuffer(HIBERNATE_PREVIEW* previewBuffer
 			try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if (sc0)
+            {
+                MmFreePool(sc0);
+            }
+
+            if (sc1)
+            {
+                MmFreePool(sc1);
+            }
+
+            if (sc2)
+            {
+                MmFreePool(sc2);
+            }
+
+            if (sc3)
+            {
+                MmFreePool(sc3);
+            }
+
+            if (row)
+            {
+                MmFreePool(row);
+            }
+
             return status;
 #endif
 		}
@@ -1155,7 +1397,12 @@ EFI_STATUS CsDrawBootImage(BOOLEAN normalLogo)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (dataBuffer)
+            {
+                MmFreePool(dataBuffer);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1172,7 +1419,12 @@ EFI_STATUS CsDrawBootImage(BOOLEAN normalLogo)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (dataBuffer)
+            {
+                MmFreePool(dataBuffer);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1190,7 +1442,12 @@ EFI_STATUS CsDrawBootImage(BOOLEAN normalLogo)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (dataBuffer)
+            {
+                MmFreePool(dataBuffer);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1210,6 +1467,12 @@ EFI_STATUS CsDrawBootImage(BOOLEAN normalLogo)
 			try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if (dataBuffer)
+            {
+                MmFreePool(dataBuffer);
+            }
+
             return status;
 #endif
 		}
@@ -1222,7 +1485,12 @@ EFI_STATUS CsDrawBootImage(BOOLEAN normalLogo)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (dataBuffer)
+            {
+                MmFreePool(dataBuffer);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1234,7 +1502,12 @@ EFI_STATUS CsDrawBootImage(BOOLEAN normalLogo)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (dataBuffer)
+            {
+                MmFreePool(dataBuffer);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1251,7 +1524,12 @@ EFI_STATUS CsDrawBootImage(BOOLEAN normalLogo)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (dataBuffer)
+            {
+                MmFreePool(dataBuffer);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1296,7 +1574,17 @@ EFI_STATUS CsDrawPanicImage()
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (imageData)
+            {
+                MmFreePool(imageData);
+            }
+
+            if (panicImage)
+            {
+                MmFreePool(panicImage);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1313,7 +1601,17 @@ EFI_STATUS CsDrawPanicImage()
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (imageData)
+            {
+                MmFreePool(imageData);
+            }
+
+            if (panicImage)
+            {
+                MmFreePool(panicImage);
+            }
+
+            return status;
 #endif
 		}
 #else
@@ -1322,7 +1620,17 @@ EFI_STATUS CsDrawPanicImage()
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (imageData)
+            {
+                MmFreePool(imageData);
+            }
+
+            if (panicImage)
+            {
+                MmFreePool(panicImage);
+            }
+
+            return status;
 #endif
 		}
 #endif // #if (TARGET_OD => YOSEMITE)
@@ -1335,7 +1643,17 @@ EFI_STATUS CsDrawPanicImage()
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if (imageData)
+            {
+                MmFreePool(imageData);
+            }
+
+            if (panicImage)
+            {
+                MmFreePool(panicImage);
+            }
+
+            return status;
 #endif
 		}
 
@@ -1537,6 +1855,11 @@ VOID CsDrawPreview(HIBERNATE_PREVIEW* previewBuffer, UINT32 imageIndex, UINT8 pr
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
+            if (configBuffer)
+            {
+                MmFreePool(configBuffer);
+            }
+
             return;
 #endif
 		}
@@ -1549,6 +1872,11 @@ VOID CsDrawPreview(HIBERNATE_PREVIEW* previewBuffer, UINT32 imageIndex, UINT8 pr
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
+            if (configBuffer)
+            {
+                MmFreePool(configBuffer);
+            }
+
             return;
 #endif
 		}
@@ -1611,6 +1939,11 @@ VOID CsDrawPreview(HIBERNATE_PREVIEW* previewBuffer, UINT32 imageIndex, UINT8 pr
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
+            if (configBuffer)
+            {
+                MmFreePool(configBuffer);
+            }
+
             return;
 #endif
 		}

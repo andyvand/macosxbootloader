@@ -53,12 +53,13 @@ EFI_STATUS NetSetupDeviceTree(EFI_HANDLE bootDeviceHandle)
 		APPLE_NET_BOOT_PROTOCOL* netBootProtocol							= nullptr;
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(bootDeviceHandle, &AppleNetBootProtocolGuid, reinterpret_cast<VOID**>(&netBootProtocol))))
 		{
-			if(EFI_ERROR(EfiBootServices->LocateProtocol(&AppleNetBootProtocolGuid, nullptr, reinterpret_cast<VOID**>(&netBootProtocol))))
+            if(EFI_ERROR(EfiBootServices->LocateProtocol(&AppleNetBootProtocolGuid, nullptr, reinterpret_cast<VOID**>(&netBootProtocol)))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                return status;
 #endif
+            }
         }
 
 		//
@@ -78,23 +79,25 @@ EFI_STATUS NetSetupDeviceTree(EFI_HANDLE bootDeviceHandle)
 		// get length
 		//
 		UINTN bufferSize													= 0;
-		if(netBootProtocol->GetDhcpResponse(netBootProtocol, &bufferSize, nullptr) != EFI_BUFFER_TOO_SMALL)
+        if(netBootProtocol->GetDhcpResponse(netBootProtocol, &bufferSize, nullptr) != EFI_BUFFER_TOO_SMALL) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// allocate buffer
 		//
 		dhcpResponse														= MmAllocatePool(bufferSize);
-		if(!dhcpResponse)
+        if(!dhcpResponse) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// get and add it
@@ -106,23 +109,31 @@ EFI_STATUS NetSetupDeviceTree(EFI_HANDLE bootDeviceHandle)
 		// get length
 		//
 		bufferSize															= 0;
-		if(netBootProtocol->GetBsdpResponse(netBootProtocol, &bufferSize, nullptr) != EFI_BUFFER_TOO_SMALL)
+        if(netBootProtocol->GetBsdpResponse(netBootProtocol, &bufferSize, nullptr) != EFI_BUFFER_TOO_SMALL) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(dhcpResponse)
+                MmFreePool(dhcpResponse);
+
+            return status;
 #endif
+        }
 
 		//
 		// allocate buffer
 		//
 		bsdpResponse														= MmAllocatePool(bufferSize);
-		if(!bsdpResponse)
+        if(!bsdpResponse) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(dhcpResponse)
+                MmFreePool(dhcpResponse);
+
+            return status;
 #endif
+        }
 
 		//
 		// get and add it

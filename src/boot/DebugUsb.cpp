@@ -172,7 +172,7 @@ STATIC BOOLEAN BdUsbpWait(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 millisecond)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -193,7 +193,7 @@ STATIC BOOLEAN BdUsbpWait(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 millisecond)
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -204,7 +204,7 @@ STATIC BOOLEAN BdUsbpWait(DEBUG_USB_GLOBAL_DATA* globalData, UINT32 millisecond)
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -243,7 +243,7 @@ STATIC BOOLEAN BdUsbpHaltController(DEBUG_USB_GLOBAL_DATA* globalData)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -267,7 +267,7 @@ STATIC BOOLEAN BdUsbpHaltController(DEBUG_USB_GLOBAL_DATA* globalData)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -289,7 +289,7 @@ STATIC BOOLEAN BdUsbpHaltController(DEBUG_USB_GLOBAL_DATA* globalData)
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -332,7 +332,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -343,7 +343,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -365,7 +365,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -382,7 +382,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -392,7 +392,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -419,7 +419,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -436,7 +436,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -447,7 +447,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -458,7 +458,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -469,7 +469,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -484,7 +484,7 @@ STATIC BOOLEAN BdUsbpInitializeControllerHardware(DEBUG_USB_GLOBAL_DATA* globalD
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 		}
 		retValue															= TRUE;
@@ -623,7 +623,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -644,7 +644,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -674,7 +674,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -700,7 +700,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 					try_leave(NOTHING);
 #else
-                    return FALSE;
+                    return retValue;
 #endif
 
 				//
@@ -732,7 +732,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -743,7 +743,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -760,7 +760,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -771,7 +771,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -802,7 +802,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -828,7 +828,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 					try_leave(NOTHING);
 #else
-                    return FALSE;
+                    return retValue;
 #endif
 
 				//
@@ -860,7 +860,7 @@ STATIC BOOLEAN BdUsbpControlRead(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAdd
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -927,7 +927,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -948,7 +948,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -981,7 +981,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
 					try_leave(NOTHING);
 #else
-                    return FALSE;
+                    return retValue;
 #endif
 
 				//
@@ -1013,7 +1013,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
 						try_leave(NOTHING);
 #else
-                        return FALSE;
+                        return retValue;
 #endif
 
 					//
@@ -1045,7 +1045,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
 					try_leave(NOTHING);
 #else
-                    return FALSE;
+                    return retValue;
 #endif
 
 				//
@@ -1056,7 +1056,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
 					try_leave(NOTHING);
 #else
-                    return FALSE;
+                    return retValue;
 #endif
 
 				//
@@ -1073,7 +1073,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 		}
 
@@ -1091,7 +1091,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -1117,7 +1117,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return FALSE;
+                    return retValue;
 #endif
 
 				//
@@ -1149,7 +1149,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -1160,7 +1160,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -1176,7 +1176,7 @@ STATIC BOOLEAN BdUsbpControlWrite(DEBUG_USB_GLOBAL_DATA* globalData, UINT8 usbAd
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return FALSE;
+                    return retValue;
 #endif
 
 				//
@@ -1271,7 +1271,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 		//
@@ -1301,7 +1301,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1312,7 +1312,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1327,7 +1327,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1338,7 +1338,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1354,7 +1354,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -1370,7 +1370,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -1386,7 +1386,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1397,7 +1397,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1407,7 +1407,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1417,7 +1417,7 @@ STATIC BOOLEAN BdUsbpTryInitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData, BOOL
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1456,7 +1456,7 @@ STATIC BOOLEAN BdUsbpReinitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            return retValue;
 #endif
 
 		//
@@ -1477,7 +1477,7 @@ STATIC BOOLEAN BdUsbpReinitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -1503,7 +1503,7 @@ STATIC BOOLEAN BdUsbpReinitializeDevice(DEBUG_USB_GLOBAL_DATA* globalData)
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                return retValue;
 #endif
 
 			//
@@ -1571,7 +1571,7 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return -1;
+                    return retValue;
 #endif
 
 			//
@@ -1593,7 +1593,7 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return -1;
+                    return retValue;
 #endif
 
 				//
@@ -1612,7 +1612,7 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 #else
                 CsPrintf(CHAR8_CONST_STRING("[READ] timeout\n"));
                 BdUsbpReinitializeDevice(globalData);
-                return -1;
+                return retValue;
 #endif
             }
 
@@ -1635,7 +1635,7 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return -1;
+                    return retValue;
 #endif
 
 			//
@@ -1658,7 +1658,7 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
                 try_leave(CsPrintf(CHAR8_CONST_STRING("[READ] STALL\n")));
 #else
                 CsPrintf(CHAR8_CONST_STRING("[READ] STALL\n"));
-                return -1;
+                return retValue;
 #endif
             }
 
@@ -1684,7 +1684,7 @@ STATIC UINT32 BdUsbpReadPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID* data
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                return retValue;
 #endif
 
 			//
@@ -1759,7 +1759,7 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return -1;
+                return retValue;
 #endif
 
 			//
@@ -1781,7 +1781,7 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return -1;
+                    return retValue;
 #endif
 
 				//
@@ -1798,7 +1798,7 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                return retValue;
 #endif
 
 			//
@@ -1820,7 +1820,7 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                return retValue;
 #endif
 
 			//
@@ -1843,7 +1843,7 @@ STATIC UINT32 BdUsbpSendPacketOnce(DEBUG_USB_GLOBAL_DATA* globalData, VOID CONST
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return -1;
+                return retValue;
 #endif
 
 			//
@@ -2440,13 +2440,19 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 	__try
 	{
 #endif
-		if(!loaderOptions || !loaderOptions[0])
+        if(!loaderOptions || !loaderOptions[0]) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
-#endif
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
 
+            return status;
+#endif
+        }
 		//
 		// check target name
 		//
@@ -2456,6 +2462,13 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_INVALID_PARAMETER);
 #else
             status = EFI_INVALID_PARAMETER;
+
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
             return status;
 #endif
         }
@@ -2473,12 +2486,19 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		//
 		// connect all
 		//
-		if(strstr(loaderOptions, CHAR8_CONST_STRING("/connectall")) && EFI_ERROR(status = BlConnectAllController()))
+        if(strstr(loaderOptions, CHAR8_CONST_STRING("/connectall")) && EFI_ERROR(status = BlConnectAllController())) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// parse location
@@ -2493,12 +2513,19 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		// find pci device
 		//
 		EFI_PCI_IO_PROTOCOL* pciIoProtocol									= nullptr;
-		if(EFI_ERROR(status	= BlFindPciDevice(segment, bus, device, func, PCI_CLASS_SERIAL, PCI_CLASS_SERIAL_USB, 0x20, &pciIoProtocol, nullptr)))
+        if(EFI_ERROR(status	= BlFindPciDevice(segment, bus, device, func, PCI_CLASS_SERIAL, PCI_CLASS_SERIAL_USB, 0x20, &pciIoProtocol, nullptr))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// get bar attribute
@@ -2506,12 +2533,19 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		UINT64 phyAddress													= 0;
 		UINT64 barLength													= 0;
 		BOOLEAN isMemorySpace												= FALSE;
-		if(EFI_ERROR(status = BlGetPciBarAttribute(pciIoProtocol, 0, &phyAddress, &barLength, &isMemorySpace)))
+        if(EFI_ERROR(status = BlGetPciBarAttribute(pciIoProtocol, 0, &phyAddress, &barLength, &isMemorySpace))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// check bar length
@@ -2521,6 +2555,13 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
             return status;
 #endif
         }
@@ -2528,12 +2569,19 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		//
 		// start device
 		//
-		if(EFI_ERROR(status = BlStartPciDevice(pciIoProtocol, FALSE, TRUE, TRUE)))
+        if(EFI_ERROR(status = BlStartPciDevice(pciIoProtocol, FALSE, TRUE, TRUE))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// 4GB check
@@ -2543,6 +2591,13 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
             return status;
 #endif
         }
@@ -2556,6 +2611,13 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
             return status;
 #endif
         }
@@ -2581,6 +2643,13 @@ EFI_STATUS BdUsbConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_DEVICE_ERROR);
 #else
             status = EFI_DEVICE_ERROR;
+
+            if(EFI_ERROR(status) && BdUsbpGlobalData)
+            {
+                MmFreePool(BdUsbpGlobalData);
+                BdUsbpGlobalData                                                = nullptr;
+            }
+
             return status;
 #endif
         }

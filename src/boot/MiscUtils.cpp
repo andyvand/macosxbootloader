@@ -73,19 +73,27 @@ EFI_STATUS BlConnectAllController()
 		{
 			UINTN totalHandles												= 0;
 
-			if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(AllHandles, nullptr, nullptr, &totalHandles, &handleArray)))
-#if defined(_MSC_VER)
-				try_leave(NOTHING);
-#else
-                return -1;
-#endif
-
-			if (lastHandles == totalHandles)
+            if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(AllHandles, nullptr, nullptr, &totalHandles, &handleArray))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                if (handleArray)
+                    EfiBootServices->FreePool(handleArray);
+
+                return status;
 #endif
+            }
+
+            if (lastHandles == totalHandles) {
+#if defined(_MSC_VER)
+                try_leave(NOTHING);
+#else
+                if (handleArray)
+                    EfiBootServices->FreePool(handleArray);
+
+                return status;
+#endif
+            }
 
 			for (UINTN i = 0; i < totalHandles; i ++)
 				EfiBootServices->ConnectController(handleArray[i], nullptr, nullptr, TRUE);
@@ -218,12 +226,16 @@ EFI_STATUS BlFindPciDevice(UINTN segment, UINTN bus, UINTN device, UINTN func, U
 		//
 		// Locate PCI io protocol handle.
 		//
-		if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiPciIoProtocolGuid, nullptr, &totalHandles, &handleArray)))
+        if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiPciIoProtocolGuid, nullptr, &totalHandles, &handleArray))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if (handleArray)
+                EfiBootServices->FreePool(handleArray);
+
+            return status;
 #endif
+        }
 
 		//
 		// For each handle, check it.
@@ -283,6 +295,10 @@ EFI_STATUS BlFindPciDevice(UINTN segment, UINTN bus, UINTN device, UINTN func, U
                     *outHandle = theHandle;
                 
                 status = EFI_SUCCESS;
+
+                if (handleArray)
+                    EfiBootServices->FreePool(handleArray);
+
                 return status;
 #endif
             }

@@ -398,7 +398,11 @@ STATIC INTN CmpParseTagList(CHAR8* contentBuffer, XML_TAG** theTag, UINTN tagTyp
                     try_leave(position = -1);
 #else
                     position = -1;
-                    return -1;
+
+                    if(position == -1 && tagList)
+                        CmFreeTag(tagList);
+
+                    return position;
 #endif
                 }
 
@@ -422,7 +426,11 @@ STATIC INTN CmpParseTagList(CHAR8* contentBuffer, XML_TAG** theTag, UINTN tagTyp
             try_leave(position = -1);
 #else
             position = -1;
-            return -1;
+
+            if(position == -1 && tagList)
+                CmFreeTag(tagList);
+
+            return position;
 #endif
         }
 
@@ -460,36 +468,76 @@ STATIC INTN CmpParseTagKey(CHAR8* contentBuffer, XML_TAG** theTag)
 	{
 #endif
 		length																= CmpFixDataMatchingTag(contentBuffer, CHAR8_CONST_STRING("key"));
-		if(length == -1)
+        if(length == -1) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(retValue == -1)
+            {
+                if(subTag)
+                    CmFreeTag(subTag);
+
+                if(tempTag)
+                    CmFreeTag(tempTag);
+            }
+
+            return retValue;
 #endif
+        }
 
 		length2																= CmpParseNextTag(contentBuffer + length, &subTag);
-		if(length2 == -1)
+        if(length2 == -1) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(retValue == -1)
+            {
+                if(subTag)
+                    CmFreeTag(subTag);
+
+                if(tempTag)
+                    CmFreeTag(tempTag);
+            }
+
+            return retValue;
 #endif
+        }
 
 		tempTag																= CmpNewTag();
-		if(!tempTag)
+        if(!tempTag) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(retValue == -1)
+            {
+                if(subTag)
+                    CmFreeTag(subTag);
+
+                if(tempTag)
+                    CmFreeTag(tempTag);
+            }
+
+            return retValue;
 #endif
+        }
 
 		CHAR8* stringValue													= CmpNewSymbol(contentBuffer);
-		if(!stringValue)
+        if(!stringValue) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(retValue == -1)
+            {
+                if(subTag)
+                    CmFreeTag(subTag);
+                
+                if(tempTag)
+                    CmFreeTag(tempTag);
+            }
+            
+            return retValue;
 #endif
+        }
 
 		tempTag->Type														= XML_TAG_KEY;
 		tempTag->StringValue												= stringValue;

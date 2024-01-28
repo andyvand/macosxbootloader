@@ -1001,12 +1001,29 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 	__try
 	{
 #endif
-		if(!loaderOptions || !loaderOptions[0])
+        if(!loaderOptions || !loaderOptions[0]) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// get channel
@@ -1018,6 +1035,23 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_INVALID_PARAMETER);
 #else
             status = EFI_INVALID_PARAMETER;
+
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
             return status;
 #endif
         }
@@ -1034,12 +1068,29 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		//
 		// connect all
 		//
-		if(strstr(loaderOptions, CHAR8_CONST_STRING("/connectall")) && EFI_ERROR(status = BlConnectAllController()))
+        if(strstr(loaderOptions, CHAR8_CONST_STRING("/connectall")) && EFI_ERROR(status = BlConnectAllController())) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// parse location
@@ -1056,12 +1107,29 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		EFI_PCI_IO_PROTOCOL* pciIoProtocol									= nullptr;
 		EFI_HANDLE controllerHandle											= nullptr;
 
-		if(EFI_ERROR(status = BlFindPciDevice(segment, bus, device, func, PCI_CLASS_SERIAL, PCI_CLASS_SERIAL_FIREWIRE, 0x10, &pciIoProtocol, &controllerHandle)))
+        if(EFI_ERROR(status = BlFindPciDevice(segment, bus, device, func, PCI_CLASS_SERIAL, PCI_CLASS_SERIAL_FIREWIRE, 0x10, &pciIoProtocol, &controllerHandle))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// disconnect from efi
@@ -1080,32 +1148,83 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 		UINT64 phyAddress													= 0;
 		UINT64 barLength													= 0;
 		BOOLEAN isMemorySpace												= FALSE;
-		if(EFI_ERROR(status = BlGetPciBarAttribute(pciIoProtocol, 0, &phyAddress, &barLength, &isMemorySpace)))
+        if(EFI_ERROR(status = BlGetPciBarAttribute(pciIoProtocol, 0, &phyAddress, &barLength, &isMemorySpace))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// check bar length
 		//
-		if(barLength < 0x800 || !isMemorySpace)
+        if(barLength < 0x800 || !isMemorySpace) {
 #if defined(_MSC_VER)
-			try_leave(status = EFI_NOT_FOUND);
+            try_leave(status = EFI_NOT_FOUND);
 #else
-            return -1;
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// start device
 		//
-		if(EFI_ERROR(status = BlStartPciDevice(pciIoProtocol, FALSE, TRUE, TRUE)))
+        if(EFI_ERROR(status = BlStartPciDevice(pciIoProtocol, FALSE, TRUE, TRUE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
+            return status;
 #endif
+        }
 
 		//
 		// 4GB check
@@ -1115,6 +1234,23 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
             return status;
 #endif
         }
@@ -1130,6 +1266,23 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
 #else
             Bd1394pDataPhysicalAddress = 0;
             status = EFI_OUT_OF_RESOURCES;
+
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
             return status;
 #endif
         }
@@ -1148,6 +1301,23 @@ EFI_STATUS Bd1394ConfigureDebuggerDevice(CHAR8 CONST* loaderOptions)
             try_leave(status = EFI_DEVICE_ERROR);
 #else
             status = EFI_DEVICE_ERROR;
+
+            //
+            // clean up
+            //
+            if(EFI_ERROR(status))
+            {
+                //
+                // free
+                //
+                if(Bd1394pDataPhysicalAddress)
+                    MmFreePages(Bd1394pDataPhysicalAddress);
+
+                Bd1394pGlobalData                                                = nullptr;
+                Bd1394pDataPhysicalAddress                                        = 0;
+                Bd1394pControllerRegisterBase                                    = nullptr;
+            }
+
             return status;
 #endif
         }

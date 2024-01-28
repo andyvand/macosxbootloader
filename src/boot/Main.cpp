@@ -122,12 +122,25 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 		//
 		// VMM ok.
 		//
-		if (!strnicmp(boardId, CHAR8_CONST_STRING("VMM"), 3))
+        if (!strnicmp(boardId, CHAR8_CONST_STRING("VMM"), 3)) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return EFI_SUCCESS;
+            if (fileDevPath)
+                MmFreePool(fileDevPath);
+
+            if (fileName)
+                MmFreePool(fileName);
+
+            if (fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if (rootTag)
+                CmFreeTag(rootTag);
+
+            return status;
 #endif
+        }
 
 		//
 		// Check current directory.
@@ -159,6 +172,19 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
             try_leave(status = EFI_SUCCESS);
 #else
             status = EFI_SUCCESS;
+
+            if (fileDevPath)
+                MmFreePool(fileDevPath);
+
+            if (fileName)
+                MmFreePool(fileName);
+
+            if (fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if (rootTag)
+                CmFreeTag(rootTag);
+
             return status;
 #endif
         }
@@ -166,12 +192,25 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 		//
 		// Parse the file.
 		//
-		if (EFI_ERROR(status = CmParseXmlFile(fileBuffer, &rootTag)))
+        if (EFI_ERROR(status = CmParseXmlFile(fileBuffer, &rootTag))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if (fileDevPath)
+                MmFreePool(fileDevPath);
+
+            if (fileName)
+                MmFreePool(fileName);
+
+            if (fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if (rootTag)
+                CmFreeTag(rootTag);
+
+            return status;
 #endif
+        }
 
 		//
 		// Get tag value.
@@ -186,12 +225,25 @@ STATIC EFI_STATUS BlpCheckBoardId(CHAR8 CONST* boardId, EFI_DEVICE_PATH_PROTOCOL
 			if (!supportedId || supportedId->Type != XML_TAG_STRING)
 				continue;
 
-			if (!strcmp(supportedId->StringValue, boardId))
+            if (!strcmp(supportedId->StringValue, boardId)) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return EFI_SUCCESS;
+                if (fileDevPath)
+                    MmFreePool(fileDevPath);
+
+                if (fileName)
+                    MmFreePool(fileName);
+
+                if (fileBuffer)
+                    MmFreePool(fileBuffer);
+
+                if (rootTag)
+                    CmFreeTag(rootTag);
+
+                return status;
 #endif
+            }
 		}
 		status																= EFI_UNSUPPORTED;
 #if defined(_MSC_VER)
@@ -239,6 +291,10 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if (recoveryFilePath)
+                MmFreePool(recoveryFilePath);
+
             return status;
 #endif
         }
@@ -259,6 +315,10 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if (recoveryFilePath)
+                MmFreePool(recoveryFilePath);
+
             return status;
 #endif
         }
@@ -273,6 +333,10 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if (recoveryFilePath)
+                MmFreePool(recoveryFilePath);
+
             return status;
 #endif
         }
@@ -287,6 +351,10 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
             try_leave(status = EFI_NOT_FOUND);
 #else
             status = EFI_NOT_FOUND;
+
+            if (recoveryFilePath)
+                MmFreePool(recoveryFilePath);
+
             return status;
 #endif
         }
@@ -298,12 +366,16 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
 
 		if (EFI_ERROR(status = EfiBootServices->LoadImage(FALSE, EfiImageHandle, recoveryFilePath, nullptr, 0, &imageHandle)))
 		{
-			if (!BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT))
+            if (!BlTestBootMode(BOOT_MODE_BOOT_IS_NOT_ROOT)) {
 #if defined(_MSC_VER)
-				try_leave(NOTHING);
+                try_leave(NOTHING);
 #else
-                return -1;
+                if (recoveryFilePath)
+                    MmFreePool(recoveryFilePath);
+
+                return status;
 #endif
+            }
 
 			//
 			// Get root UUID.
@@ -315,6 +387,10 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
                 try_leave(status = EFI_NOT_FOUND);
 #else
             	status = EFI_NOT_FOUND;
+
+                if (recoveryFilePath)
+                    MmFreePool(recoveryFilePath);
+
                 return status;
 #endif
             }
@@ -322,12 +398,16 @@ STATIC EFI_STATUS BlpRunRecoveryEfi(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EF
 			//
 			// Load booter.
 			//
-			if (EFI_ERROR(status = IoLoadBooterWithRootUUID(bootFilePath, rootUUID, &imageHandle)))
+            if (EFI_ERROR(status = IoLoadBooterWithRootUUID(bootFilePath, rootUUID, &imageHandle))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                if (recoveryFilePath)
+                    MmFreePool(recoveryFilePath);
+
+                return status;
 #endif
+            }
 		}
 
 		//
@@ -379,12 +459,16 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 		//
 		UINTN totalHandles													= 0;
 
-		if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiSimpleFileSystemProtocolGuid, nullptr, &totalHandles, &handleArray)))
+        if (EFI_ERROR(status = EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiSimpleFileSystemProtocolGuid, nullptr, &totalHandles, &handleArray))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if (fileName)
+                MmFreePool(fileName);
+
+            return status;
 #endif
+        }
 
 		for (UINTN i = 0; i < totalHandles; i ++)
 		{
@@ -429,12 +513,16 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 			//
 			EFI_DEVICE_PATH_PROTOCOL* rootDevicePath						= nullptr;
 
-			if (EFI_ERROR(status = EfiBootServices->HandleProtocol(theHandle, &EfiDevicePathProtocolGuid, reinterpret_cast<VOID**>(&rootDevicePath))))
+            if (EFI_ERROR(status = EfiBootServices->HandleProtocol(theHandle, &EfiDevicePathProtocolGuid, reinterpret_cast<VOID**>(&rootDevicePath)))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                if (fileName)
+                    MmFreePool(fileName);
+
+                return status;
 #endif
+            }
 
 			//
 			// Load it.
@@ -442,12 +530,16 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 			EFI_DEVICE_PATH_PROTOCOL* bootFilePath							= DevPathAppendFilePath(rootDevicePath, fileName);
 			EFI_HANDLE imageHandle											= nullptr;
 
-			if (EFI_ERROR(status = EfiBootServices->LoadImage(TRUE, EfiImageHandle, bootFilePath, nullptr, 0, &imageHandle)))
+            if (EFI_ERROR(status = EfiBootServices->LoadImage(TRUE, EfiImageHandle, bootFilePath, nullptr, 0, &imageHandle))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                if (fileName)
+                    MmFreePool(fileName);
+
+                return status;
 #endif
+            }
 
 			//
 			// Free file path.
@@ -463,7 +555,12 @@ STATIC EFI_STATUS BlpRunAppleBoot(CHAR8 CONST* bootFileName)
 #if defined(_MSC_VER)
                 try_leave(EfiBootServices->UnloadImage(imageHandle));
 #else
-                return EfiBootServices->UnloadImage(imageHandle);
+                EfiBootServices->UnloadImage(imageHandle);
+
+                if (fileName)
+                    MmFreePool(fileName);
+
+                return status;
 #endif
             }
 
@@ -522,22 +619,24 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		// Memory initialisation.
 		//
-		if (EFI_ERROR(status = MmInitialize()))
+        if (EFI_ERROR(status = MmInitialize())) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Initialise arch phase 0.
 		//
-		if (EFI_ERROR(status = ArchInitialize0()))
+        if (EFI_ERROR(status = ArchInitialize0())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Get debug options.
@@ -551,12 +650,13 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//debugOptions														= CHAR8_STRING("/debug=1394 /channel=12 /break /connectall /runapple=/System/Library/CoreServices/boot.apple");
 		//debugOptions														= CHAR8_STRING("/debug=1394 /channel=12 /break /connectall /connectwait=5");
 
-		if (EFI_ERROR(status = BdInitialize(debugOptions)))
+        if (EFI_ERROR(status = BdInitialize(debugOptions))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Run Apple's boot.efi
@@ -575,62 +675,68 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		// Initialise arch parse 1.
 		//
-		if (EFI_ERROR(status = ArchInitialize1()))
+        if (EFI_ERROR(status = ArchInitialize1())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Initialize console.
 		//
-		if (EFI_ERROR(status = CsInitialize()))
+        if (EFI_ERROR(status = CsInitialize())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Fix ROM variable.
 		//
-		if (EFI_ERROR(status = BlpSetupRomVariable()))
+        if (EFI_ERROR(status = BlpSetupRomVariable())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Initialize device tree.
 		//
-		if (EFI_ERROR(status = DevTreeInitialize()))
+        if (EFI_ERROR(status = DevTreeInitialize())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Detect memory size.
 		//
-		if (EFI_ERROR(status = BlDetectMemorySize()))
+        if (EFI_ERROR(status = BlDetectMemorySize())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Init platform expert.
 		//
-		if (EFI_ERROR(status = PeInitialize()))
+        if (EFI_ERROR(status = PeInitialize())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Check hibernate.
@@ -649,24 +755,26 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		// Detect hot key.
 		//
-		if (EFI_ERROR(status = BlDetectHotKey()))
+        if (EFI_ERROR(status = BlDetectHotKey())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Get loaded image protocol.
 		//
 		EFI_LOADED_IMAGE_PROTOCOL* loadedBootImage							= nullptr;
 
-		if (EFI_ERROR(status = EfiBootServices->HandleProtocol(EfiImageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedBootImage))))
+        if (EFI_ERROR(status = EfiBootServices->HandleProtocol(EfiImageHandle, &EfiLoadedImageProtocolGuid, reinterpret_cast<VOID**>(&loadedBootImage)))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Allocate buffer.
@@ -686,12 +794,13 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		// Convert unicode to UTF8.
 		//
-		if (EFI_ERROR(status = BlUnicodeToUtf8(static_cast<CHAR16*>(loadedBootImage->LoadOptions), loadedBootImage->LoadOptionsSize / sizeof(CHAR16), loaderOptions, loaderOptionsSize / sizeof(CHAR8))))
+        if (EFI_ERROR(status = BlUnicodeToUtf8(static_cast<CHAR16*>(loadedBootImage->LoadOptions), loadedBootImage->LoadOptionsSize / sizeof(CHAR16), loaderOptions, loaderOptionsSize / sizeof(CHAR8)))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Detect root device.
@@ -699,12 +808,13 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		EFI_HANDLE bootDeviceHandle											= loadedBootImage->DeviceHandle;
 		EFI_DEVICE_PATH_PROTOCOL* bootFilePath								= loadedBootImage->FilePath;
 
-		if (EFI_ERROR(status = IoDetectRoot(&bootDeviceHandle, &bootFilePath, debugOptions && strstr(debugOptions, CHAR8_CONST_STRING("/detectboot")))))
+        if (EFI_ERROR(status = IoDetectRoot(&bootDeviceHandle, &bootFilePath, debugOptions && strstr(debugOptions, CHAR8_CONST_STRING("/detectboot"))))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Get boot device path.
@@ -725,32 +835,35 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		CHAR8* kernelCommandLine											= nullptr;
 
-		if (EFI_ERROR(status = BlProcessOptions(loaderOptions, &kernelCommandLine, bootDevicePath, bootFilePath)))
+        if (EFI_ERROR(status = BlProcessOptions(loaderOptions, &kernelCommandLine, bootDevicePath, bootFilePath))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Check 64-bit CPU.
 		//
-		if (EFI_ERROR(status = ArchCheck64BitCpu()))
+        if (EFI_ERROR(status = ArchCheck64BitCpu())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Compact check
 		//
-		if (!BlTestBootMode(BOOT_MODE_SKIP_BOARD_ID_CHECK) && EFI_ERROR(status = BlpCheckBoardId(BlGetBoardId(), bootFilePath)))
+        if (!BlTestBootMode(BOOT_MODE_SKIP_BOARD_ID_CHECK) && EFI_ERROR(status = BlpCheckBoardId(BlGetBoardId(), bootFilePath))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Createmedia installer and recovery boot detection.
@@ -855,44 +968,48 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		status																= LdrLoadKernelCache(&kernelInfo, bootDevicePath);
 		BOOLEAN usingKernelCache											= !EFI_ERROR(status);
 
-		if (!usingKernelCache && LdrGetKernelCacheOverride())
+        if (!usingKernelCache && LdrGetKernelCacheOverride()) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Load kernel.
 		//
-		if (!usingKernelCache && EFI_ERROR(status = LdrLoadKernel(&kernelInfo)))
+        if (!usingKernelCache && EFI_ERROR(status = LdrLoadKernel(&kernelInfo))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Initialize boot args.
 		//
 		BOOT_ARGS* bootArgs													= nullptr;
 
-		if (EFI_ERROR(status = BlInitializeBootArgs(bootDevicePath, bootFilePath, bootDeviceHandle, kernelCommandLine, &bootArgs)))
+        if (EFI_ERROR(status = BlInitializeBootArgs(bootDevicePath, bootFilePath, bootDeviceHandle, kernelCommandLine, &bootArgs))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Load driver.
 		//
-		if (!usingKernelCache && EFI_ERROR(status = LdrLoadDrivers()))
+        if (!usingKernelCache && EFI_ERROR(status = LdrLoadDrivers())) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Load ramdisk.
@@ -908,22 +1025,24 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 		//
 		// SIP configuration.
 		//
-		if (EFI_ERROR(BlInitCSRState(bootArgs)))
+        if (EFI_ERROR(BlInitCSRState(bootArgs))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 #endif
 		//
 		// Finish boot args.
 		//
-		if (EFI_ERROR(status = BlFinalizeBootArgs(bootArgs, kernelCommandLine, bootDeviceHandle, &kernelInfo)))
+        if (EFI_ERROR(status = BlFinalizeBootArgs(bootArgs, kernelCommandLine, bootDeviceHandle, &kernelInfo))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Stop debugger.

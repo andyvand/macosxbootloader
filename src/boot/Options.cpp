@@ -70,12 +70,16 @@ STATIC EFI_STATUS BlpRunPasswordUIEfi()
 	__try
 	{
 #endif
-		if(!BlTestBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE) || BlpIsTemporaryBoot() || BlpPasswordUIEfiRun)
+        if(!BlTestBootMode(BOOT_MODE_EFI_NVRAM_RECOVERY_BOOT_MODE) || BlpIsTemporaryBoot() || BlpPasswordUIEfiRun) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(handleArray)
+                MmFreePool(handleArray);
+
+            return status;
 #endif
+        }
 
 		CsConnectDevice(TRUE, FALSE);
 		EfiBootServices->LocateHandleBuffer(ByProtocol, &EfiFirmwareVolumeProtocolGuid, nullptr, &handleCount, &handleArray);
@@ -116,7 +120,11 @@ STATIC EFI_STATUS BlpRunPasswordUIEfi()
                         try_leave(BlpPasswordUIEfiRun = TRUE);
 #else
                         BlpPasswordUIEfiRun = TRUE;
-                        return 0;
+
+                        if(handleArray)
+                            MmFreePool(handleArray);
+
+                        return status;
 #endif
                     }
 				}
@@ -153,22 +161,30 @@ STATIC EFI_STATUS BlpReadKernelFlags(EFI_DEVICE_PATH_PROTOCOL* bootFilePath, CHA
 		//
 		// read config file
 		//
-		if(EFI_ERROR(status	= IoReadWholeFile(bootFilePath, fileName, &fileBuffer, nullptr, TRUE)))
+        if(EFI_ERROR(status	= IoReadWholeFile(bootFilePath, fileName, &fileBuffer, nullptr, TRUE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            return status;
 #endif
+        }
 
 		//
 		// parse file
 		//
-		if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, nullptr)))
+        if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, nullptr))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            return status;
 #endif
+        }
 
 		*kernelFlags														= CmGetStringValueForKey(nullptr, CHAR8_CONST_STRING("Kernel Flags"), nullptr);
 #if defined(_MSC_VER)
@@ -205,12 +221,18 @@ STATIC CHAR8 CONST* BlpLoadConfigFile(CHAR8 CONST* bootOptions, EFI_DEVICE_PATH_
 		if(bootPlistDevPath)
 		{
 			bootPlistPathName												= DevPathExtractFilePathName(bootPlistDevPath, TRUE);
-			if(bootPlistPathName && !EFI_ERROR(BlpReadKernelFlags(bootFilePath, bootPlistPathName, &retValue)))
+            if(bootPlistPathName && !EFI_ERROR(BlpReadKernelFlags(bootFilePath, bootPlistPathName, &retValue))) {
 #if defined(_MSC_VER)
-				try_leave(NOTHING);
+                try_leave(NOTHING);
 #else
-                return (const unsigned char *)NULL;
+                if(bootPlistPathName)
+                    MmFreePool(bootPlistPathName);
+                if(bootPlistDevPath)
+                    MmFreePool(bootPlistDevPath);
+
+                return retValue;
 #endif
+            }
 		}
 
 		//
@@ -268,34 +290,44 @@ STATIC EFI_DEVICE_PATH_PROTOCOL* BlpReadDevicePathVariable(CHAR16 CONST* variabl
 	{
 #endif
 		UINTN variableLength												= 0;
-		if(EfiRuntimeServices->GetVariable(const_cast<CHAR16*>(variableName), &AppleNVRAMVariableGuid, nullptr, &variableLength, nullptr) != EFI_BUFFER_TOO_SMALL)
+        if(EfiRuntimeServices->GetVariable(const_cast<CHAR16*>(variableName), &AppleNVRAMVariableGuid, nullptr, &variableLength, nullptr) != EFI_BUFFER_TOO_SMALL) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
+            return retValue;
 #endif
+        }
 
 		devicePath															= static_cast<EFI_DEVICE_PATH_PROTOCOL*>(MmAllocatePool(variableLength));
-		if(!devicePath)
+        if(!devicePath) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
+            return retValue;
 #endif
+        }
 
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(const_cast<CHAR16*>(variableName), &AppleNVRAMVariableGuid, nullptr, &variableLength, devicePath)))
+        if(EFI_ERROR(EfiRuntimeServices->GetVariable(const_cast<CHAR16*>(variableName), &AppleNVRAMVariableGuid, nullptr, &variableLength, devicePath))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
-#endif
+            if(devicePath)
+                MmFreePool(devicePath);
 
-		if(macAddressNode != DevPathHasMacAddressNode(devicePath))
+            return retValue;
+#endif
+        }
+
+        if(macAddressNode != DevPathHasMacAddressNode(devicePath)) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return (EFI_DEVICE_PATH_PROTOCOL *)NULL;
+            if(devicePath)
+                MmFreePool(devicePath);
+
+            return retValue;
 #endif
+        }
 
 		retValue															= devicePath;
 		devicePath															= nullptr;
@@ -475,23 +507,25 @@ EFI_STATUS BlDetectHotKey()
 		//
 		// skip hiber
 		//
-		if(BlTestBootMode(BOOT_MODE_HIBER_FROM_FV))
+        if(BlTestBootMode(BOOT_MODE_HIBER_FROM_FV)) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// locate key press protocol
 		//
 		APPLE_KEY_STATE_PROTOCOL* keyStateProtocol							= nullptr;
-		if(EFI_ERROR(status = EfiBootServices->LocateProtocol(&AppleKeyStateProtocolGuid, 0, reinterpret_cast<VOID**>(&keyStateProtocol))))
+        if(EFI_ERROR(status = EfiBootServices->LocateProtocol(&AppleKeyStateProtocolGuid, 0, reinterpret_cast<VOID**>(&keyStateProtocol)))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// read state
@@ -499,12 +533,13 @@ EFI_STATUS BlDetectHotKey()
 		UINT16 modifyFlags													= 0;
 		CHAR16 pressedKeys[32]												= {0};
 		UINTN statesCount													= ARRAYSIZE(pressedKeys);
-		if(EFI_ERROR(status = keyStateProtocol->ReadKeyState(keyStateProtocol, &modifyFlags, &statesCount, pressedKeys)))
+        if(EFI_ERROR(status = keyStateProtocol->ReadKeyState(keyStateProtocol, &modifyFlags, &statesCount, pressedKeys))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// check keys
@@ -564,7 +599,7 @@ EFI_STATUS BlDetectHotKey()
             try_leave(BlpRunPasswordUIEfi());
 #else
             BlpRunPasswordUIEfi();
-            return 0;
+            return status;
 #endif
         }
 
@@ -578,7 +613,7 @@ EFI_STATUS BlDetectHotKey()
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 		}
 

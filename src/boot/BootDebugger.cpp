@@ -1520,12 +1520,19 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		//
 		// Already initialised.
 		//
-		if (BdSubsystemInitialized || !loaderOptions || !loaderOptions[0])
+        if (BdSubsystemInitialized || !loaderOptions || !loaderOptions[0]) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if (EFI_ERROR(status))
+            {
+                BdpCloseDebuggerDevice();
+                BdpFreeDataTableEntry(&BdModuleDataTableEntry);
+            }
+            
+            return status;
 #endif
+        }
 
 		//
 		// Case on debug type.
@@ -1550,6 +1557,13 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 			try_leave(status = EFI_SUCCESS);
 #else
             status = EFI_SUCCESS;
+
+            if (EFI_ERROR(status))
+            {
+                BdpCloseDebuggerDevice();
+                BdpFreeDataTableEntry(&BdModuleDataTableEntry);
+            }
+
             return status;
 #endif
 		}
@@ -1557,12 +1571,16 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		//
 		// Setup debug device failed.
 		//
-		if (EFI_ERROR(status))
+        if (EFI_ERROR(status)) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            BdpCloseDebuggerDevice();
+            BdpFreeDataTableEntry(&BdModuleDataTableEntry);
+            
+            return status;
 #endif
+        }
 
 		//
 		// Initialise breakpoint table.
@@ -1574,12 +1592,19 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		//
 		BdBreakpointInstruction												= KDP_BREAKPOINT_VALUE;
 		BdDebugTrap															= (BdDebugRoutine)&BdTrap;
-		if (EFI_ERROR(status = BdpPopulateDataTableEntry(&BdModuleDataTableEntry)))
+        if (EFI_ERROR(status = BdpPopulateDataTableEntry(&BdModuleDataTableEntry))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if (EFI_ERROR(status))
+            {
+                BdpCloseDebuggerDevice();
+                BdpFreeDataTableEntry(&BdModuleDataTableEntry);
+            }
+            
+            return status;
 #endif
+        }
 
 		//
 		// Link debugger module to modules list.
@@ -1592,12 +1617,16 @@ EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions)
 		//
 		// Initialise arch.
 		//
-		if (EFI_ERROR(status = BdArchInitialize()))
+        if (EFI_ERROR(status = BdArchInitialize())) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            BdpCloseDebuggerDevice();
+            BdpFreeDataTableEntry(&BdModuleDataTableEntry);
+            
+            return status;
 #endif
+        }
 
 		//
 		// Start debugger.

@@ -72,12 +72,13 @@ CHAR8 CONST* PeGetModelName()
 	__try
 	{
 #endif
-		if(PepModelName[0])
+        if(PepModelName[0]) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
             return PepModelName;
 #endif
+        }
 
 		DEVICE_TREE_NODE* platformNode										= DevTreeFindNode(CHAR8_CONST_STRING("/efi/platform"), FALSE);
 
@@ -156,6 +157,10 @@ EFI_STATUS PeSetupDeviceTree()
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(deviceProperties)
+                MmFreePool(deviceProperties);
+
             return status;
 #endif
         }
@@ -176,6 +181,10 @@ EFI_STATUS PeSetupDeviceTree()
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(deviceProperties)
+                MmFreePool(deviceProperties);
+
             return status;
 #endif
         }
@@ -205,6 +214,10 @@ EFI_STATUS PeSetupDeviceTree()
                 try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
                 status = EFI_OUT_OF_RESOURCES;
+
+                if(deviceProperties)
+                    MmFreePool(deviceProperties);
+
                 return status;
 #endif
             }

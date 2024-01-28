@@ -90,7 +90,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return (const CHAR8 *)NULL;
+            return rootUUID;
 #endif
 
 		//
@@ -101,7 +101,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return (const CHAR8 *)NULL;
+            return rootUUID;
 #endif
 
 		//
@@ -112,7 +112,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return (const CHAR8 *)NULL;
+            return rootUUID;
 #endif
 
 		//
@@ -129,7 +129,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return (const CHAR8 *)NULL;
+                return rootUUID;
 #endif
 		}
 
@@ -143,7 +143,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return (const CHAR8 *)NULL;
+            return rootUUID;
 #endif
 
 		//
@@ -353,6 +353,10 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+
             return status;
 #endif
         }
@@ -414,6 +418,10 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+
             return status;
 #endif
         }
@@ -421,22 +429,30 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 		//
 		// compatible = ACPI
 		//
-		if(EFI_ERROR(status = DevTreeAddProperty(rootNode, CHAR8_CONST_STRING("compatible"), "ACPI", 5, FALSE)))
+        if(EFI_ERROR(status = DevTreeAddProperty(rootNode, CHAR8_CONST_STRING("compatible"), "ACPI", 5, FALSE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+            
+            return status;
 #endif
+        }
 
 		//
 		// model = ACPI
 		//
-		if(EFI_ERROR(status = DevTreeAddProperty(rootNode, CHAR8_CONST_STRING("model"), "ACPI", 5, FALSE)))
+        if(EFI_ERROR(status = DevTreeAddProperty(rootNode, CHAR8_CONST_STRING("model"), "ACPI", 5, FALSE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+            
+            return status;
 #endif
+        }
 
 		//
 		// get chosen node
@@ -447,6 +463,10 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+
             return status;
 #endif
         }
@@ -460,6 +480,10 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+
             return status;
 #endif
         }
@@ -538,29 +562,40 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+
+            return status;
 #endif
 		}
 
 		//
 		// add boot device path
 		//
-		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-device-path"), bootDevicePath, static_cast<UINT32>(DevPathGetSize(bootDevicePath)), FALSE)))
+        if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-device-path"), bootDevicePath, static_cast<UINT32>(DevPathGetSize(bootDevicePath)), FALSE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+            
+            return status;
 #endif
+        }
 
 		//
 		// add boot file path
 		//
-		if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file-path"), bootFilePath, static_cast<UINT32>(DevPathGetSize(bootFilePath)), FALSE)))
+        if(EFI_ERROR(status = DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-file-path"), bootFilePath, static_cast<UINT32>(DevPathGetSize(bootFilePath)), FALSE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(EFI_ERROR(status))
+                MmFreeKernelMemory(virtualAddress, physicalAddress);
+            
+            return status;
 #endif
+        }
 
 		//
 		// Boot != Root key for firmware's /chosen
@@ -572,7 +607,10 @@ EFI_STATUS BlInitializeBootArgs(EFI_DEVICE_PATH_PROTOCOL* bootDevicePath, EFI_DE
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return -1;
+                if(EFI_ERROR(status))
+                    MmFreeKernelMemory(virtualAddress, physicalAddress);
+
+                return status;
 #endif
 			}
 		}
@@ -693,7 +731,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
         
 		//
@@ -703,7 +741,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 
 		//
@@ -713,7 +751,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 
 		//
@@ -727,7 +765,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return -1;
+                return status;
 #endif
 
 			bootArgs->KeyStoreDataStart										= static_cast<UINT32>(keyStorePhysicalAddress);
@@ -742,7 +780,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 
 		//
@@ -773,7 +811,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 
 		//
@@ -799,7 +837,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 
 		//
@@ -855,7 +893,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
 #else
-                return -1;
+                return status;
 #endif
 
 			if(currentSize > memoryMapSize)
@@ -882,7 +920,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 
 		//
@@ -900,7 +938,7 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
 
 		//

@@ -117,12 +117,16 @@ STATIC EFI_STATUS LdrpParseDriverInfoPlist(CHAR8* fileBuffer, LDR_EXTENSION_MODU
 	__try
 	{
 #endif
-		if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, &moduleDict)))
+        if(EFI_ERROR(status = CmParseXmlFile(fileBuffer, &moduleDict))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(moduleDict)
+                CmFreeTag(moduleDict);
+
+            return status;
 #endif
+        }
 
 		XML_TAG* requiredProperty											= CmGetTagValueForKey(moduleDict, CHAR8_CONST_STRING("OSBundleRequired"));
         if(!requiredProperty || requiredProperty->Type != XML_TAG_STRING || !strcmp(requiredProperty->StringValue, CHAR8_CONST_STRING("Safe Boot"))) {
@@ -130,6 +134,10 @@ STATIC EFI_STATUS LdrpParseDriverInfoPlist(CHAR8* fileBuffer, LDR_EXTENSION_MODU
             try_leave(status = EFI_INVALID_PARAMETER);
 #else
             status = EFI_INVALID_PARAMETER;
+
+            if(moduleDict)
+                CmFreeTag(moduleDict);
+
             return status;
 #endif
         }
@@ -140,6 +148,10 @@ STATIC EFI_STATUS LdrpParseDriverInfoPlist(CHAR8* fileBuffer, LDR_EXTENSION_MODU
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(moduleDict)
+                CmFreeTag(moduleDict);
+
             return status;
 #endif
         }
@@ -189,6 +201,16 @@ STATIC EFI_STATUS LdrpLoadDriverPList(CHAR8 CONST* extensionDir, CHAR8 CONST* fi
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
             return status;
 #endif
         }
@@ -207,23 +229,47 @@ STATIC EFI_STATUS LdrpLoadDriverPList(CHAR8 CONST* extensionDir, CHAR8 CONST* fi
 		//
 		// open file
 		//
-		if(EFI_ERROR(status = IoOpenFile(fullFileName, nullptr, &fileHandle, IO_OPEN_MODE_NORMAL)))
+        if(EFI_ERROR(status = IoOpenFile(fullFileName, nullptr, &fileHandle, IO_OPEN_MODE_NORMAL))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
+            IoCloseFile(&fileHandle);
+
+            return status;
 #endif
+        }
 
 		//
 		// get file length
 		//
 		UINT64 fileLength													= 0;
-		if(EFI_ERROR(status = IoGetFileSize(&fileHandle, &fileLength)))
+        if(EFI_ERROR(status = IoGetFileSize(&fileHandle, &fileLength))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
+            IoCloseFile(&fileHandle);
+
+            return status;
 #endif
+        }
 
 		//
 		// allocate buffer
@@ -234,6 +280,18 @@ STATIC EFI_STATUS LdrpLoadDriverPList(CHAR8 CONST* extensionDir, CHAR8 CONST* fi
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
+            IoCloseFile(&fileHandle);
+
             return status;
 #endif
         }
@@ -242,12 +300,24 @@ STATIC EFI_STATUS LdrpLoadDriverPList(CHAR8 CONST* extensionDir, CHAR8 CONST* fi
 		// read file
 		//
 		UINTN readLength													= 0;
-		if(EFI_ERROR(status = IoReadFile(&fileHandle, fileBuffer, static_cast<UINTN>(fileLength), &readLength, FALSE)))
+        if(EFI_ERROR(status = IoReadFile(&fileHandle, fileBuffer, static_cast<UINTN>(fileLength), &readLength, FALSE))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
+            IoCloseFile(&fileHandle);
+
+            return status;
 #endif
+        }
 
 		//
 		// length check
@@ -257,6 +327,18 @@ STATIC EFI_STATUS LdrpLoadDriverPList(CHAR8 CONST* extensionDir, CHAR8 CONST* fi
             try_leave(status = EFI_DEVICE_ERROR);
 #else
             status = EFI_DEVICE_ERROR;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
+            IoCloseFile(&fileHandle);
+
             return status;
 #endif
         }
@@ -276,6 +358,18 @@ STATIC EFI_STATUS LdrpLoadDriverPList(CHAR8 CONST* extensionDir, CHAR8 CONST* fi
             try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
+
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
+            IoCloseFile(&fileHandle);
+
             return status;
 #endif
         }
@@ -286,12 +380,24 @@ STATIC EFI_STATUS LdrpLoadDriverPList(CHAR8 CONST* extensionDir, CHAR8 CONST* fi
 		// parse the file
 		//
 		LDR_EXTENSION_MODULE* theModule										= nullptr;
-		if(EFI_ERROR(status = LdrpParseDriverInfoPlist(fileBuffer, &theModule)))
+        if(EFI_ERROR(status = LdrpParseDriverInfoPlist(fileBuffer, &theModule))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            if(fileBuffer)
+                MmFreePool(fileBuffer);
+
+            if(fileBuffer2)
+                MmFreePool(fileBuffer2);
+
+            if(driverDirectory)
+                MmFreePool(driverDirectory);
+
+            IoCloseFile(&fileHandle);
+
+            return status;
 #endif
+        }
 
 		//
 		// save buffers
@@ -349,12 +455,13 @@ STATIC EFI_STATUS LdrpLoadDrivers(CHAR8 CONST* extensionsDirectory, BOOLEAN isPl
 		//
 		// open directory
 		//
-		if(EFI_ERROR(status = IoOpenFile(extensionsDirectory, nullptr, &fileHandle, IO_OPEN_MODE_NORMAL)))
+        if(EFI_ERROR(status = IoOpenFile(extensionsDirectory, nullptr, &fileHandle, IO_OPEN_MODE_NORMAL))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		while(TRUE)
 		{
@@ -365,12 +472,15 @@ STATIC EFI_STATUS LdrpLoadDrivers(CHAR8 CONST* extensionsDirectory, BOOLEAN isPl
 			EFI_FILE_INFO* fileInfo											= static_cast<EFI_FILE_INFO*>(static_cast<VOID*>(localBuffer));
 			UINTN readLength												= 0;
 			status															= IoReadFile(&fileHandle, fileInfo, sizeof(localBuffer), &readLength, TRUE);
-			if(EFI_ERROR(status) || !readLength)
+            if(EFI_ERROR(status) || !readLength) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                IoCloseFile(&fileHandle);
+
+                return status;
 #endif
+            }
 
 			//
 			// direcotry attribute
@@ -392,12 +502,15 @@ STATIC EFI_STATUS LdrpLoadDrivers(CHAR8 CONST* extensionsDirectory, BOOLEAN isPl
 			// convert to ansi
 			//
 			STATIC CHAR8 utf8FileName[1024]									= {0};
-			if(EFI_ERROR(status = BlUnicodeToUtf8(fileInfo->FileName, fileNameLength, utf8FileName, ARRAYSIZE(utf8FileName) - 1)))
+            if(EFI_ERROR(status = BlUnicodeToUtf8(fileInfo->FileName, fileNameLength, utf8FileName, ARRAYSIZE(utf8FileName) - 1))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                IoCloseFile(&fileHandle);
+
+                return status;
 #endif
+            }
 
 			//
 			// check content folder
@@ -512,31 +625,47 @@ STATIC EFI_STATUS LdrpLoadMatchedModules()
 				{
 					CHAR8* fileName											= theProperty->StringValue;
 					snprintf(fileFullPath, ARRAYSIZE(fileFullPath) - 1, CHAR8_CONST_STRING("%s%s"), theModule->DriverPath, fileName);
-					if(EFI_ERROR(IoOpenFile(fileFullPath, nullptr, &fileHandle, IO_OPEN_MODE_NORMAL)))
-#if defined(_MSC_VER)
-						try_leave(NOTHING);
-#else
-                        return -1;
-#endif
-
-					if(EFI_ERROR(MachLoadThinFatFile(&fileHandle, nullptr, &moduleLength)))
+                    if(EFI_ERROR(IoOpenFile(fileFullPath, nullptr, &fileHandle, IO_OPEN_MODE_NORMAL))) {
 #if defined(_MSC_VER)
                         try_leave(NOTHING);
 #else
-                        return -1;
+                        if(physicalAddress)
+                            MmFreeKernelMemory(virtualAddress, physicalAddress);
+
+                        return EFI_SUCCESS;
 #endif
+                    }
+
+                    if(EFI_ERROR(MachLoadThinFatFile(&fileHandle, nullptr, &moduleLength))) {
+#if defined(_MSC_VER)
+                        try_leave(NOTHING);
+#else
+                        if(physicalAddress)
+                            MmFreeKernelMemory(virtualAddress, physicalAddress);
+
+                        IoCloseFile(&fileHandle);
+
+                        return EFI_SUCCESS;
+#endif
+                    }
 				}
 
 				UINTN driverLength											= sizeof(LDR_DRIVER_INFO) + theModule->InfoPlistLength + moduleLength + theModule->DriverPathLength;
 				UINTN allocatedLength										= driverLength;
 				physicalAddress												= MmAllocateKernelMemory(&allocatedLength, &virtualAddress);
 				UINT32 driverAddress										= static_cast<UINT32>(physicalAddress);
-				if(!driverAddress)
+                if(!driverAddress) {
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return -1;
+                    if(physicalAddress)
+                        MmFreeKernelMemory(virtualAddress, physicalAddress);
+
+                    IoCloseFile(&fileHandle);
+
+                    return EFI_SUCCESS;
 #endif
+                }
 
 				LDR_DRIVER_INFO* driverInfo									= ArchConvertAddressToPointer(driverAddress, LDR_DRIVER_INFO*);
 				driverInfo->InfoPlistAddress								= driverAddress + sizeof(LDR_DRIVER_INFO);
@@ -549,12 +678,18 @@ STATIC EFI_STATUS LdrpLoadMatchedModules()
 				else
 					driverInfo->ModuleAddress								= 0;
 
-				if(moduleLength && EFI_ERROR(IoReadFile(&fileHandle, ArchConvertAddressToPointer(driverInfo->ModuleAddress, VOID*), moduleLength, &moduleLength, FALSE)))
+                if(moduleLength && EFI_ERROR(IoReadFile(&fileHandle, ArchConvertAddressToPointer(driverInfo->ModuleAddress, VOID*), moduleLength, &moduleLength, FALSE))) {
 #if defined(_MSC_VER)
                     try_leave(NOTHING);
 #else
-                    return -1;
+                    if(physicalAddress)
+                        MmFreeKernelMemory(virtualAddress, physicalAddress);
+
+                    IoCloseFile(&fileHandle);
+
+                    return EFI_SUCCESS;
 #endif
+                }
 
 				memcpy(ArchConvertAddressToPointer(driverInfo->InfoPlistAddress, CHAR8*), theModule->InfoPlistBuffer, theModule->InfoPlistLength);
 				memcpy(ArchConvertAddressToPointer(driverInfo->DriverPath, CHAR8*), theModule->DriverPath, theModule->DriverPathLength);

@@ -933,12 +933,22 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		//
 		// skip safe mode
 		//
-		if(BlTestBootMode(BOOT_MODE_SAFE))
+        if(BlTestBootMode(BOOT_MODE_SAFE)) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage';
 #endif
+        }
 
 		//
 		// read boot-switch-vars
@@ -950,24 +960,46 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 			// read boot-signature
 			//
 			dataSize														= sizeof(HbpHibernateVars.BootSignature);
-			if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-signature"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.BootSignature)))
+            if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-signature"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.BootSignature))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return FALSE;
+                if(bootImagePath)
+                    MmFreePool(bootImagePath);
+
+                if(filePath)
+                    MmFreePool(filePath);
+
+                if(needReset)
+                    EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+                return resumeFromCoreStorage;
 #endif
+            }
+
 			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"boot-signature"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
 
 			//
 			// read boot-image-key
 			//
 			dataSize														= sizeof(HbpHibernateVars.WiredCryptKey);
-			if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image-key"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.WiredCryptKey)))
+            if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image-key"), &AppleNVRAMVariableGuid, nullptr, &dataSize, HbpHibernateVars.WiredCryptKey))) {
 #if defined(_MSC_VER)
-            try_leave(NOTHING);
+                try_leave(NOTHING);
 #else
-            return FALSE;
+                if(bootImagePath)
+                    MmFreePool(bootImagePath);
+
+                if(filePath)
+                    MmFreePool(filePath);
+
+                if(needReset)
+                    EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+                return resumeFromCoreStorage;
 #endif
+            }
+
 			EfiRuntimeServices->SetVariable(CHAR16_STRING(L"boot-image-key"), &AppleNVRAMVariableGuid, 0, 0, nullptr);
 
 			//
@@ -987,12 +1019,23 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		needReset															= TRUE;
 		HbpBootImageKeyLength												= sizeof(HbpHibernateVars.WiredCryptKey);
 		HbpBootImageKey														= static_cast<UINT8*>(MmAllocatePool(HbpBootImageKeyLength));
-		if(!HbpBootImageKey)
+        if(!HbpBootImageKey) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
+
 		memcpy(HbpBootImageKey, HbpHibernateVars.WiredCryptKey, sizeof(HbpHibernateVars.WiredCryptKey));
 
 		//
@@ -1004,65 +1047,125 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		// get boot image size
 		//
 		dataSize															= 0;
-		if(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, nullptr) != EFI_BUFFER_TOO_SMALL || !dataSize)
+        if(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, nullptr) != EFI_BUFFER_TOO_SMALL || !dataSize) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// allocate boot image buffer
 		//
 		bootImagePath														= static_cast<EFI_DEVICE_PATH_PROTOCOL*>(MmAllocatePool(dataSize));
-		if(!bootImagePath)
+        if(!bootImagePath) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// read boot image
 		//
-		if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, bootImagePath)))
+        if(EFI_ERROR(EfiRuntimeServices->GetVariable(CHAR16_STRING(L"boot-image"), &AppleNVRAMVariableGuid, nullptr, &dataSize, bootImagePath))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// locate block io protocol
 		//
 		EFI_DEVICE_PATH_PROTOCOL* blockIoDevicePath							= bootImagePath;
 		EFI_HANDLE deviceHandle												= nullptr;
-		if(EFI_ERROR(EfiBootServices->LocateDevicePath(&EfiBlockIoProtocolGuid, &blockIoDevicePath, &deviceHandle)))
+        if(EFI_ERROR(EfiBootServices->LocateDevicePath(&EfiBlockIoProtocolGuid, &blockIoDevicePath, &deviceHandle))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// get disk io protocol
 		//
-		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiDiskIoProtocolGuid, reinterpret_cast<VOID**>(&HbpDiskIoProtocol))))
+        if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiDiskIoProtocolGuid, reinterpret_cast<VOID**>(&HbpDiskIoProtocol)))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// get block io protocol
 		//
-		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiBlockIoProtocolGuid, reinterpret_cast<VOID**>(&HbpBlockIoProtocol))))
+        if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiBlockIoProtocolGuid, reinterpret_cast<VOID**>(&HbpBlockIoProtocol)))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// get apple disk io protocol
@@ -1086,23 +1189,43 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 		// get file path node
 		//
 		FILEPATH_DEVICE_PATH* filePathNode									= _CR(DevPathGetNode(bootImagePath, MEDIA_DEVICE_PATH, MEDIA_FILEPATH_DP), FILEPATH_DEVICE_PATH, Header);
-		if(!filePathNode)
+        if(!filePathNode) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// get file path
 		//
 		filePath															= BlAllocateUtf8FromUnicode(filePathNode->PathName, static_cast<UINTN>(-1));
-		if(!filePath)
+        if(!filePath) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return FALSE;
+            if(bootImagePath)
+                MmFreePool(bootImagePath);
+
+            if(filePath)
+                MmFreePool(filePath);
+
+            if(needReset)
+                EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+            return resumeFromCoreStorage;
 #endif
+        }
 
 		//
 		// get disk offset, hibernate key
@@ -1122,13 +1245,24 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
 				}
 			}
 
-			if(resumeFromCoreStorage)
+            if(resumeFromCoreStorage) {
 #if defined(_MSC_VER)
-				try_leave(needReset = FALSE);
+                try_leave(needReset = FALSE);
 #else
-            needReset = FALSE;
-            return needReset;
+                needReset = FALSE;
+
+                if(bootImagePath)
+                    MmFreePool(bootImagePath);
+
+                if(filePath)
+                    MmFreePool(filePath);
+
+                if(needReset)
+                    EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
+
+                return resumeFromCoreStorage;
 #endif
+            }
 		}
 
 		//

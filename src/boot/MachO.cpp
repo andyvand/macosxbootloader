@@ -817,12 +817,13 @@ EFI_STATUS MachpLoadMachOThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetI
 		//
 		// seek file
 		//
-		if (EFI_ERROR(status = IoSetFilePosition(fileHandle, 0)))
+        if (EFI_ERROR(status = IoSetFilePosition(fileHandle, 0))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// read mach header
@@ -830,45 +831,49 @@ EFI_STATUS MachpLoadMachOThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetI
 		MACH_HEADER machHeader												= {0};
 		UINTN readLength													= 0;
 
-		if (EFI_ERROR(status = IoReadFile(fileHandle, &machHeader, sizeof(machHeader), &readLength, FALSE)))
+        if (EFI_ERROR(status = IoReadFile(fileHandle, &machHeader, sizeof(machHeader), &readLength, FALSE))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// check length
 		//
-		if (readLength < sizeof(machHeader))
+        if (readLength < sizeof(machHeader)) {
 #if defined(_MSC_VER)
-			try_leave(status = EFI_DEVICE_ERROR);
+            try_leave(status = EFI_DEVICE_ERROR);
 #else
             status = EFI_DEVICE_ERROR;
             return status;
 #endif
+        }
 
 		//
 		// seek back
 		//
-		if (EFI_ERROR(status = IoSetFilePosition(fileHandle, 0)))
+        if (EFI_ERROR(status = IoSetFilePosition(fileHandle, 0))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// get file size
 		//
 		UINT64 fileSize														= 0;
 
-		if (EFI_ERROR(status = IoGetFileSize(fileHandle, &fileSize)))
+        if (EFI_ERROR(status = IoGetFileSize(fileHandle, &fileSize))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// check magic
@@ -929,12 +934,13 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 		FAT_HEADER fatHeader												= {0};
 		UINTN readLength													= 0;
 
-		if (EFI_ERROR(status = IoReadFile(fileHandle, &fatHeader, sizeof(fatHeader), &readLength, FALSE)))
+        if (EFI_ERROR(status = IoReadFile(fileHandle, &fatHeader, sizeof(fatHeader), &readLength, FALSE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// check read length
@@ -994,23 +1000,25 @@ EFI_STATUS MachLoadThinFatFile(IO_FILE_HANDLE* fileHandle, UINT64* offsetInFile,
 			//
 			// read it
 			//
-			if (EFI_ERROR(status = IoReadFile(fileHandle, &curArchHeader, sizeof(curArchHeader), &readLength, FALSE)))
+            if (EFI_ERROR(status = IoReadFile(fileHandle, &curArchHeader, sizeof(curArchHeader), &readLength, FALSE))) {
 #if defined(_MSC_VER)
                 try_leave(NOTHING);
 #else
-                return -1;
+                return status;
 #endif
+            }
 
 			//
 			// check length
 			//
-			if (readLength < sizeof(curArchHeader))
+            if (readLength < sizeof(curArchHeader)) {
 #if defined(_MSC_VER)
-				try_leave(status = EFI_DEVICE_ERROR);
+                try_leave(status = EFI_DEVICE_ERROR);
 #else
                 status = EFI_DEVICE_ERROR;
                 return status;
 #endif
+            }
 
 			//
 			// swap
@@ -1144,12 +1152,13 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
 		UINT64 machOffset													= 0;
 		UINTN machLength													= 0;
 
-		if (EFI_ERROR(status = MachLoadThinFatFile(fileHandle, &machOffset, &machLength)))
+        if (EFI_ERROR(status = MachLoadThinFatFile(fileHandle, &machOffset, &machLength))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 		
 		//
 		// Check length
@@ -1169,12 +1178,13 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
 		MACH_HEADER64 machHeader											= {0};
 		UINTN readLength													= 0;
 
-		if (EFI_ERROR(status = IoReadFile(fileHandle, &machHeader, sizeof(MACH_HEADER), &readLength, FALSE)))
+        if (EFI_ERROR(status = IoReadFile(fileHandle, &machHeader, sizeof(MACH_HEADER), &readLength, FALSE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Check length
@@ -1204,12 +1214,13 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
 		//
 		// Read 64bit header
 		//
-		if (EFI_ERROR(status = IoReadFile(fileHandle, &machHeader.Reserved, sizeof(machHeader.Reserved), &readLength, FALSE)))
+        if (EFI_ERROR(status = IoReadFile(fileHandle, &machHeader.Reserved, sizeof(machHeader.Reserved), &readLength, FALSE))) {
 #if defined(_MSC_VER)
             try_leave(NOTHING);
 #else
-            return -1;
+            return status;
 #endif
+        }
 
 		//
 		// Length check
@@ -1234,23 +1245,28 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
 		//
 		commandsBuffer														= MmAllocatePool(machHeader.CommandsLength);
 
-		if (!commandsBuffer)
+        if (!commandsBuffer) {
 #if defined(_MSC_VER)
-			try_leave(status = EFI_OUT_OF_RESOURCES);
+            try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
             status = EFI_OUT_OF_RESOURCES;
             return status;
 #endif
+        }
 
 		//
 		// Read commands
 		//
-		if (EFI_ERROR(status = IoReadFile(fileHandle, commandsBuffer, machHeader.CommandsLength, &readLength, FALSE)))
+        if (EFI_ERROR(status = IoReadFile(fileHandle, commandsBuffer, machHeader.CommandsLength, &readLength, FALSE))) {
 #if defined(_MSC_VER)
-			try_leave(NOTHING);
+            try_leave(NOTHING);
 #else
-            return -1;
+            if (commandsBuffer)
+                MmFreePool(commandsBuffer);
+
+            return status;
 #endif
+        }
 
 		//
 		// Length check
@@ -1260,6 +1276,10 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
             try_leave(status = EFI_LOAD_ERROR);
 #else
             status = EFI_LOAD_ERROR;
+
+            if (commandsBuffer)
+                MmFreePool(commandsBuffer);
+
             return status;
 #endif
         }
@@ -1308,12 +1328,16 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
 					//
 					// Seek file
 					//
-					if (EFI_ERROR(status = IoSetFilePosition(fileHandle, machOffset + segmentFileOffset)))
+                    if (EFI_ERROR(status = IoSetFilePosition(fileHandle, machOffset + segmentFileOffset))) {
 #if defined(_MSC_VER)
-						try_leave(NOTHING);
+                        try_leave(NOTHING);
 #else
-                        return -1;
+                        if (commandsBuffer)
+                            MmFreePool(commandsBuffer);
+
+                        return status;
 #endif
+                    }
 
 					//
 					// Allocate buffer
@@ -1327,6 +1351,10 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
                         try_leave(status = EFI_OUT_OF_RESOURCES);
 #else
                         status = EFI_OUT_OF_RESOURCES;
+
+                        if (commandsBuffer)
+                            MmFreePool(commandsBuffer);
+
                         return status;
 #endif
                     }
@@ -1336,12 +1364,16 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
 					//
 					UINTN fileLength										= static_cast<UINTN>(segmentVirtualSize > segmentFileSize ? segmentFileSize : segmentVirtualSize);
 
-					if (fileLength && EFI_ERROR(status = IoReadFile(fileHandle, ArchConvertAddressToPointer(physicalAddress, VOID*), fileLength, &readLength, FALSE)))
+                    if (fileLength && EFI_ERROR(status = IoReadFile(fileHandle, ArchConvertAddressToPointer(physicalAddress, VOID*), fileLength, &readLength, FALSE))) {
 #if defined(_MSC_VER)
-						try_leave(NOTHING);
+                        try_leave(NOTHING);
 #else
-                        return -1;
+                        if (commandsBuffer)
+                            MmFreePool(commandsBuffer);
+
+                        return status;
 #endif
+                    }
 
 #if DEBUG_KERNEL_PATCHER
 					CsPrintf(CHAR8_CONST_STRING("Kernelpatcher: %s @ 0x%llx \n"), segmentCommand64->Name, physicalAddress);
@@ -1454,6 +1486,10 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
                             try_leave(status = EFI_LOAD_ERROR);
 #else
                             status = EFI_LOAD_ERROR;
+
+                            if (commandsBuffer)
+                                MmFreePool(commandsBuffer);
+
                             return status;
 #endif
                         }
@@ -1478,6 +1514,10 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
                                 try_leave(status = EFI_LOAD_ERROR);
 #else
                                 status = EFI_LOAD_ERROR;
+
+                                if (commandsBuffer)
+                                    MmFreePool(commandsBuffer);
+
                                 return status;
 #endif
                             }
