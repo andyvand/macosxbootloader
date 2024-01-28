@@ -946,7 +946,7 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent)
             if(needReset)
                 EfiRuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, nullptr);
 
-            return resumeFromCoreStorage';
+            return resumeFromCoreStorage;
 #endif
         }
 

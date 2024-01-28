@@ -22,7 +22,11 @@ Abstract:
 #ifndef _EFI_TYPES_H_
 #define _EFI_TYPES_H_
 
-#include "EfiBind.h"
+#if defined(__x86_64__) || defined(_M_AMD64)
+#include "x64/EfiBind.h"
+#elif defined(__i386__) || defined(_M_IX86)
+#include "x86/EfiBind.h"
+#endif
 
 //
 // EFI Data Types based on ANSI C integer types in EfiBind.h
