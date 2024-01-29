@@ -167,8 +167,8 @@ extern "C" VOID ArchStartKernel(VOID* kernelEntry, VOID* bootArgs)
 #else
     __asm("cli\n"
 #ifdef __clang__
-          "movl %%edx, %0\n"
-          "movl %%eax, %1\n"
+          "movl %0, %%edx\n"
+          "movl %1, %%eax\n"
           "call *(%%edx)\n"
 #else
           "mov %0, %%edx\n"
