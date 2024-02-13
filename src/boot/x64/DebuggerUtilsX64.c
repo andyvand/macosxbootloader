@@ -337,7 +337,11 @@ EFI_STATUS BdArchInitialize()
 		BdPcrPhysicalAddress												= 0;
 		return EFI_OUT_OF_RESOURCES;
 	}
+#ifdef _MSC_VER
 	BdPrcb																	= (KPCR *)&BdPcr->Prcb;
+#else
+    BdPrcb                                                                    = &BdPcr->Prcb;
+#endif
 
 	KDESCRIPTOR idtr;
 	ArchGetIdtRegister(&idtr);
