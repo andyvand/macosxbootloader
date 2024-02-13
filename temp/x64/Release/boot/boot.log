@@ -1,2 +1,576 @@
-﻿  x64\CompilerX64.asm
+﻿  StdAfx.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'StdAfx.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'StdAfx.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'StdAfx.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'StdAfx.c')
+  
+  AcpiUtils.c
+  Base64.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'AcpiUtils.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Base64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'AcpiUtils.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Base64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'AcpiUtils.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Base64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'AcpiUtils.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Base64.c')
+  
+  BootArgs.c
+  Config.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootArgs.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootArgs.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootArgs.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Config.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Config.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Config.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Config.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootArgs.c')
+  
+  Console.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Console.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Console.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Console.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Console.c')
+  
+  FileIo.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileIo.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileIo.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileIo.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileIo.c')
+  
+  FileVault.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileVault.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileVault.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileVault.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'FileVault.c')
+  
+  Hibernate.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Hibernate.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Hibernate.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Hibernate.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Hibernate.c')
+  
+  LoadDrivers.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadDrivers.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadDrivers.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadDrivers.c')
+  
+  LoadKernel.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadDrivers.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadKernel.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadKernel.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadKernel.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'LoadKernel.c')
+  
+  MachO.c
+  MD5.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MachO.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MachO.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MachO.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MD5.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MD5.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MD5.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MachO.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MD5.c')
+  
+  MemoryMap.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MemoryMap.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MemoryMap.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MemoryMap.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MemoryMap.c')
+  
+  NetBoot.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'NetBoot.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'NetBoot.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'NetBoot.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'NetBoot.c')
+  
+  Options.c
+  PanicDialog.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Options.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PanicDialog.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PanicDialog.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PanicDialog.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Options.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Options.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PanicDialog.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Options.c')
+  
+  PlatformExpert.c
+  SHA256.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PlatformExpert.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PlatformExpert.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PlatformExpert.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PlatformExpert.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'SHA256.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'SHA256.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'SHA256.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'SHA256.c')
+  
+  ArchUtilsX64.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/ArchUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/ArchUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/ArchUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/ArchUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(876,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/ArchUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(924,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/ArchUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(1056,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/ArchUtilsX64.c')
+  
+  DebuggerUtilsX64.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(876,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(924,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(1056,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x64/DebuggerUtilsX64.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\DebuggerUtilsX64.c(340,25): warning C4133: '=': incompatible types - from 'KPCR *' to 'KPRCB *'
+  BootDebugger.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(876,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(924,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(1056,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+  Crc32.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Crc32.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Crc32.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Crc32.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Crc32.c')
+  
+  Debug1394.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(876,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(924,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(1056,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\Debug1394.c(188,4): warning C4201: nonstandard extension used: nameless struct/union
+  DebugUsb.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(876,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(924,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(1056,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+  DevicePath.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DevicePath.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DevicePath.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DevicePath.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DevicePath.c')
+  
+  DeviceTree.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DeviceTree.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DeviceTree.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DeviceTree.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'DeviceTree.c')
+  
+  GuidDefine.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'GuidDefine.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'GuidDefine.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'GuidDefine.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'GuidDefine.c')
+  
+  Main.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Main.c')
+  
+  Memory.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Memory.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Memory.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Memory.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'Memory.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(876,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(924,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x64\ArchDefine.h(1056,3): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+  MiscUtils.c
+  PeImage.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PeImage.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MiscUtils.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MiscUtils.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MiscUtils.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PeImage.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PeImage.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'PeImage.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'MiscUtils.c')
+  
+  RuntimeLib.c
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiTypes.h(26,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'RuntimeLib.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\sdk\include\EfiCommon.h(29,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'RuntimeLib.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(112,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'RuntimeLib.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\StdAfx.h(115,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  (compiling source file 'RuntimeLib.c')
+  
   boot.vcxproj -> C:\Users\andyv\Downloads\macosxbootloader\bin\x64\Release\boot.efi

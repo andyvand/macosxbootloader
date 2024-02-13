@@ -1,4 +1,0 @@
-^C:\USERS\ANDYV\DOWNLOADS\MACOSXBOOTLOADER\SRC\BOOT\X86\THUNKCODE32.ASM
-cd "C:\Users\andyv\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\" & nasm -o "C:\Users\andyv\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\ThunkCode32.obj" -fwin32 -X vc "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\ThunkCode32.asm"
-^C:\USERS\ANDYV\DOWNLOADS\MACOSXBOOTLOADER\SRC\BOOT\X86\THUNKCODE64.ASM
-cd "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\" & nasm -o "C:\Users\andyv\Downloads\macosxbootloader\src\..\temp\x86\Debug\boot\ThunkCode64.dat"  -X vc "C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\ThunkCode64.asm"

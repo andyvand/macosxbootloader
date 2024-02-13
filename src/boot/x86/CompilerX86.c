@@ -10,7 +10,7 @@
 //
 // 64bit right shift
 //
-extern "C" int __declspec(naked) _aullshr()
+int __declspec(naked) _aullshr()
 {
 	__asm
 	{
@@ -40,7 +40,7 @@ extern "C" int __declspec(naked) _aullshr()
 //
 // 64bit div
 //
-extern "C" void __declspec(naked) _alldiv()
+void __declspec(naked) _alldiv()
 {
 	__asm
 	{
@@ -137,7 +137,7 @@ extern "C" void __declspec(naked) _alldiv()
 //
 // ULONG64 div
 //
-extern "C" void __declspec(naked) _aulldiv()
+void __declspec(naked) _aulldiv()
 {
 	__asm
 	{
@@ -204,7 +204,7 @@ extern "C" void __declspec(naked) _aulldiv()
 //
 // ULONG rem
 //
-extern "C" void __declspec(naked) _aullrem()
+void __declspec(naked) _aullrem()
 {
 	__asm
 	{
@@ -268,7 +268,7 @@ extern "C" void __declspec(naked) _aullrem()
 //
 // 64bits shift left
 //
-extern "C" void __declspec(naked) _allshl()
+void __declspec(naked) _allshl()
 {
 	__asm
 	{
@@ -298,7 +298,7 @@ extern "C" void __declspec(naked) _allshl()
 //
 // LONG64 rem
 //
-extern "C" void __declspec(naked) _allrem()
+void __declspec(naked) _allrem()
 {
 	__asm
 	{
@@ -395,7 +395,7 @@ extern "C" void __declspec(naked) _allrem()
 //
 // LONG64 mul
 //
-extern "C" void __declspec(naked) _allmul()
+void __declspec(naked) _allmul()
 {
 	__asm
 	{
@@ -428,7 +428,7 @@ extern "C" void __declspec(naked) _allmul()
 //
 // LONG64 shr
 //
-extern "C" void	__declspec(naked) _allshr()
+void	__declspec(naked) _allshr()
 {
 	__asm
 	{
@@ -455,7 +455,7 @@ extern "C" void	__declspec(naked) _allshr()
 	}
 }
 
-extern "C" VOID __declspec(naked) _aulldvrm()
+VOID __declspec(naked) _aulldvrm()
 {
 	__asm
 	{
@@ -532,7 +532,7 @@ extern "C" VOID __declspec(naked) _aulldvrm()
 	}
 }
 
-extern "C" VOID __declspec(naked) _alldvrm()
+VOID __declspec(naked) _alldvrm()
 {
 	__asm
 	{
@@ -651,7 +651,7 @@ extern "C" VOID __declspec(naked) _alldvrm()
 	}
 }
 
-extern "C" VOID __declspec(naked) _chkstk()
+VOID __declspec(naked) _chkstk()
 {
 	__asm
 	{
@@ -689,7 +689,7 @@ extern "C" VOID __declspec(naked) _chkstk()
 	}
 }
 
-extern "C" VOID __declspec(naked) _alloca_probe_16()
+VOID __declspec(naked) _alloca_probe_16()
 {
 	__asm
 	{
@@ -697,12 +697,12 @@ extern "C" VOID __declspec(naked) _alloca_probe_16()
 	}
 }
 
-extern "C" int _except_handler3()
+int _except_handler3()
 {
 	return 0;
 }
 
-extern "C" VOID __declspec(naked) _SEH_epilog()
+VOID __declspec(naked) _SEH_epilog()
 {
 	__asm
 	{
@@ -716,7 +716,7 @@ extern "C" VOID __declspec(naked) _SEH_epilog()
 	}
 }
 
-extern "C" VOID __declspec(naked) _SEH_prolog()
+VOID __declspec(naked) _SEH_prolog()
 {
 	__asm
 	{

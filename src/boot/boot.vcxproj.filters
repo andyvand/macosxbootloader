@@ -127,116 +127,116 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="StdAfx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GuidDefine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RuntimeLib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BootDebugger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug1394.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MiscUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PeImage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Crc32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DeviceTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DevicePath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugUsb.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileIo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MD5.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MachO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AcpiUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlatformExpert.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NetBoot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LoadKernel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LoadDrivers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Options.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BootArgs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PanicDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Hibernate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileVault.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SHA256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Base64.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="x64\ArchUtilsX64.cpp">
+    <ClCompile Include="x64\DebuggerUtilsX64.c">
       <Filter>Arch Files\x64</Filter>
     </ClCompile>
-    <ClCompile Include="x64\DebuggerUtilsX64.cpp">
-      <Filter>Arch Files\x64</Filter>
-    </ClCompile>
-    <ClCompile Include="x86\ArchUtilsX86.cpp">
+    <ClCompile Include="x86\ArchUtilsX86.c">
       <Filter>Arch Files\x86</Filter>
     </ClCompile>
-    <ClCompile Include="x86\CompilerX86.cpp">
+    <ClCompile Include="x86\CompilerX86.c">
       <Filter>Arch Files\x86</Filter>
     </ClCompile>
-    <ClCompile Include="x86\DebuggerUtilsX86.cpp">
+    <ClCompile Include="x86\DebuggerUtilsX86.c">
       <Filter>Arch Files\x86</Filter>
     </ClCompile>
-    <ClCompile Include="x86\Thunk64.cpp">
+    <ClCompile Include="x86\Thunk64.c">
       <Filter>Arch Files\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="AcpiUtils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Base64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BootArgs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Console.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileVault.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hibernate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadDrivers.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadKernel.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MachO.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MD5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryMap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NetBoot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Options.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PanicDialog.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlatformExpert.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SHA256.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="x64\ArchUtilsX64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BootDebugger.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Crc32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug1394.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugUsb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DevicePath.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeviceTree.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GuidDefine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MiscUtils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PeImage.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RuntimeLib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

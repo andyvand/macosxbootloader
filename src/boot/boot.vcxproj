@@ -252,7 +252,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="x64\DebuggerUtilsX64.cpp">
+    <ClCompile Include="x64\DebuggerUtilsX64.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">true</ExcludedFromBuild>
@@ -280,25 +280,25 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="x86\ArchUtilsX86.cpp">
+    <ClCompile Include="x86\ArchUtilsX86.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="x86\CompilerX86.cpp">
+    <ClCompile Include="x86\CompilerX86.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="x86\DebuggerUtilsX86.cpp">
+    <ClCompile Include="x86\DebuggerUtilsX86.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="x86\Thunk64.cpp">
+    <ClCompile Include="x86\Thunk64.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">true</ExcludedFromBuild>
@@ -343,12 +343,16 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -D_MSC_VER -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -D_MSC_VER -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">cd "%(RootDir)%(Directory)" &amp; nasm -D_MSC_VER -o "$(IntDir)%(Filename).obj" -f win64 -X vc "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">%(Identity)</Message>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -370,6 +374,10 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">%(Identity)</Message>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -391,6 +399,10 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">%(Identity)</Message>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -412,6 +424,10 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|Win32'">%(Identity)</Message>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="x86\ThunkCode64.asm">
       <FileType>Document</FileType>
@@ -427,6 +443,10 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">%(Identity)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|Win32'">%(Identity)</Message>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

@@ -1,38 +1,147 @@
-﻿  StdAfx.cpp
-  AcpiUtils.cpp
-  Base64.cpp
-  BootArgs.cpp
-  Config.cpp
-  Console.cpp
-  FileIo.cpp
-  FileVault.cpp
-  Hibernate.cpp
-  LoadDrivers.cpp
-  LoadKernel.cpp
-  MachO.cpp
-  MD5.cpp
-  MemoryMap.cpp
-  NetBoot.cpp
-  Options.cpp
-  PanicDialog.cpp
-  PlatformExpert.cpp
-  SHA256.cpp
-  BootDebugger.cpp
-  Crc32.cpp
-  Debug1394.cpp
-  DebugUsb.cpp
-  DevicePath.cpp
-  DeviceTree.cpp
-  GuidDefine.cpp
-  Main.cpp
-  Memory.cpp
-  MiscUtils.cpp
-  PeImage.cpp
-  RuntimeLib.cpp
-  ArchUtilsX86.cpp
-  CompilerX86.cpp
-  DebuggerUtilsX86.cpp
-  Thunk64.cpp
-C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(85): warning C4731: 'DbgService2': frame pointer register 'ebp' modified by inline assembly code
-C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.cpp(41): warning C4731: 'DbgService': frame pointer register 'ebp' modified by inline assembly code
+﻿  StdAfx.c
+  AcpiUtils.c
+  Base64.c
+  BootArgs.c
+  Config.c
+  Console.c
+  FileIo.c
+  FileVault.c
+  Hibernate.c
+  LoadDrivers.c
+  LoadKernel.c
+  MachO.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MachO.c(1572,52): warning C4305: 'type cast': truncation from 'UINT64' to 'unsigned char *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MachO.c(1576,48): warning C4305: 'type cast': truncation from 'UINT64' to 'unsigned char *'
+  MD5.c
+  MemoryMap.c
+  NetBoot.c
+  Options.c
+  PanicDialog.c
+  PlatformExpert.c
+  SHA256.c
+  BootDebugger.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'BootDebugger.c')
+  
+  Crc32.c
+  Debug1394.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Debug1394.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\Debug1394.c(188,4): warning C4201: nonstandard extension used: nameless struct/union
+  DebugUsb.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'DebugUsb.c')
+  
+  DevicePath.c
+  DeviceTree.c
+  GuidDefine.c
+  Main.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'Main.c')
+  
+  Memory.c
+  MiscUtils.c
+  PeImage.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(999,43): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1084,48): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1193,74): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1194,61): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1203,46): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1218,42): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1223,28): warning C4305: 'type cast': truncation from 'UINT64' to 'void *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1238,46): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1253,36): warning C4305: 'type cast': truncation from 'UINT64' to 'CHAR8 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1260,28): warning C4305: 'type cast': truncation from 'UINT64' to 'void *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1275,46): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1286,42): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1290,28): warning C4305: 'type cast': truncation from 'UINT64' to 'void *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1298,46): warning C4305: 'type cast': truncation from 'UINT64' to 'UINT64 *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1312,28): warning C4305: 'type cast': truncation from 'UINT64' to 'void *'
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\MiscUtils.c(1350,28): warning C4305: 'type cast': truncation from 'UINT64' to 'void *'
+  RuntimeLib.c
+  ArchUtilsX86.c
+  CompilerX86.c
+  DebuggerUtilsX86.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(388,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x86/DebuggerUtilsX86.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(401,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x86/DebuggerUtilsX86.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(801,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x86/DebuggerUtilsX86.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1073,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x86/DebuggerUtilsX86.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1319,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x86/DebuggerUtilsX86.c')
+  
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\BootDebuggerPrivate.h(1458,6): warning C4201: nonstandard extension used: nameless struct/union
+  (compiling source file 'x86/DebuggerUtilsX86.c')
+  
+  Thunk64.c
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.c(41): warning C4731: 'DbgService': frame pointer register 'ebp' modified by inline assembly code
+C:\Users\andyv\Downloads\macosxbootloader\src\boot\x86\DebuggerUtilsX86.c(85): warning C4731: 'DbgService2': frame pointer register 'ebp' modified by inline assembly code
   boot.vcxproj -> C:\Users\andyv\Downloads\macosxbootloader\bin\x86\Release (Grey)\boot.efi
