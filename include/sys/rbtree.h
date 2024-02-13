@@ -53,13 +53,13 @@ __BEGIN_DECLS
     for ((N) = RB_TREE_MIN(T); (N); \
 	(N) = rb_tree_iterate((T), (N), RB_DIR_RIGHT))
 #define RB_TREE_FOREACH_SAFE(N, T, TVAR) \
-    for ((N) = RB_TREE_MIN(T); (N) && ((TVAR) = rb_tree_iterate((T), (N), RB_DIR_RIGHT), 1); \
+    for ((N) = RB_TREE_MIN(T); (N) && ((TVAR) = rb_tree_iterate((T), (N), RB_DIR_RIGHT)); \
 	(N) = (TVAR))
 #define RB_TREE_FOREACH_REVERSE(N, T) \
     for ((N) = RB_TREE_MAX(T); (N); \
 	(N) = rb_tree_iterate((T), (N), RB_DIR_LEFT))
 #define RB_TREE_FOREACH_REVERSE_SAFE(N, T, TVAR) \
-    for ((N) = RB_TREE_MAX(T); (N) && ((TVAR) = rb_tree_iterate((T), (N), RB_DIR_LEFT), 1); \
+    for ((N) = RB_TREE_MAX(T); (N) && ((TVAR) = rb_tree_iterate((T), (N), RB_DIR_LEFT)); \
 	(N) = (TVAR))
 
 

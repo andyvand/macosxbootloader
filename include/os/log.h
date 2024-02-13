@@ -23,8 +23,6 @@ __BEGIN_DECLS
 OS_OBJECT_DECL_SWIFT(os_log);
 #elif OS_OBJECT_USE_OBJC
 OS_OBJECT_DECL(os_log);
-#elif defined(__has_ptrcheck)
-typedef struct os_log_s *__single os_log_t;
 #else
 typedef struct os_log_s *os_log_t;
 #endif /* OS_OBJECT_USE_OBJC */
@@ -66,20 +64,20 @@ struct os_log_s _os_log_default;
  * always captured to memory or disk.
  *
  * @constant OS_LOG_TYPE_INFO
- * Equivalent type for "os_log_info()" messages, i.e., additional informational
+ * Equivalent type for "os_log_info()" messages, i.e., Additional informational
  * messages.
  *
  * @constant OS_LOG_TYPE_DEBUG
- * Equivalent type for "os_log_debug()" messages, i.e., debug messages.
+ * Equivalent type for "os_log_debug()" messages, i.e., Debug messages.
  *
  * @constant OS_LOG_TYPE_ERROR
- * Equivalent type for "os_log_error()" messages, i.e., messages indicating
- * error conditions.
+ * Equivalent type for "os_log_error()" messages, i.e., local process error
+ * messages.
  *
  * @constant OS_LOG_TYPE_FAULT
- * Equivalent type for "os_log_fault()" messages, i.e., messages indicating
- * that an unexpected condition occurred that likely indicates the presence of a
- * bug.
+ * Equivalent type for "os_log_fault()" messages, i.e., a system error that
+ * involves potentially more than one process, usually used by daemons and
+ * services.
  */
 OS_ENUM(os_log_type, uint8_t,
     OS_LOG_TYPE_DEFAULT = 0x00,
@@ -110,12 +108,10 @@ OS_ENUM(os_log_type, uint8_t,
  * the log object.
  *
  * @result
- * Returns an os_log_t value to be passed to other os_log API calls.  The
- * logging runtime maintains a global collection of all os_log_t objects, one
- * per subsystem/category pair.  The os_log_t for a given subsystem/category is
- * created upon the first call to os_log_create and any subsequent calls return
- * the same object.  These objects are never deallocated, so dynamic creation
- * (e.g. on a per-operation basis) is generally inappropriate.
+ * Returns an os_log_t value to be passed to other os_log API calls.  This
+ * should be called once at log initialization and rely on system to detect
+ * changes to settings.  This object should be released when no longer used
+ * via os_release or -[release] method.
  *
  * A value will always be returned to allow for dynamic enablement.
  */
@@ -277,19 +273,8 @@ os_log_create(const char *subsystem, const char *category);
  * line is decoded.  This string must be a constant string, not dynamically
  * generated.  Supports all standard printf types and %@ (objects).
  */
-#if OS_LOG_TARGET_HAS_10_15_FEATURES
-#define os_log_debug(log, format, ...) __extension__({ \
-    os_log_t _log_tmp = (log); \
-    os_log_type_t _type_tmp = OS_LOG_TYPE_DEBUG; \
-    if (os_log_type_enabled(_log_tmp, _type_tmp)) { \
-        OS_LOG_CALL_WITH_FORMAT(_os_log_debug_impl, \
-                (&__dso_handle, _log_tmp, _type_tmp), format, ##__VA_ARGS__); \
-    } \
-})
-#else
 #define os_log_debug(log, format, ...) \
         os_log_with_type(log, OS_LOG_TYPE_DEBUG, format, ##__VA_ARGS__)
-#endif // OS_LOG_TARGET_HAS_10_15_FEATURES
 
 /*!
  * @function os_log_error
@@ -311,13 +296,6 @@ os_log_create(const char *subsystem, const char *category);
  *
  * Note, in a debugger, it is possible to set a breakpoint on _os_log_error_impl
  * to break on any error being emitted.
- *
- * A common use of os_log_error is to log failures from system calls and
- * library functions, including the value of errno.  Like other system calls
- * and library functions, the os_log functions do not preserve the value of
- * errno across calls.  errno can change even if the log message is logged
- * successfully.  Consider saving errno into a local variable before calling
- * os_log, if you still need errno's value afterward.
  *
  * @param log
  * Pass OS_LOG_DEFAULT or a log object previously created with os_log_create.
@@ -348,16 +326,10 @@ os_log_create(const char *subsystem, const char *category);
  * Insert a fault log message into the Unified Logging and Tracing system.
  *
  * @discussion
- * Log a fault message into the Unified Logging and Tracing system.
- *
- * Faults should be used to report conditions which indicate the
- * presence of a bug.  Faults will gather more expensive contextual information
- * and record it for later inspection.  They may also be reported to other
- * debugging tools for display or aggregation.
- *
- * Note that faults should only be used for unexpected error conditions in
- * which there's a clear and safe recovery path.  If such a path does not
- * exist, consider the os_crash(3) family of APIs instead.
+ * Log a fault message issue into the Unified Logging and Tracing system
+ * signifying a multi-process (i.e., system error) related issue, either
+ * due to interaction via IPC or some other.  Faults will gather information
+ * from the entire process chain and record it for later inspection.
  *
  * When an os_activity_id_t is present, the log message will also be scoped by
  * that identifier.  Activities provide granular filtering of log messages
@@ -367,14 +339,6 @@ os_log_create(const char *subsystem, const char *category);
  * i.e., %s and %@, that can be written to the persistence store.  As such,
  * all content exceeding the limit will be truncated before written to disk.
  * Live streams will continue to show the full content.
- *
- * When composing user provided strings libtrace will cap the size in total of
- * format specifiers. See libtrace/libtrace/format_internal.h for details.
- * Libtrace will also truncate the total composed message to a length of
- * EXIT_REASON_PAYLOAD_MAX_LEN bytes, which is the kernel's maximum limit
- * for fault message length. See xnu/osfmk/kern/kcdata.h for details.
- * Libtrace will truncate all fault payloads regardless of oversize messages
- * being enabled before calling into the kernel.
  *
  * Note, in a debugger, it is possible to set a breakpoint on _os_log_fault_impl
  * to break on any fault being emitted.
@@ -437,37 +401,25 @@ _os_log_impl(void *dso, os_log_t log, os_log_type_t type,
         const char *format, uint8_t *buf, uint32_t size);
 
 /*!
- * @function _os_log_debug_impl
- *
- * @abstract
- * Internal function that is taken for any debug log emitted in the system.
- */
-API_AVAILABLE(macos(10.15), ios(13.0), tvos(13.0), watchos(6.0))
-OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED OS_COLD
-void
-_os_log_debug_impl(void *dso, os_log_t log, os_log_type_t type,
-        const char *format, uint8_t *buf, uint32_t size);
-
-/*!
  * @function _os_log_error_impl
  *
  * @abstract
  * Internal function that is taken for any error emitted in the system.
  */
 API_AVAILABLE(macos(10.13), ios(11.0), tvos(11.0), watchos(4.0))
-OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED OS_COLD
+OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED
 void
 _os_log_error_impl(void *dso, os_log_t log, os_log_type_t type,
         const char *format, uint8_t *buf, uint32_t size);
 
 /*!
- * @function _os_log_fault_impl
+ * @function _os_log_impl
  *
  * @abstract
  * Internal function that is taken for any fault emitted in the system.
  */
 API_AVAILABLE(macos(10.13), ios(11.0), tvos(11.0), watchos(4.0))
-OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED OS_COLD
+OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED
 void
 _os_log_fault_impl(void *dso, os_log_t log, os_log_type_t type,
         const char *format, uint8_t *buf, uint32_t size);

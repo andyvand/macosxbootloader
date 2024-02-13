@@ -21,7 +21,6 @@
 #include <odmodule/odrequest.h>
 #include <odmodule/odconnection.h>
 #include <odmodule/odcredential.h>
-#include <odmodule/odcstr.h>
 
 /*!
     @header     odcore
@@ -99,11 +98,11 @@ OS_EXPORT OS_NOTHROW
 void
 od_retain(od_object_t object);
 
-#if OD_OBJECT_USE_OS_OBJECT && OS_OBJECT_USE_OBJC_RETAIN_RELEASE
+#if OS_OBJECT_USE_OBJC_RETAIN_RELEASE
 #undef od_retain
 #define od_retain(object) ({ od_object_t _o = (object); \
 _od_object_validate(_o); (void)[_o retain]; })
-#endif
+#endif // OS_OBJECT_USE_OBJC_RETAIN_RELEASE
 
 /*!
     @function   od_release
@@ -112,11 +111,11 @@ _od_object_validate(_o); (void)[_o retain]; })
 OS_EXPORT OS_NOTHROW
 void
 od_release(od_object_t object);
-#if OD_OBJECT_USE_OS_OBJECT && OS_OBJECT_USE_OBJC_RETAIN_RELEASE
+#if OS_OBJECT_USE_OBJC_RETAIN_RELEASE
 #undef od_release
 #define od_release(object) ({ od_object_t _o = (object); \
 _od_object_validate(_o); [_o release]; })
-#endif
+#endif // OS_OBJECT_USE_OBJC_RETAIN_RELEASE
 
 #pragma mark -
 #pragma mark od_context_t
@@ -152,6 +151,29 @@ odcontext_get_data(od_context_t context);
 
 #pragma mark -
 #pragma mark Utility functions
+
+/*!
+    @function   od_cstr_from_cfstring
+    @abstract   get a C string from a CF String as UTF8
+    @discussion get a C string from a CF String as UTF8
+    @param      inCFStr the CFString to extract
+    @param      ioCStr must be freed if it is non-NULL
+    @result     a constant C string that should not be freed as it may be internal storage from the CFString
+*/
+OS_EXPORT OS_NOTHROW OS_WARN_RESULT
+const char *
+od_cstr_from_cfstring(CFStringRef inCFStr, char **ioCStr);
+
+/*!
+    @function	od_cstr_from_cfstring_or_cfdata
+    @abstract   fetches a standard C-string from a CFDataRef or CFStringRef passed to APIs
+    @discussion fetches a standard C-string from a CFDataRef or CFStringRef passed to APIs
+    @param      value is a CFDataRef or CFStringRef to extract the string from
+    @result     a pointer to a char string that must be freed
+*/
+OS_EXPORT OS_NOTHROW OS_WARN_RESULT OS_MALLOC
+char *
+od_cstr_from_cfstring_or_cfdata(CFTypeRef value);
 
 
 /*!

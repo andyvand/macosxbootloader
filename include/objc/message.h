@@ -36,8 +36,12 @@ struct objc_super {
     __unsafe_unretained _Nonnull id receiver;
 
     /// Specifies the particular superclass of the instance to message. 
+#if !defined(__cplusplus)  &&  !__OBJC2__
+    /* For compatibility with old objc-runtime.h header */
+    __unsafe_unretained _Nonnull Class class;
+#else
     __unsafe_unretained _Nonnull Class super_class;
-
+#endif
     /* super_class is the first class to search */
 };
 #endif
@@ -53,8 +57,6 @@ struct objc_super {
  * before being called. 
  */
 #if !OBJC_OLD_DISPATCH_PROTOTYPES
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-library-redeclaration"
 OBJC_EXPORT void
 objc_msgSend(void /* id self, SEL op, ... */ )
     OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0);
@@ -62,7 +64,6 @@ objc_msgSend(void /* id self, SEL op, ... */ )
 OBJC_EXPORT void
 objc_msgSendSuper(void /* struct objc_super *super, SEL op, ... */ )
     OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0);
-#pragma clang diagnostic pop
 #else
 /** 
  * Sends a message with a simple return value to an instance of a class.
@@ -113,8 +114,6 @@ objc_msgSendSuper(struct objc_super * _Nonnull super, SEL _Nonnull op, ...)
  * before being called. 
  */
 #if !OBJC_OLD_DISPATCH_PROTOTYPES
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-library-redeclaration"
 OBJC_EXPORT void
 objc_msgSend_stret(void /* id self, SEL op, ... */ )
     OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0)
@@ -124,7 +123,6 @@ OBJC_EXPORT void
 objc_msgSendSuper_stret(void /* struct objc_super *super, SEL op, ... */ )
     OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0)
     OBJC_ARM64_UNAVAILABLE;
-#pragma clang diagnostic pop
 #else
 /** 
  * Sends a message with a data-structure return value to an instance of a class.
@@ -167,8 +165,6 @@ objc_msgSendSuper_stret(struct objc_super * _Nonnull super,
  * before being called. 
  */
 #if !OBJC_OLD_DISPATCH_PROTOTYPES
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-library-redeclaration"
 
 # if defined(__i386__)
 
@@ -186,7 +182,6 @@ OBJC_EXPORT void
 objc_msgSend_fp2ret(void /* id self, SEL op, ... */ )
     OBJC_AVAILABLE(10.5, 2.0, 9.0, 1.0, 2.0);
 
-#pragma clang diagnostic pop
 # endif
 
 // !OBJC_OLD_DISPATCH_PROTOTYPES
@@ -203,12 +198,9 @@ objc_msgSend_fp2ret(void /* id self, SEL op, ... */ )
  *  you must use \c objc_msgSend_fpret for functions returning non-integral type. For \c float or 
  *  \c long \c double return types, cast the function to an appropriate function pointer type first.
  */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-library-redeclaration"
 OBJC_EXPORT double
 objc_msgSend_fpret(id _Nullable self, SEL _Nonnull op, ...)
     OBJC_AVAILABLE(10.4, 2.0, 9.0, 1.0, 2.0);
-#pragma clang diagnostic pop
 
 /* Use objc_msgSendSuper() for fp-returning messages to super. */
 /* See also objc_msgSendv_fpret() below. */
@@ -251,8 +243,6 @@ OBJC_EXPORT void objc_msgSend_fp2ret(id _Nullable self, SEL _Nonnull op, ...)
  * before being called. 
  */
 #if !OBJC_OLD_DISPATCH_PROTOTYPES
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-library-redeclaration"
 OBJC_EXPORT void
 method_invoke(void /* id receiver, Method m, ... */ ) 
     OBJC_AVAILABLE(10.5, 2.0, 9.0, 1.0, 2.0);
@@ -261,7 +251,6 @@ OBJC_EXPORT void
 method_invoke_stret(void /* id receiver, Method m, ... */ ) 
     OBJC_AVAILABLE(10.5, 2.0, 9.0, 1.0, 2.0)
     OBJC_ARM64_UNAVAILABLE;
-#pragma clang diagnostic pop
 #else
 OBJC_EXPORT id _Nullable
 method_invoke(id _Nullable receiver, Method _Nonnull m, ...) 
@@ -290,8 +279,6 @@ method_invoke_stret(id _Nullable receiver, Method _Nonnull m, ...)
  * but may be compared to other IMP values.
  */
 #if !OBJC_OLD_DISPATCH_PROTOTYPES
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-library-redeclaration"
 OBJC_EXPORT void
 _objc_msgForward(void /* id receiver, SEL sel, ... */ ) 
     OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0);
@@ -300,7 +287,6 @@ OBJC_EXPORT void
 _objc_msgForward_stret(void /* id receiver, SEL sel, ... */ ) 
     OBJC_AVAILABLE(10.6, 3.0, 9.0, 1.0, 2.0)
     OBJC_ARM64_UNAVAILABLE;
-#pragma clang diagnostic pop
 #else
 OBJC_EXPORT id _Nullable
 _objc_msgForward(id _Nonnull receiver, SEL _Nonnull sel, ...) 
@@ -310,6 +296,75 @@ OBJC_EXPORT void
 _objc_msgForward_stret(id _Nonnull receiver, SEL _Nonnull sel, ...) 
     OBJC_AVAILABLE(10.6, 3.0, 9.0, 1.0, 2.0)
     OBJC_ARM64_UNAVAILABLE;
+#endif
+
+
+/* Variable-argument Messaging Primitives
+ *
+ * Use these functions to call methods with a list of arguments, such 
+ * as the one passed to forward:: .
+ *
+ * The contents of the argument list are architecture-specific. 
+ * Consult your local function call ABI documentation for details.
+ * 
+ * These functions must be cast to an appropriate function pointer type 
+ * before being called, except for objc_msgSendv_stret() which must not 
+ * be cast to a struct-returning type.
+ */
+
+typedef void* marg_list;
+
+OBJC_EXPORT id _Nullable
+objc_msgSendv(id _Nullable self, SEL _Nonnull op, size_t arg_size,
+              marg_list _Nonnull arg_frame)
+    OBJC2_UNAVAILABLE;
+
+OBJC_EXPORT void
+objc_msgSendv_stret(void * _Nonnull stretAddr, id _Nullable self,
+                    SEL _Nonnull op, size_t arg_size,
+                    marg_list _Nullable arg_frame)
+    OBJC2_UNAVAILABLE;
+/* Note that objc_msgSendv_stret() does not return a structure type, 
+ * and should not be cast to do so. This is unlike objc_msgSend_stret() 
+ * and objc_msgSendSuper_stret().
+ */
+#if defined(__i386__)
+OBJC_EXPORT double
+objc_msgSendv_fpret(id _Nullable self, SEL _Nonnull op,
+                    unsigned arg_size, marg_list _Nullable arg_frame)
+    OBJC2_UNAVAILABLE;
+#endif
+
+
+/* The following marg_list macros are of marginal utility. They
+ * are included for compatibility with the old objc-class.h header. */
+
+#if !__OBJC2__
+
+#define marg_prearg_size	0
+
+#define marg_malloc(margs, method) \
+	do { \
+		margs = (marg_list *)malloc (marg_prearg_size + ((7 + method_getSizeOfArguments(method)) & ~7)); \
+	} while (0)
+
+#define marg_free(margs) \
+	do { \
+		free(margs); \
+	} while (0)
+	
+#define marg_adjustedOffset(method, offset) \
+	(marg_prearg_size + offset)
+
+#define marg_getRef(margs, offset, type) \
+	( (type *)((char *)margs + marg_adjustedOffset(method,offset) ) )
+
+#define marg_getValue(margs, offset, type) \
+	( *marg_getRef(margs, offset, type) )
+
+#define marg_setValue(margs, offset, type, value) \
+	( marg_getValue(margs, offset, type) = (value) )
+
 #endif
 
 #endif

@@ -51,8 +51,6 @@
 #define kFSSubTypeKey                "FSSubType"
 #define kFSXMLOutputArgumentKey      "FSXMLOutputArgument"
 
-#define kFSEncryptNameKey 			 "FSEncryptionName"
-	/* Deprecated - use kFSEncryptNameKey for HFS/APFS */
 #define	kFSCoreStorageEncryptNameKey "FSCoreStorageEncryptionName"
 
 #endif /* _FSPROPERTIES_H_ */

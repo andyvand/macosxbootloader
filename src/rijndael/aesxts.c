@@ -26,9 +26,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef _MSC_VER
 #pragma warning(disable:4100)
+#endif
 
-int 
+int
 aes_encrypt_key(const uint8_t *key, int key_len, aesedp_encrypt_ctx cx[1]);
 
 int 

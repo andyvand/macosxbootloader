@@ -130,4 +130,5 @@ simpleroutine mach_notify_dead_name(
 	msgseqno seqno	: mach_port_seqno_t;
 #endif	/* SEQNOS */
 		name	: mach_port_name_t);
+
 /* vim: set ft=c : */

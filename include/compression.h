@@ -29,9 +29,9 @@ extern "C" {
  algorithms that we do not provide because using one of the algorithms we
  do provide is [almost] always a better choice.
  
- There are four commonly-known encoders implemented: LZ4, zlib (level 5),
- LZMA (level 6) and Brotli (level 2). If you require that your compression be interoperable
- with non-Apple devices, you should use one of these three schemes:
+ There are three commonly-known encoders implemented: LZ4, zlib (level 5), and
+ LZMA (level 6).  If you require that your compression be interoperable with
+ non-Apple devices, you should use one of these three schemes:
  
     - Use LZ4 if speed is critical, and you are willing to sacrifice
     compression ratio to achieve it.
@@ -48,11 +48,6 @@ extern "C" {
  algorithm that is faster than, and generally compresses better than zlib.
  It is slower than LZ4 and does not compress as well as LZMA, however, so
  you will still want to use those algorithms in the situations described.
-
- Brotli is a widely adopted content-encoding-method for the web. Thus, Brotli
- is included in libcompression escpecially to provide decoding capabilities.
- In many other use-cases, one of the above mentioned algorithms is probably a
- better choice.
 
  Further details on the supported public formats, and their implementation
  in the compression library:
@@ -106,24 +101,19 @@ extern "C" {
 
  - LZ4_RAW is supported by the buffer APIs only, and encodes/decodes payloads
    compatible with the LZ4 library, without the frame headers described above.
-
- - We implement Brotli level 2 encoder only. This compression level provides
-   a good balance between compression speed and compression ratio. The Brotli
-   decoder supports decoding data compressed with any compression level.
  
 */
 typedef enum {
 
-    /* Commonly-available algorithms */
-    COMPRESSION_LZ4      = 0x100,       // available starting OS X 10.11, iOS 9.0
-    COMPRESSION_ZLIB     = 0x205,       // available starting OS X 10.11, iOS 9.0
-    COMPRESSION_LZMA     = 0x306,       // available starting OS X 10.11, iOS 9.0
-    COMPRESSION_LZ4_RAW  = 0x101,       // available starting OS X 10.11, iOS 9.0
-    COMPRESSION_BROTLI   = 0xB02,       // available starting OS X 12.0, iOS 15.0
+    /* Commonly-available encoders */
+    COMPRESSION_LZ4     = 0x100,       // available starting OS X 10.11, iOS 9.0
+    COMPRESSION_ZLIB    = 0x205,       // available starting OS X 10.11, iOS 9.0
+    COMPRESSION_LZMA    = 0x306,       // available starting OS X 10.11, iOS 9.0
 
-    /* Apple-specific algorithms */
-    COMPRESSION_LZFSE    = 0x801,       // available starting OS X 10.11, iOS 9.0
-    COMPRESSION_LZBITMAP = 0x702,       // buffer API only, available starting OS X 12.0, iOS 15.0
+    COMPRESSION_LZ4_RAW = 0x101,       // available starting OS X 10.11, iOS 9.0
+
+    /* Apple-specific encoders */
+    COMPRESSION_LZFSE    = 0x801,      // available starting OS X 10.11, iOS 9.0
 
 } compression_algorithm;
 
@@ -148,7 +138,7 @@ typedef enum {
 */
 extern size_t
 compression_encode_scratch_buffer_size(compression_algorithm algorithm)
-__API_AVAILABLE(macos(10.11), ios(9.0));
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
 
 /*!
 
@@ -192,7 +182,7 @@ compression_encode_buffer(uint8_t * __restrict dst_buffer, size_t dst_size,
                           const uint8_t * __restrict src_buffer, size_t src_size,
                           void * __restrict __nullable scratch_buffer,
                           compression_algorithm algorithm)
-__API_AVAILABLE(macos(10.11), ios(9.0));
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
 
 /*!
 
@@ -211,7 +201,7 @@ __API_AVAILABLE(macos(10.11), ios(9.0));
 */
 extern size_t
 compression_decode_scratch_buffer_size(compression_algorithm algorithm)
-__API_AVAILABLE(macos(10.11), ios(9.0));
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
 
 /*!
 
@@ -257,7 +247,7 @@ compression_decode_buffer(uint8_t * __restrict dst_buffer, size_t dst_size,
                           const uint8_t * __restrict src_buffer, size_t src_size,
                           void * __restrict __nullable scratch_buffer,
                           compression_algorithm algorithm)
-__API_AVAILABLE(macos(10.11), ios(9.0));
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
 
 /******************************************************************************
  * Stream (zlib-style) compression interfaces                                 *
@@ -389,7 +379,7 @@ extern compression_status
 compression_stream_init(compression_stream * stream,
                         compression_stream_operation operation,
                         compression_algorithm algorithm)
-__API_AVAILABLE(macos(10.11), ios(9.0));
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
 
 /*!
 
@@ -410,9 +400,9 @@ __API_AVAILABLE(macos(10.11), ios(9.0));
  Binary OR of zero or more compression_stream_flags:
  
  COMPRESSION_STREAM_FINALIZE
- If set, indicates that no further input will be added to the stream, and
- thus that the end of stream should be indicated if the input block is
- completely processed.
+ If set, indicates that no further input block will be added to the
+ stream, and thus that the end of stream should be indicated if the input
+ block is completely processed.
 
  @discussion
  Processes the buffers described by the stream object until the source buffer
@@ -435,23 +425,12 @@ __API_AVAILABLE(macos(10.11), ios(9.0));
  
  COMPRESSION_STATUS_ERROR is returned if an error is encountered (if the
  encoded data is corrupted, for example).
-
- When decoding a valid stream, the end of stream will be detected from the contents
- of the input, and COMPRESSION_STATUS_END will be returned in that case, even if
- COMPRESSION_STREAM_FINALIZE is not set, or more input is provided.
-
- When decoding a corrupted or truncated stream, if COMPRESSION_STREAM_FINALIZE is not
- set to notify the decoder that no more input is coming, the decoder will not consume
- or produce any data, and return COMPRESSION_STATUS_OK.  In that case, the client code
- will call compression_stream_process again with the same state, entering an infinite loop.
- To avoid this, it is strongly advised to always set COMPRESSION_STREAM_FINALIZE when
- no more input is expected, for both encoding and decoding.
-
+ 
 */
 extern compression_status
 compression_stream_process(compression_stream * stream,
                            int flags)
-__API_AVAILABLE(macos(10.11), ios(9.0));
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
 
 /*!
 
@@ -468,7 +447,7 @@ __API_AVAILABLE(macos(10.11), ios(9.0));
 */
 extern compression_status
 compression_stream_destroy(compression_stream * stream)
-__API_AVAILABLE(macos(10.11), ios(9.0));
+__OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
   
 #if __has_feature(assume_nonnull)
   _Pragma("clang assume_nonnull end")

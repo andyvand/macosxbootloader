@@ -1,10 +1,9 @@
-module Dispatch [system] {
+module Dispatch [system] [extern_c] {
 	umbrella header "dispatch.h"
 	export *
-	exclude header "introspection.h"
 }
 
-module DispatchIntrospection [system] {
+module DispatchIntrospection [system] [extern_c] {
 	header "introspection.h"
 	export *
 }

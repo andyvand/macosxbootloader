@@ -146,7 +146,11 @@ Abstract:
     typedef unsigned short      uint16_t;
     typedef short               int16_t;
     typedef unsigned char       uint8_t;
-    typedef char                int8_t;
+    #ifdef __GNUC__
+      typedef __signed char       int8_t;
+    #else
+      typedef char                int8_t;
+    #endif
   #else
 
     //
@@ -160,13 +164,17 @@ Abstract:
     typedef unsigned short      uint16_t;
     typedef short               int16_t;
     typedef unsigned char       uint8_t;
-    typedef char                int8_t;
+    #ifdef __GNUC__
+      typedef __signed char       int8_t;
+    #else
+      typedef char                int8_t;
+    #endif
   #endif
 #else
   //
   // Use ANSI C 2000 stdint.h integer width declarations
   //
-  #include "stdint.h"
+  #include <stdint.h>
 #endif
 
 //
@@ -231,7 +239,7 @@ typedef int32_t   intn_t;
 // _EFIAPI is used to make all public APIs follow the standard C calling 
 // convention.
 //
-#if _MSC_EXTENSIONS
+#if _MSC_EXTENSIONS || defined(__clang__)
   //
   // Microsoft* compiler requires _EFIAPI useage, __cdecl is Microsoft* specific C.
   // 

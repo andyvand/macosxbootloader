@@ -99,10 +99,8 @@ int	sigrelse(int);
 void    (* _Nullable sigset(int, void (* _Nullable)(int)))(int);
 int	sigsuspend(const sigset_t *) __DARWIN_ALIAS_C(sigsuspend);
 int	sigwait(const sigset_t * __restrict, int * __restrict) __DARWIN_ALIAS_C(sigwait);
-#if !defined(_POSIX_C_SOURCE) || _POSIX_C_SOURCE >= 200809L || defined(_DARWIN_C_SOURCE)
-void	psignal(int, const char *);
-#endif /*  (!_POSIX_C_SOURCE || _POSIX_C_SOURCE >= 200809L || _DARWIN_C_SOURCE) */
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+void	psignal(unsigned int, const char *);
 int	sigblock(int);
 int	sigsetmask(int);
 int	sigvec(int, struct sigvec *, struct sigvec *);
@@ -110,11 +108,16 @@ int	sigvec(int, struct sigvec *, struct sigvec *);
 __END_DECLS
 
 /* List definitions after function declarations, or Reiser cpp gets upset. */
+#if defined(__i386__) || defined(__x86_64__)
+/* The left shift operator on intel is modulo 32 */
 __header_always_inline int
 __sigbits(int __signo)
 {
     return __signo > __DARWIN_NSIG ? 0 : (1 << (__signo - 1));
 }
+#else /* !__i386__ && !__x86_64__ */
+#define __sigbits(signo)	(1 << ((signo) - 1))
+#endif /* __i386__ || __x86_64__ */
 
 #define	sigaddset(set, signo)	(*(set) |= __sigbits(signo), 0)
 #define	sigdelset(set, signo)	(*(set) &= ~__sigbits(signo), 0)

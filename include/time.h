@@ -64,7 +64,6 @@
 #define	_TIME_H_
 
 #include <_types.h>
-#include <sys/cdefs.h>
 #include <Availability.h>
 #include <sys/_types/_clock_t.h>
 #include <sys/_types/_null.h>
@@ -87,11 +86,11 @@ struct tm {
 };
 
 #if __DARWIN_UNIX03
-#define CLOCKS_PER_SEC  ((clock_t)1000000)	/* [XSI] */
+#define CLOCKS_PER_SEC  1000000	/* [XSI] */
 #else /* !__DARWIN_UNIX03 */
 #include <machine/_limits.h>	/* Include file containing CLK_TCK. */
 
-#define CLOCKS_PER_SEC  ((clock_t)(__DARWIN_CLK_TCK))
+#define CLOCKS_PER_SEC  (__DARWIN_CLK_TCK)
 #endif /* __DARWIN_UNIX03 */
 
 #ifndef _ANSI_SOURCE
@@ -189,15 +188,6 @@ int clock_settime(clockid_t __clock_id, const struct timespec *__tp);
 #undef __CLOCK_AVAILABILITY
 #endif /* __DARWIN_C_LEVEL */
 #endif /* _DARWIN_FEATURE_CLOCK_GETTIME */
-
-#if (__DARWIN_C_LEVEL >= __DARWIN_C_FULL) || \
-        (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || \
-        (defined(__cplusplus) && __cplusplus >= 201703L)
-/* ISO/IEC 9899:201x 7.27.2.5 The timespec_get function */
-#define TIME_UTC	1	/* time elapsed since epoch */
-__API_AVAILABLE(macosx(10.15), ios(13.0), tvos(13.0), watchos(6.0))
-int timespec_get(struct timespec *ts, int base);
-#endif
 
 __END_DECLS
 

@@ -88,11 +88,6 @@
  *                                  returned.
  *                                  Available for vectors of length 2, 3, or 4.
  *
- *     simd_orient(x,y,...)         Return a positive value if the origin and
- *                                  their ordered arguments determine a positively
- *                                  oriented parallelepiped, zero if it is degenerate,
- *                                  and a negative value if it is negatively oriented.
- *
  *  In C++ the following geometric functions are available in the simd::
  *  namespace:
  *
@@ -110,7 +105,6 @@
  *      simd::cross(x,y)                simd_cross(x,y)
  *      simd::reflect(x,n)              simd_reflect(x,n)
  *      simd::refract(x,n,eta)          simd_refract(x,n,eta)
- *      simd::orient(x,y,...)           simd_orient(x,y,...)
  *
  *      simd::precise::project(x,y)     simd_precise_project(x,y)
  *      simd::precise::length(x)        simd_precise_length(x)
@@ -343,7 +337,7 @@ static simd_float4  SIMD_CFUNC simd_refract(simd_float4  __x, simd_float4  __n, 
 static simd_double2 SIMD_CFUNC simd_refract(simd_double2 __x, simd_double2 __n, double __eta);
 static simd_double3 SIMD_CFUNC simd_refract(simd_double3 __x, simd_double3 __n, double __eta);
 static simd_double4 SIMD_CFUNC simd_refract(simd_double4 __x, simd_double4 __n, double __eta);
-#define vector_refract simd_refract
+#define vector_refrace simd_refract
 
 #if SIMD_LIBRARY_VERSION >= 2
 /*  These functions require that you are building for OS X 10.12 or later,
@@ -692,17 +686,6 @@ namespace simd {
   static SIMD_CPPFUNC double3 refract(const double3 x, const double3 n, const float eta) { return ::simd_refract(x,n,eta); }
   static SIMD_CPPFUNC double4 refract(const double4 x, const double4 n, const float eta) { return ::simd_refract(x,n,eta); }
   
-#if SIMD_LIBRARY_VERSION >= 2
-  static SIMD_CPPFUNC float  orient(const float2  x, const float2 y) { return ::simd_orient(x,y); }
-  static SIMD_CPPFUNC float  orient(const float2  a, const float2 b, const float2 c) { return ::simd_orient(a,b,c); }
-  static SIMD_CPPFUNC float  orient(const float3  x, const float3 y, const float3 z) { return ::simd_orient(x,y,z); }
-  static SIMD_CPPFUNC float  orient(const float3  a, const float3 b, const float3 c, const float3 d) { return ::simd_orient(a,b,c,d); }
-  static SIMD_CPPFUNC double orient(const double2 x, const double2 y) { return ::simd_orient(x,y); }
-  static SIMD_CPPFUNC double orient(const double2 a, const double2 b, const double2 c) { return ::simd_orient(a,b,c); }
-  static SIMD_CPPFUNC double orient(const double3 x, const double3 y, const double3 z) { return ::simd_orient(x,y,z); }
-  static SIMD_CPPFUNC double orient(const double3 a, const double3 b, const double3 c, const double3 d) { return ::simd_orient(a,b,c,d); }
-#endif
-
   /* precise and fast sub-namespaces                                        */
   namespace precise {
     static SIMD_CPPFUNC float2  project(const float2  x, const float2  y) { return ::simd_precise_project(x, y); }
@@ -1075,7 +1058,7 @@ static float SIMD_CFUNC simd_orient(simd_float3 __a, simd_float3 __b, simd_float
 }
 static double SIMD_CFUNC simd_orient(simd_double3 __a, simd_double3 __b, simd_double3 __c, simd_double3 __d) {
   simd_double3 __args[4] = { __a, __b, __c, __d };
-  return _simd_orient_pd3((const double *)__args);
+  return _simd_orient_vd3((const double *)__args);
 }
 
 static float SIMD_CFUNC simd_incircle(simd_float2 __x, simd_float2 __a, simd_float2 __b, simd_float2 __c) {

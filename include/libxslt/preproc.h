@@ -22,7 +22,7 @@ extern "C" {
 /*
  * Interfaces
  */
-XSLTPUBVAR const xmlChar *xsltExtMarker;
+extern const xmlChar *xsltExtMarker;
 
 XSLTPUBFUN xsltElemPreCompPtr XSLTCALL
 		xsltDocumentComp	(xsltStylesheetPtr style,

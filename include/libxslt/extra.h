@@ -48,6 +48,14 @@ extern "C" {
 #define XSLT_XALAN_NAMESPACE ((xmlChar *)	\
 	                        "org.apache.xalan.xslt.extensions.Redirect")
 
+/**
+ * XSLT_NORM_SAXON_NAMESPACE:
+ *
+ * This is Norm's namespace for SAXON extensions.
+ */
+#define XSLT_NORM_SAXON_NAMESPACE ((xmlChar *)	\
+	"http://nwalsh.com/xslt/ext/com.nwalsh.saxon.CVS")
+
 
 XSLTPUBFUN void XSLTCALL
 		xsltFunctionNodeSet	(xmlXPathParserContextPtr ctxt,
@@ -56,7 +64,7 @@ XSLTPUBFUN void XSLTCALL
 		xsltDebug		(xsltTransformContextPtr ctxt,
 					 xmlNodePtr node,
 					 xmlNodePtr inst,
-					 xsltElemPreCompPtr comp);
+					 xsltStylePreCompPtr comp);
 
 
 XSLTPUBFUN void XSLTCALL

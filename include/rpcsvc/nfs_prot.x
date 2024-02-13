@@ -121,7 +121,7 @@ struct fattr {
 	unsigned uid;		/* owner user id */
 	unsigned gid;		/* owner group id */
 	unsigned size;		/* file size in bytes */
-	unsigned blocksize;	/* preferred block size */
+	unsigned blocksize;	/* prefered block size */
 	unsigned rdev;		/* special device # */
 	unsigned blocks;	/* Kb of disk used by file */
 	unsigned fsid;		/* device # */
@@ -409,7 +409,7 @@ struct fattr3 {
 	uid3	uid;		/* owner user id */
 	gid3	gid;		/* owner group id */
 	size3	size;		/* file size in bytes */
-	size3	used;		/* preferred block size */
+	size3	used;		/* prefered block size */
 	specdata3 rdev;		/* special device # */
 	uint64 fsid;		/* device # */
 	fileid3	fileid;		/* inode # */
@@ -489,14 +489,14 @@ default:
 
 union set_atime switch (time_how set_it) {
 case SET_TO_CLIENT_TIME:
-	nfstime3	atime;
+	atime	atime;
 default:
 	void;
 };
 
 union set_mtime switch (time_how set_it) {
 case SET_TO_CLIENT_TIME:
-	nfstime3	mtime;
+	mtime	mtime;
 default:
 	void;
 };
@@ -1107,9 +1107,9 @@ struct PATHCONF3resfail {
 
 union PATHCONF3res switch (nfsstat3 status) {
 case NFS3_OK:
-	PATHCONF3resok	resok;
+	FSINFO3resok	resok;
 default:
-	PATHCONF3resfail	resfail;
+	FSINFO3resfail	resfail;
 };
 
 /*
@@ -1132,9 +1132,9 @@ struct COMMIT3resfail {
 
 union COMMIT3res switch (nfsstat3 status) {
 case NFS3_OK:
-	COMMIT3resok	resok;
+	FSINFO3resok	resok;
 default:
-	COMMIT3resfail	resfail;
+	FSINFO3resfail	resfail;
 };
 
 #endif /* WANT_NFS3 */

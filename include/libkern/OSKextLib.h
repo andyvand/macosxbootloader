@@ -30,14 +30,15 @@
 #define _LIBKERN_OSKEXTLIB_H
 
 #include <sys/cdefs.h>
+__BEGIN_DECLS
+
 #include <stdint.h>
 #include <mach/kmod.h>
 #include <mach/vm_types.h>
 #include <uuid/uuid.h>
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <libkern/OSReturn.h>
-
-__BEGIN_DECLS
 
 /*!
  * @header
@@ -232,38 +233,6 @@ __BEGIN_DECLS
  */
 #define kOSKextReturnSystemPolicy                    libkern_kext_err(0x1b)
 
-/*!
- * @define   kOSKextReturnKCLoadFailure
- * @abstract Loading of the System KC failed
- */
-#define kOSKextReturnKCLoadFailure                  libkern_kext_err(0x1c)
-
-/*!
- * @define   kOSKextReturnKCLoadFailureSystemKC
- * @abstract Loading of the System KC failed
- *
- * This a sub-code of kOSKextReturnKCLoadFailure. It can be OR'd together
- * with: kOSKextReturnKCLoadFailureAuxKC
- *
- * If both the System and Aux KCs fail to load, then the error code will be:
- * libkern_kext_err(0x1f)
- */
-#define kOSKextReturnKCLoadFailureSystemKC          libkern_kext_err(0x1d)
-
-/*!
- * @define   kOSKextReturnKCLoadFailureAuxKC
- * @abstract Loading of the Aux KC failed
- *
- * This a sub-code of kOSKextReturnKCLoadFailure. It can be OR'd together
- * with: kOSKextReturnKCLoadFailureSystemKC
- *
- * If both the System and Aux KCs fail to load, then the error code will be:
- * libkern_kext_err(0x1f)
- */
-#define kOSKextReturnKCLoadFailureAuxKC             libkern_kext_err(0x1e)
-
-/* next available error is: libkern_kext_err(0x20) */
-
 #if PRAGMA_MARK
 #pragma mark -
 /********************************************************************/
@@ -332,13 +301,6 @@ __BEGIN_DECLS
 #define kOSBundleRequiredKey                    "OSBundleRequired"
 
 /*!
- * @define   kOSBundleRequireExplicitLoadKey
- * @abstract A boolean value indicating whether the kext requires an
- *           explicit kextload in order to start/match.
- */
-#define kOSBundleRequireExplicitLoadKey         "OSBundleRequireExplicitLoad"
-
-/*!
  * @define   kOSBundleAllowUserLoadKey
  * @abstract A boolean value indicating whether
  *           <code>@link //apple_ref/doc/man/8/kextd kextcache(8)@/link</code>
@@ -352,27 +314,11 @@ __BEGIN_DECLS
 #define kOSBundleAllowUserLoadKey               "OSBundleAllowUserLoad"
 
 /*!
- * @define   kOSBundleAllowUserTerminateKey
- * @abstract A boolean value indicating whether the kextunload tool
- *           is allowed to issue IOService terminate to classes defined in this kext.
- * @discussion A boolean value indicating whether the kextunload tool
- *           is allowed to issue IOService terminate to classes defined in this kext.
- */
-#define kOSBundleAllowUserTerminateKey          "OSBundleAllowUserTerminate"
-
-/*!
  * @define   kOSKernelResourceKey
  * @abstract A boolean value indicating whether the kext represents a built-in
  *           component of the kernel.
  */
 #define kOSKernelResourceKey                    "OSKernelResource"
-
-/*!
- * @define   kOSKextVariantOverrideKey
- * @abstract A dictionary with target names as key and a target-specific variant
- *           name as value.
- */
-#define kOSKextVariantOverrideKey               "OSKextVariantOverride"
 
 /*!
  * @define   kIOKitPersonalitiesKey
@@ -396,14 +342,6 @@ __BEGIN_DECLS
 #define kAppleTextHashesKey                     "AppleTextHashes"
 #endif
 
-/*!
- * @define   kOSMutableSegmentCopy
- * @abstract A boolean value indicating whether the kext requires a copy of
- *           its mutable segments to be kept in memory, and then reset when the kext
- *           unloads. This should be used with caution as it will increase the
- *           amount of memory used by the kext.
- */
-#define kOSMutableSegmentCopy                   "OSMutableSegmentCopy"
 
 
 #if PRAGMA_MARK
@@ -445,89 +383,61 @@ __BEGIN_DECLS
  */
 
 /*!
- * @define   kOSKextKernelIdentifier
- * @abstract
- * This is the CFBundleIdentifier user for the kernel itself.
- */
+* @define   kOSKextKernelIdentifier
+* @abstract
+* This is the CFBundleIdentifier user for the kernel itself.
+*/
 #define kOSKextKernelIdentifier                 "__kernel__"
 
-
 /*!
- * @define  kOSKextBundlePackageTypeKext
- * @abstract
- * The bundle type value for Kernel Extensions.
- */
-#define kOSKextBundlePackageTypeKext        "KEXT"
-
-/*!
- * @define  kOSKextBundlePackageTypeDriverKit
- * @abstract
- * The bundle type value for Driver Extensions.
- */
-#define kOSKextBundlePackageTypeDriverKit   "DEXT"
-
-/*!
- * @define   kOSBundleRequiredRoot
- * @abstract
- * This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
- * value indicates that the kext may be needed to mount the root filesystem
- * whether starting from a local or a network volume.
- */
+* @define   kOSBundleRequiredRoot
+* @abstract
+* This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
+* value indicates that the kext may be needed to mount the root filesystem
+* whether starting from a local or a network volume.
+*/
 #define kOSBundleRequiredRoot                   "Root"
 
 /*!
- * @define   kOSBundleRequiredLocalRoot
- * @abstract
- * This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
- * value indicates that the kext may be needed to mount the root filesystem
- * when starting from a local disk.
- */
+* @define   kOSBundleRequiredLocalRoot
+* @abstract
+* This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
+* value indicates that the kext may be needed to mount the root filesystem
+* when starting from a local disk.
+*/
 #define kOSBundleRequiredLocalRoot              "Local-Root"
 
 /*!
- * @define   kOSBundleRequiredNetworkRoot
- * @abstract
- * This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
- * value indicates that the kext may be needed to mount the root filesystem
- * when starting over a network connection.
- */
+* @define   kOSBundleRequiredNetworkRoot
+* @abstract
+* This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
+* value indicates that the kext may be needed to mount the root filesystem
+* when starting over a network connection.
+*/
 #define kOSBundleRequiredNetworkRoot            "Network-Root"
 
 /*!
- * @define   kOSBundleRequiredSafeBoot
- * @abstract
- * This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
- * value indicates that the kext can be loaded during a safe startup.
- * This value does not normally cause the kext to be read by the booter
- * or included in startup kext caches.
- */
+* @define   kOSBundleRequiredSafeBoot
+* @abstract
+* This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
+* value indicates that the kext can be loaded during a safe startup.
+* This value does not normally cause the kext to be read by the booter
+* or included in startup kext caches.
+*/
 #define kOSBundleRequiredSafeBoot               "Safe Boot"
 
 /*!
- * @define   kOSBundleRequiredConsole
- * @abstract
- * This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
- * value indicates that the kext may be needed for console access
- * (specifically in a single-user startup when
- * <code>@link //apple_ref/doc/man/8/kextd kextd(8)@/link</code>.
- * does not run)
- * and should be loaded during early startup.
- */
+* @define   kOSBundleRequiredConsole
+* @abstract
+* This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
+* value indicates that the kext may be needed for console access
+* (specifically in a single-user startup when
+* <code>@link //apple_ref/doc/man/8/kextd kextd(8)@/link</code>.
+* does not run)
+* and should be loaded during early startup.
+*/
 #define kOSBundleRequiredConsole                "Console"
 
-/*!
- * @define   kOSBundleRequiredDriverKit
- * @abstract
- * This <code>@link kOSBundleRequiredKey OSBundleRequired@/link</code>
- * value indicates that the driver extension's (DriverKit driver's)
- * personalities must be present in the kernel at early boot (specifically
- * before <code>@link //apple_ref/doc/man/8/kextd kextd(8)@/link</code> starts)
- * in order to compete with kexts built into the prelinkedkernel. Note that
- * kextd is still required to launch the user space driver binary. The IOKit
- * matching will happen during early boot, and the actual driver launch
- * will happen after kextd starts.
- */
-#define kOSBundleRequiredDriverKit              "DriverKit"
 
 #if PRAGMA_MARK
 #pragma mark -

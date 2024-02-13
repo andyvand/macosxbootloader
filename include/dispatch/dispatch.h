@@ -26,10 +26,8 @@
 #include <os/availability.h>
 #include <TargetConditionals.h>
 #include <os/base.h>
-#elif defined(_WIN32)
-#include <os/generic_win_base.h>
-#elif defined(__unix__)
-#include <os/generic_unix_base.h>
+#elif defined(__linux__)
+#include <os/linux_base.h>
 #endif
 
 #include <sys/types.h>
@@ -37,16 +35,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
-#include <string.h>
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#if !defined(HAVE_UNISTD_H) || HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <fcntl.h>
-#if defined(_WIN32)
-#include <time.h>
-#endif
 
-#if (defined(__linux__) || defined(__FreeBSD__)) && defined(__has_feature)
+#if defined(__linux__) && defined(__has_feature)
 #if __has_feature(modules)
 #if !defined(__arm__)
 #include <stdio.h> // for off_t (to match Glibc.modulemap)
@@ -54,14 +48,15 @@
 #endif
 #endif
 
-#define DISPATCH_API_VERSION 20181008
+#define DISPATCH_API_VERSION 20170124
+
+#ifndef __DISPATCH_BUILDING_DISPATCH__
 
 #ifndef __DISPATCH_INDIRECT__
 #define __DISPATCH_INDIRECT__
 #endif
 
 #include <os/object.h>
-#include <os/workgroup.h>
 #include <dispatch/base.h>
 #include <dispatch/time.h>
 #include <dispatch/object.h>
@@ -73,9 +68,9 @@
 #include <dispatch/once.h>
 #include <dispatch/data.h>
 #include <dispatch/io.h>
-#include <dispatch/workloop.h>
-#include <dispatch/dispatch_swift_shims.h>
 
 #undef __DISPATCH_INDIRECT__
+
+#endif /* !__DISPATCH_BUILDING_DISPATCH__ */
 
 #endif

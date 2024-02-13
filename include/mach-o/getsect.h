@@ -25,14 +25,6 @@
 
 #include <stdint.h>
 #include <mach-o/loader.h>
-#include <Availability.h>
-#include <TargetConditionals.h>
-
-#ifndef __CCTOOLS_DEPRECATED
-    #define __CCTOOLS_DEPRECATED            __API_DEPRECATED("No longer supported", macos(10.0, 13.0), ios(1.0, 16.0), watchos(1.0, 8.0), tvos(1.0, 16.0))
-    #define __CCTOOLS_DEPRECATED_MSG(_msg)  __API_DEPRECATED_WITH_REPLACEMENT(_msg, macos(10.0, 13.0), ios(1.0, 16.0), watchos(1.0, 8.0), tvos(1.0, 16.0))
-#endif
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,17 +38,17 @@ extern "C" {
 extern char *getsectdata(
     const char *segname,
     const char *sectname,
-    unsigned long *size) __CCTOOLS_DEPRECATED_MSG("use getsectiondata()");
+    unsigned long *size);
 
 extern char *getsectdatafromFramework(
     const char *FrameworkName,
     const char *segname,
     const char *sectname,
-    unsigned long *size) __CCTOOLS_DEPRECATED;
+    unsigned long *size);
 
-extern unsigned long get_end(void) __CCTOOLS_DEPRECATED;
-extern unsigned long get_etext(void) __CCTOOLS_DEPRECATED;
-extern unsigned long get_edata(void) __CCTOOLS_DEPRECATED;
+extern unsigned long get_end(void);
+extern unsigned long get_etext(void);
+extern unsigned long get_edata(void);
 
 #ifndef __LP64__
 /*
@@ -64,7 +56,7 @@ extern unsigned long get_edata(void) __CCTOOLS_DEPRECATED;
  */
 extern const struct section *getsectbyname(
     const char *segname,
-    const char *sectname) __CCTOOLS_DEPRECATED_MSG("use getsectiondata(&__dso_handle,)");
+    const char *sectname);
 
 extern uint8_t *getsectiondata(
     const struct mach_header *mhp,
@@ -73,7 +65,7 @@ extern uint8_t *getsectiondata(
     unsigned long *size);
 
 extern const struct segment_command *getsegbyname(
-    const char *segname) __CCTOOLS_DEPRECATED;
+    const char *segname);
 
 extern uint8_t *getsegmentdata(
     const struct mach_header *mhp,
@@ -95,7 +87,7 @@ extern uint8_t *getsectiondata(
     unsigned long *size);
 
 extern const struct segment_command_64 *getsegbyname(
-    const char *segname) __CCTOOLS_DEPRECATED;
+    const char *segname);
 
 extern uint8_t *getsegmentdata(
     const struct mach_header_64 *mhp,
@@ -111,18 +103,18 @@ extern char *getsectdatafromheader(
     const struct mach_header *mhp,
     const char *segname,
     const char *sectname,
-    uint32_t *size) __CCTOOLS_DEPRECATED_MSG("use getsectiondata()");
+    uint32_t *size);
 
 extern const struct section *getsectbynamefromheader(
     const struct mach_header *mhp,
     const char *segname,
-    const char *sectname) __CCTOOLS_DEPRECATED_MSG("use getsectiondata()");
+    const char *sectname);
 
 extern const struct section *getsectbynamefromheaderwithswap(
     struct mach_header *mhp,
     const char *segname,
     const char *sectname,
-    int fSwap) __CCTOOLS_DEPRECATED_MSG("use getsectiondata()");
+    int fSwap);
 
 /*
  * Interfaces for tools working with 64-bit Mach-O files.
@@ -131,18 +123,18 @@ extern char *getsectdatafromheader_64(
     const struct mach_header_64 *mhp,
     const char *segname,
     const char *sectname,
-    uint64_t *size) __CCTOOLS_DEPRECATED_MSG("use getsectiondata()");
+    uint64_t *size);
 
 extern const struct section_64 *getsectbynamefromheader_64(
     const struct mach_header_64 *mhp,
     const char *segname,
-    const char *sectname) __CCTOOLS_DEPRECATED_MSG("use getsectiondata()");
+    const char *sectname);
 
 extern const struct section *getsectbynamefromheaderwithswap_64(
     struct mach_header_64 *mhp,
     const char *segname,
     const char *sectname,
-    int fSwap) __CCTOOLS_DEPRECATED_MSG("use getsectiondata()");
+    int fSwap);
 
 #ifdef __cplusplus
 }

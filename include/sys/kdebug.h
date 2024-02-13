@@ -1,104 +1,122 @@
-// Copyright (c) 2000-2021 Apple Inc. All rights reserved.
-//
-// @APPLE_OSREFERENCE_LICENSE_HEADER_START@
-//
-// This file contains Original Code and/or Modifications of Original Code
-// as defined in and that are subject to the Apple Public Source License
-// Version 2.0 (the 'License'). You may not use this file except in
-// compliance with the License. The rights granted to you under the License
-// may not be used to create, or enable the creation or redistribution of,
-// unlawful or unlicensed copies of an Apple operating system, or to
-// circumvent, violate, or enable the circumvention or violation of, any
-// terms of an Apple operating system software license agreement.
-//
-// Please obtain a copy of the License at
-// http://www.opensource.apple.com/apsl/ and read it before using this file.
-//
-// The Original Code and all software distributed under the License are
-// distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
-// EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
-// INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
-// Please see the License for the specific language governing rights and
-// limitations under the License.
-//
-// @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+/*
+ * Copyright (c) 2000-2016 Apple Inc. All rights reserved.
+ *
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_START@
+ *
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. The rights granted to you under the License
+ * may not be used to create, or enable the creation or redistribution of,
+ * unlawful or unlicensed copies of an Apple operating system, or to
+ * circumvent, violate, or enable the circumvention or violation of, any
+ * terms of an Apple operating system software license agreement.
+ *
+ * Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this file.
+ *
+ * The Original Code and all software distributed under the License are
+ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
+ *
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+ */
+
+/*
+ * kdebug.h - kernel_debug definitions
+ */
 
 #ifndef BSD_SYS_KDEBUG_H
 #define BSD_SYS_KDEBUG_H
 
 #include <sys/appleapiopts.h>
 #include <sys/cdefs.h>
-
 __BEGIN_DECLS
 
 #ifdef __APPLE_API_UNSTABLE
 
-// kdebug records events occurring in the system.  For user space, it has been
-// replaced by the `os_signpost` interfaces in `<os/signpost.h>`.
-//
-// This header reserves "debug IDs", 32-bit values that classify events recorded
-// by kdebug:
-//
-//  class  subclass     code     function
-// ╭──────┬───────┬─────────────┬─╮
-// │  8   │   8   │     14      │2│
-// ╰──────┴───────┴─────────────┴─╯
-// ╰──────────────╯               │
-//  class-subclass              00│
-// ╰──────────────────────────────╯
-// │          event ID            │
-// ╰──────────────────────────────╯
-//            debug ID
-//
-// The event ID is a hierarchical ID, indicating which components an event is
-// referring to.  The debug ID includes an event ID and sets the function
-// qualifier bits, to determine the structural significance of an event (whether
-// it starts or ends an interval).
+#include <mach/clock_types.h>
+#include <stdint.h>
 
-#pragma mark - Debug ID encoding/decoding
+#include <Availability.h>
+
+
+/*
+ * Kdebug is a facility for tracing events occurring on a system.
+ *
+ * All events are tagged with a 32-bit debugid:
+ *
+ * +----------------+----------------+----------------------------+----+
+ * |   Class (8)    |  Subclass (8)  |          Code (14)         |Func|
+ * |                |                |                            |(2) |
+ * +----------------+----------------+----------------------------+----+
+ * \_________________________________/
+ *         ClassSubclass (CSC)
+ * \________________________________________________________________00_/
+ *                                 Eventid
+ * \___________________________________________________________________/
+ *                                 Debugid
+ *
+ * The eventid is a hierarchical ID, indicating which components an event is
+ * referring to.  The debugid includes an eventid and two function qualifier
+ * bits, to determine the structural significance of an event (whether it
+ * starts or ends an interval).
+ */
 
 #define KDBG_CLASS_MASK   (0xff000000)
 #define KDBG_CLASS_OFFSET (24)
 #define KDBG_CLASS_MAX    (0xff)
+
 #define KDBG_SUBCLASS_MASK   (0x00ff0000)
 #define KDBG_SUBCLASS_OFFSET (16)
 #define KDBG_SUBCLASS_MAX    (0xff)
+
+/* class and subclass mask */
 #define KDBG_CSC_MASK   (0xffff0000)
 #define KDBG_CSC_OFFSET (KDBG_SUBCLASS_OFFSET)
 #define KDBG_CSC_MAX    (0xffff)
+
 #define KDBG_CODE_MASK   (0x0000fffc)
 #define KDBG_CODE_OFFSET (2)
 #define KDBG_CODE_MAX    (0x3fff)
+
 #define KDBG_EVENTID_MASK (0xfffffffc)
 #define KDBG_FUNC_MASK    (0x00000003)
 
-// Generate an eventid corresponding to Class, SubClass, and Code.
+/* Generate an eventid corresponding to Class, SubClass, and Code. */
 #define KDBG_EVENTID(Class, SubClass, Code)                \
-	(((unsigned)((Class)    &   0xff) << KDBG_CLASS_OFFSET)    | \
-	 ((unsigned)((SubClass) &   0xff) << KDBG_SUBCLASS_OFFSET) | \
-	 ((unsigned)((Code)     & 0x3fff) << KDBG_CODE_OFFSET))
+        ((((Class)    &   0xff) << KDBG_CLASS_OFFSET)    | \
+         (((SubClass) &   0xff) << KDBG_SUBCLASS_OFFSET) | \
+         (((Code)     & 0x3fff) << KDBG_CODE_OFFSET))
+/* Deprecated macro using old naming convention. */
+#define KDBG_CODE(Class, SubClass, Code) \
+        KDBG_EVENTID(Class, SubClass, Code)
 
-// Extract pieces of a debug ID.
+/* Extract pieces of the debug code. */
 #define KDBG_EXTRACT_CLASS(Debugid) \
-	((uint8_t)(((Debugid) & KDBG_CLASS_MASK) >> KDBG_CLASS_OFFSET))
+        ((uint8_t)(((Debugid) & KDBG_CLASS_MASK) >> KDBG_CLASS_OFFSET))
 #define KDBG_EXTRACT_SUBCLASS(Debugid) \
-	((uint8_t)(((Debugid) & KDBG_SUBCLASS_MASK) >> KDBG_SUBCLASS_OFFSET))
+        ((uint8_t)(((Debugid) & KDBG_SUBCLASS_MASK) >> KDBG_SUBCLASS_OFFSET))
 #define KDBG_EXTRACT_CSC(Debugid) \
-	((uint16_t)(((Debugid) & KDBG_CSC_MASK) >> KDBG_CSC_OFFSET))
+        ((uint16_t)(((Debugid) & KDBG_CSC_MASK) >> KDBG_CSC_OFFSET))
 #define KDBG_EXTRACT_CODE(Debugid) \
-	((uint16_t)(((Debugid) & KDBG_CODE_MASK) >> KDBG_CODE_OFFSET))
-#define KDBG_CLASS_ENCODE(Class, SubClass) KDBG_EVENTID(Class, SubClass, 0)
-#define KDBG_CLASS_DECODE(Debugid) (Debugid & KDBG_CSC_MASK)
+        ((uint16_t)(((Debugid) & KDBG_CODE_MASK) >> KDBG_CODE_OFFSET))
 
-// Function qualifiers for debug IDs.
-#define DBG_FUNC_START 1U
-#define DBG_FUNC_END   2U
-#define DBG_FUNC_NONE  0U
+/* function qualifiers  */
+#define DBG_FUNC_START 1
+#define DBG_FUNC_END   2
+#define DBG_FUNC_NONE  0
 
-#pragma mark - Class and subclass definitions
+/*
+ * Definitions to support IOP tracing.
+ */
 
 
+/* The Kernel Debug Classes  */
 #define DBG_MACH        1
 #define DBG_NETWORK     2
 #define DBG_FSYSTEM     3
@@ -107,7 +125,7 @@ __BEGIN_DECLS
 #define DBG_DRIVERS     6
 #define DBG_TRACE       7
 #define DBG_DLIL        8
-#define DBG_PTHREAD     9
+#define DBG_WORKQUEUE   9
 #define DBG_CORESTORAGE 10
 #define DBG_CG          11
 #define DBG_MONOTONIC   12
@@ -117,7 +135,6 @@ __BEGIN_DECLS
 #define DBG_QT          32
 #define DBG_APPS        33
 #define DBG_LAUNCHD     34
-#define DBG_SILICON     35
 #define DBG_PERF        37
 #define DBG_IMPORTANCE  38
 #define DBG_BANK        40
@@ -129,72 +146,52 @@ __BEGIN_DECLS
 #define DBG_DISPATCH    46
 #define DBG_IMG         49
 #define DBG_UMALLOC     51
-#define DBG_TURNSTILE   53
-#define DBG_AUDIO       54
+
 
 #define DBG_MIG         255
 
-#pragma mark DBG_MACH subclasses
 
-#define DBG_MACH_EXCP_KTRAP_x86 0x02 // Kernel Traps on x86
-#define DBG_MACH_EXCP_DFLT      0x03 // deprecated name
-#define DBG_MACH_EXCP_SYNC_ARM  0x03 // arm/arm64 synchronous exception
-#define DBG_MACH_EXCP_IFLT      0x04 // deprecated name
-#define DBG_MACH_EXCP_SERR_ARM  0x04 // arm/arm64 SError (async) exception
-#define DBG_MACH_EXCP_INTR      0x05 // Interrupts
-#define DBG_MACH_EXCP_ALNG      0x06 // Alignment Exception
-#define DBG_MACH_EXCP_UTRAP_x86 0x07 // User Traps on x86
-#define DBG_MACH_EXCP_FP        0x08 // FP Unavail
-#define DBG_MACH_EXCP_DECI      0x09 // Decrementer Interrupt
-#define DBG_MACH_CHUD           0x0A // deprecated name
-#define DBG_MACH_SIGNPOST       0x0A // kernel signposts
-#define DBG_MACH_EXCP_SC        0x0C // System Calls
-#define DBG_MACH_EXCP_TRACE     0x0D // Trace exception
-#define DBG_MACH_EXCP_EMUL      0x0E // Instruction emulated
-#define DBG_MACH_IHDLR          0x10 // Interrupt Handlers
-#define DBG_MACH_IPC            0x20 // Inter Process Comm
-#define DBG_MACH_RESOURCE       0x25 // tracing limits, etc
-#define DBG_MACH_VM             0x30 // Virtual Memory
-#define DBG_MACH_LEAKS          0x31 // alloc/free
-#define DBG_MACH_WORKINGSET     0x32 // private subclass for working set related debugging
-#define DBG_MACH_SCHED          0x40 // Scheduler
-#define DBG_MACH_MSGID_INVALID  0x50 // Messages - invalid
-#define DBG_MACH_LOCKS          0x60 // new lock APIs
-#define DBG_MACH_PMAP           0x70 // pmap
-#define DBG_MACH_CLOCK          0x80 // clock
-#define DBG_MACH_MP             0x90 // MP related
-#define DBG_MACH_VM_PRESSURE    0xA0 // Memory Pressure Events
-#define DBG_MACH_STACKSHOT      0xA1 // Stackshot/Microstackshot subsystem
-#define DBG_MACH_SFI            0xA2 // Selective Forced Idle (SFI)
-#define DBG_MACH_ENERGY_PERF    0xA3 // Energy/performance resource stats
-#define DBG_MACH_SYSDIAGNOSE    0xA4 // sysdiagnose
-#define DBG_MACH_ZALLOC         0xA5 // Zone allocator
-#define DBG_MACH_THREAD_GROUP   0xA6 // Thread groups
-#define DBG_MACH_COALITION      0xA7 // Coalitions
-#define DBG_MACH_SHAREDREGION   0xA8 // Shared region
-#define DBG_MACH_SCHED_CLUTCH   0xA9 // Clutch scheduler
-#define DBG_MACH_IO             0xAA // I/O
-#define DBG_MACH_WORKGROUP      0xAB // Workgroup subsystem
-#define DBG_MACH_HV             0xAC // Hypervisor subsystem
-#define DBG_MACH_KCOV           0xAD // Kernel coverage sanitizer
-#define DBG_MACH_MACHDEP_EXCP_SC_x86 0xAE // Machine Dependent System Calls on x86
-#define DBG_MACH_MACHDEP_EXCP_SC_ARM 0xAF // Machine Dependent System Calls on arm
 
-// Codes for DBG_MACH_IO
-#define DBC_MACH_IO_MMIO_READ           0x1
-#define DBC_MACH_IO_MMIO_WRITE          0x2
-#define DBC_MACH_IO_PHYS_READ           0x3
-#define DBC_MACH_IO_PHYS_WRITE          0x4
-#define DBC_MACH_IO_PORTIO_READ         0x5
-#define DBC_MACH_IO_PORTIO_WRITE        0x6
+/* **** The Kernel Debug Sub Classes for Mach (DBG_MACH) **** */
+#define DBG_MACH_EXCP_KTRAP_x86 0x02 /* Kernel Traps on x86 */
+#define DBG_MACH_EXCP_DFLT      0x03 /* Data Translation Fault */
+#define DBG_MACH_EXCP_IFLT      0x04 /* Inst Translation Fault */
+#define DBG_MACH_EXCP_INTR      0x05 /* Interrupts */
+#define DBG_MACH_EXCP_ALNG      0x06 /* Alignment Exception */
+#define DBG_MACH_EXCP_UTRAP_x86 0x07 /* User Traps on x86 */
+#define DBG_MACH_EXCP_FP        0x08 /* FP Unavail */
+#define DBG_MACH_EXCP_DECI      0x09 /* Decrementer Interrupt */
+#define DBG_MACH_CHUD           0x0A /* deprecated name */
+#define DBG_MACH_SIGNPOST       0x0A /* kernel signposts */
+#define DBG_MACH_EXCP_SC        0x0C /* System Calls */
+#define DBG_MACH_EXCP_TRACE     0x0D /* Trace exception */
+#define DBG_MACH_EXCP_EMUL      0x0E /* Instruction emulated */
+#define DBG_MACH_IHDLR          0x10 /* Interrupt Handlers */
+#define DBG_MACH_IPC            0x20 /* Inter Process Comm */
+#define DBG_MACH_RESOURCE       0x25 /* tracing limits, etc */
+#define DBG_MACH_VM             0x30 /* Virtual Memory */
+#define DBG_MACH_LEAKS          0x31 /* alloc/free */
+#define DBG_MACH_WORKINGSET     0x32 /* private subclass for working set related debugging */
+#define DBG_MACH_SCHED          0x40 /* Scheduler */
+#define DBG_MACH_MSGID_INVALID  0x50 /* Messages - invalid */
+#define DBG_MACH_LOCKS          0x60 /* new lock APIs */
+#define DBG_MACH_PMAP           0x70 /* pmap */
+#define DBG_MACH_CLOCK          0x80 /* clock */
+#define DBG_MACH_MP             0x90 /* MP related */
+#define DBG_MACH_VM_PRESSURE    0xA0 /* Memory Pressure Events */
+#define DBG_MACH_STACKSHOT      0xA1 /* Stackshot/Microstackshot subsystem */
+#define DBG_MACH_SFI            0xA2 /* Selective Forced Idle (SFI) */
+#define DBG_MACH_ENERGY_PERF    0xA3 /* Energy/performance resource stats */
+#define DBG_MACH_SYSDIAGNOSE    0xA4 /* sysdiagnose */
+#define DBG_MACH_ZALLOC         0xA5 /* Zone allocator */
+#define DBG_MACH_THREAD_GROUP   0xA6 /* Thread groups */
+#define DBG_MACH_COALITION      0xA7 /* Coalitions */
 
 /* Interrupt type bits for DBG_MACH_EXCP_INTR */
 #define DBG_INTR_TYPE_UNKNOWN   0x0     /* default/unknown interrupt */
 #define DBG_INTR_TYPE_IPI       0x1     /* interprocessor interrupt */
 #define DBG_INTR_TYPE_TIMER     0x2     /* timer interrupt */
 #define DBG_INTR_TYPE_OTHER     0x3     /* other (usually external) interrupt */
-#define DBG_INTR_TYPE_PMI       0x4     /* performance monitor interrupt */
-#define DBG_INTR_TYPE_RSVD1     0x5     /* reserved interrupt kind */
 
 /* Codes for Scheduler (DBG_MACH_SCHED) */
 #define MACH_SCHED              0x0     /* Scheduler */
@@ -204,28 +201,28 @@ __BEGIN_DECLS
 #define MACH_CALLOUT            0x4     /* callouts */
 #define MACH_STACK_DETACH       0x5
 #define MACH_MAKE_RUNNABLE      0x6     /* make thread runnable */
-#define MACH_PROMOTE            0x7     /* promoted due to resource (replaced by MACH_PROMOTED) */
-#define MACH_DEMOTE             0x8     /* promotion undone (replaced by MACH_UNPROMOTED) */
-#define MACH_IDLE               0x9     /* processor idling */
-#define MACH_STACK_DEPTH        0xa     /* stack depth at switch */
-#define MACH_MOVED              0xb     /* did not use original scheduling decision */
+#define	MACH_PROMOTE            0x7	/* promoted due to resource */
+#define	MACH_DEMOTE             0x8	/* promotion undone */
+#define MACH_IDLE               0x9	/* processor idling */
+#define MACH_STACK_DEPTH        0xa	/* stack depth at switch */
+#define MACH_MOVED              0xb	/* did not use original scheduling decision */
 #define MACH_PSET_LOAD_AVERAGE  0xc
 #define MACH_AMP_DEBUG          0xd
-#define MACH_FAILSAFE           0xe     /* tripped fixed-pri/RT failsafe */
-#define MACH_BLOCK              0xf     /* thread block */
-#define MACH_WAIT               0x10    /* thread wait assertion */
-#define MACH_GET_URGENCY        0x14    /* Urgency queried by platform */
-#define MACH_URGENCY            0x15    /* Urgency (RT/BG/NORMAL) communicated
-	                                 * to platform
-	                                 */
-#define MACH_REDISPATCH         0x16    /* "next thread" thread redispatched */
-#define MACH_REMOTE_AST         0x17    /* AST signal issued to remote processor */
-#define MACH_SCHED_CHOOSE_PROCESSOR     0x18    /* Result of choose_processor */
-#define MACH_DEEP_IDLE          0x19    /* deep idle on master processor */
+#define MACH_FAILSAFE           0xe	/* tripped fixed-pri/RT failsafe */
+#define MACH_BLOCK              0xf	/* thread block */
+#define MACH_WAIT		0x10	/* thread wait assertion */
+#define	MACH_GET_URGENCY	0x14	/* Urgency queried by platform */
+#define	MACH_URGENCY		0x15	/* Urgency (RT/BG/NORMAL) communicated
+   					 * to platform
+					 */
+#define	MACH_REDISPATCH		0x16	/* "next thread" thread redispatched */
+#define	MACH_REMOTE_AST		0x17	/* AST signal issued to remote processor */
+#define	MACH_SCHED_CHOOSE_PROCESSOR	0x18	/* Result of choose_processor */
+#define MACH_DEEP_IDLE          0x19	/* deep idle on master processor */
 /* unused                       0x1a    was MACH_SCHED_DECAY_PRIORITY */
-#define MACH_CPU_THROTTLE_DISABLE       0x1b    /* Global CPU Throttle Disable */
-#define MACH_RW_PROMOTE            0x1c /* promoted due to RW lock promotion */
-#define MACH_RW_DEMOTE             0x1d /* promotion due to RW lock undone */
+#define MACH_CPU_THROTTLE_DISABLE	0x1b	/* Global CPU Throttle Disable */
+#define MACH_RW_PROMOTE            0x1c	/* promoted due to RW lock promotion */
+#define MACH_RW_DEMOTE             0x1d	/* promotion due to RW lock undone */
 #define MACH_SCHED_MAINTENANCE     0x1f /* periodic maintenance thread */
 #define MACH_DISPATCH              0x20 /* context switch completed */
 #define MACH_QUANTUM_HANDOFF       0x21 /* quantum handoff occurred */
@@ -235,7 +232,7 @@ __BEGIN_DECLS
 #define MACH_REMOTE_DEFERRED_AST   0x25 /* Deferred AST started against remote processor */
 #define MACH_REMOTE_CANCEL_AST     0x26 /* Canceled deferred AST for remote processor */
 #define MACH_SCHED_CHANGE_PRIORITY 0x27 /* thread sched priority changed */
-#define MACH_SCHED_UPDATE_REC_CORES     0x28    /* Change to recommended processor bitmask */
+#define MACH_SCHED_UPDATE_REC_CORES	0x28	/* Change to recommended processor bitmask */
 #define MACH_STACK_WAIT            0x29 /* Thread could not be switched-to because of kernel stack shortage */
 #define MACH_THREAD_BIND           0x2a /* Thread was bound (or unbound) to a processor */
 #define MACH_WAITQ_PROMOTE         0x2b /* Thread promoted by waitq boost */
@@ -247,77 +244,6 @@ __BEGIN_DECLS
 #define MACH_EXEC_DEMOTE           0x31 /* Thread demoted from exec boost */
 #define MACH_AMP_SIGNAL_SPILL      0x32 /* AMP spill signal sent to cpuid */
 #define MACH_AMP_STEAL             0x33 /* AMP thread stolen or spilled */
-#define MACH_SCHED_LOAD_EFFECTIVE  0x34 /* Effective scheduler load */
-/* unused  MACH_PROMOTED              0x35 was: thread promoted due to mutex priority promotion */
-/* unused  MACH_UNPROMOTED            0x36 was: thread unpromoted due to mutex priority promotion */
-/* unused  MACH_PROMOTED_UPDATE       0x37 was: thread already promoted, but promotion priority changed */
-#define MACH_QUIESCENT_COUNTER     0x38 /* quiescent counter tick */
-#define MACH_TURNSTILE_USER_CHANGE 0x39 /* base priority change because of turnstile */
-#define MACH_AMP_RECOMMENDATION_CHANGE 0x3a /* Thread group recommendation change */
-#define MACH_AMP_PERFCTL_POLICY_CHANGE 0x3b /* AMP policy for perfctl cluster recommendation */
-#define MACH_TURNSTILE_KERNEL_CHANGE 0x40 /* sched priority change because of turnstile */
-#define MACH_SCHED_WI_AUTO_JOIN      0x41 /* work interval auto join events */
-#define MACH_SCHED_WI_DEFERRED_FINISH 0x42 /* work interval pending finish events for auto-join thread groups */
-#define MACH_SET_RT_DEADLINE       0x43 /* set thread->realtime.deadline */
-#define MACH_CANCEL_RT_DEADLINE    0x44 /* cancel thread->realtime.deadline */
-#define MACH_RT_SIGNAL_SPILL       0x45 /* RT spill signal sent to cpuid */
-#define MACH_RT_STEAL              0x46 /* RT thread stolen or spilled */
-#define MACH_PENDING_AST_URGENT    0x47 /* CPU pending_AST_URGENT set/cleared */
-#define MACH_SCHED_THREAD_SELECT   0x48 /* Result of thread_select */
-#define MACH_SCHED_NEXT_PROCESSOR  0x49 /* Result of choose_next_rt_processor_for_IPI */
-#define MACH_PSET_AVG_EXEC_TIME    0x50
-#define MACH_SUSPEND_USERSPACE     0x51    /* userspace threads are suspended */
-#define MACH_PREEMPTION_EXPIRED    0x52 /* preemption disable threshold crossed */
-#define MACH_FLOOR_PROMOTE         0x53 /* promoted upon request */
-#define MACH_FLOOR_DEMOTE          0x54 /* unpromoted upon request */
-#define MACH_INT_MASKED_EXPIRED    0x55    /* interrupt masked threshold crossed */
-#define MACH_INT_HANDLED_EXPIRED   0x56    /* interrupt handling threshold crossed */
-/* unused MACH_RT_RESTRICT_DENIED    0x57 was: Denied a thread becoming realtime (with -time-constraint-policy-restrict boot-arg)*/
-#define MACH_UPDATE_POWERED_CORES  0x58 /* CLPC requested cores powerup/powerdown */
-#define MACH_MODE_DEMOTE_THROTTLED       0x59 /* Sched mode demotion - throttled */
-#define MACH_MODE_DEMOTE_FAILSAFE        0x5a /* Sched mode demotion - failsafe */
-#define MACH_MODE_DEMOTE_RT_DISALLOWED   0x5b /* Sched mode demotion - rt not allowed */
-#define MACH_MODE_UNDEMOTE_THROTTLED     0x5c /* Sched mode undemotion - throttling */
-#define MACH_MODE_UNDEMOTE_FAILSAFE      0x5d /* Sched mode undemotion - failsafe */
-#define MACH_MODE_UNDEMOTE_RT_DISALLOWED 0x5e /* Sched mode undemotion - rt not allowed */
-#define MACH_INT_MASKED_RESET            0x5f /* interrupt masked threshold reset */
-#define MACH_RT_DISALLOWED_WORK_INTERVAL 0x60 /* RT disallowed due to unmet work interval requirements */
-#define MACH_SCHED_WI_EXTERNAL_WAKEUP    0x61 /* WI thread woken by a thread outside its same work interval */
-#define MACH_SCHED_AST_CHECK             0x62 /* run ast check interrupt handler */
-#define MACH_SCHED_PREEMPT_TIMER_ACTIVE  0x63 /* preempt timer is armed */
-
-/* Codes for Clutch/Edge Scheduler (DBG_MACH_SCHED_CLUTCH) */
-#define MACH_SCHED_CLUTCH_ROOT_BUCKET_STATE     0x0 /* __unused */
-#define MACH_SCHED_CLUTCH_TG_BUCKET_STATE       0x1 /* __unused */
-#define MACH_SCHED_CLUTCH_THREAD_SELECT         0x2 /* Thread selection events for Clutch scheduler */
-#define MACH_SCHED_CLUTCH_THREAD_STATE          0x3 /* __unused */
-#define MACH_SCHED_CLUTCH_TG_BUCKET_PRI         0x4 /* Clutch bucket priority update event */
-/* Edge Scheduler Tracepoints */
-#define MACH_SCHED_EDGE_CLUSTER_OVERLOAD        0x5 /* Cluster experienced overload; migrating threads to other clusters */
-#define MACH_SCHED_EDGE_STEAL                   0x6 /* Per-cluster avg. thread execution time */
-#define MACH_SCHED_EDGE_REBAL_RUNNABLE          0x7 /* Rebalance runnable threads on a foreign cluster */
-#define MACH_SCHED_EDGE_REBAL_RUNNING           0x8 /* Rebalance running threads on a foreign cluster */
-#define MACH_SCHED_EDGE_SHOULD_YIELD            0x9 /* Edge decisions for thread yield */
-#define MACH_SCHED_CLUTCH_THR_COUNT             0xa /* Clutch scheduler runnable thread counts */
-#define MACH_SCHED_EDGE_LOAD_AVG                0xb /* Per-cluster load average */
-#define MACH_SCHED_EDGE_CLUSTER_SHARED_LOAD     0xc /* Per-cluster shared resource load */
-#define MACH_SCHED_EDGE_RSRC_HEAVY_THREAD       0xd /* Resource heavy thread state */
-#define MACH_SCHED_EDGE_SHARED_RSRC_MIGRATE     0xe /* Migrating a shared resource thread due to cluster load imbalance */
-
-/* Codes for workgroup interval subsystem (DBG_MACH_WORKGROUP) */
-#define WORKGROUP_INTERVAL_CREATE               0x0 /* work interval creation */
-#define WORKGROUP_INTERVAL_DESTROY              0x1 /* work interval destruction */
-#define WORKGROUP_INTERVAL_CHANGE               0x2 /* thread work interval change */
-#define WORKGROUP_INTERVAL_START                0x3 /* work interval start call */
-#define WORKGROUP_INTERVAL_UPDATE               0x4 /* work interval update call */
-#define WORKGROUP_INTERVAL_FINISH               0x5 /* work interval finish call */
-#define WORKGROUP_INTERVAL_SET_WORKLOAD_ID      0x6 /* work interval set workload id */
-#define WORKGROUP_INTERVAL_SET_WORKLOAD_ID_NAME 0x7 /* work interval set workload id (name) */
-
-/* Codes for coverage sanitizer */
-#define KCOV_STKSZ_THRESHOLD_ABOVE           0x0 /* thread stack is above threshold */
-#define KCOV_STKSZ_THRESHOLD_BELOW           0x1 /* thread stack is below threshold */
-#define KCOV_STKSZ_DELTA                     0X2 /* thread stack change is larger than delta. */
 
 /* Variants for MACH_MULTIQ_DEQUEUE */
 #define MACH_MULTIQ_BOUND     1
@@ -325,105 +251,73 @@ __BEGIN_DECLS
 #define MACH_MULTIQ_GLOBAL    3
 
 /* Arguments for vm_fault (DBG_MACH_VM) */
-#define DBG_ZERO_FILL_FAULT           1
-#define DBG_PAGEIN_FAULT              2
-#define DBG_COW_FAULT                 3
-#define DBG_CACHE_HIT_FAULT           4
-#define DBG_NZF_PAGE_FAULT            5
-#define DBG_GUARD_FAULT               6
-#define DBG_PAGEINV_FAULT             7
-#define DBG_PAGEIND_FAULT             8
-#define DBG_COMPRESSOR_FAULT          9
+#define DBG_ZERO_FILL_FAULT   1
+#define DBG_PAGEIN_FAULT      2
+#define DBG_COW_FAULT         3
+#define DBG_CACHE_HIT_FAULT   4
+#define DBG_NZF_PAGE_FAULT    5
+#define DBG_GUARD_FAULT	      6
+#define DBG_PAGEINV_FAULT     7
+#define DBG_PAGEIND_FAULT     8
+#define DBG_COMPRESSOR_FAULT  9
 #define DBG_COMPRESSOR_SWAPIN_FAULT  10
-#define DBG_COR_FAULT                11
 
 /* Codes for IPC (DBG_MACH_IPC) */
-#define MACH_TASK_SUSPEND                       0x0     /* Suspended a task */
-#define MACH_TASK_RESUME                        0x1     /* Resumed a task */
-#define MACH_THREAD_SET_VOUCHER                 0x2
-#define MACH_IPC_MSG_SEND                       0x3     /* mach msg send, uniq msg info */
-#define MACH_IPC_MSG_RECV                       0x4     /* mach_msg receive */
-#define MACH_IPC_MSG_RECV_VOUCHER_REFUSED       0x5     /* mach_msg receive, voucher refused */
-#define MACH_IPC_KMSG_FREE                      0x6     /* kernel free of kmsg data */
-#define MACH_IPC_VOUCHER_CREATE                 0x7     /* Voucher added to global voucher hashtable */
-#define MACH_IPC_VOUCHER_CREATE_ATTR_DATA       0x8     /* Attr data for newly created voucher */
-#define MACH_IPC_VOUCHER_DESTROY                0x9     /* Voucher removed from global voucher hashtable */
-#define MACH_IPC_KMSG_INFO                      0xa     /* Send/Receive info for a kmsg */
-#define MACH_IPC_KMSG_LINK                      0xb     /* link a kernel kmsg pointer to user mach_msg_header_t */
-#define MACH_IPC_PORT_ENTRY_MODIFY              0xc     /* A port space gained or lost a port right (reference) */
-#define MACH_IPC_DESTROY_GUARDED_DESC           0xd     /* Unable to receive a guarded descriptor */
+#define	MACH_TASK_SUSPEND			0x0	/* Suspended a task */
+#define	MACH_TASK_RESUME 		  	0x1	/* Resumed a task */
+#define MACH_THREAD_SET_VOUCHER 		0x2
+#define MACH_IPC_MSG_SEND			0x3	/* mach msg send, uniq msg info */
+#define MACH_IPC_MSG_RECV			0x4	/* mach_msg receive */
+#define MACH_IPC_MSG_RECV_VOUCHER_REFUSED	0x5	/* mach_msg receive, voucher refused */
+#define MACH_IPC_KMSG_FREE			0x6	/* kernel free of kmsg data */
+#define MACH_IPC_VOUCHER_CREATE			0x7	/* Voucher added to global voucher hashtable */
+#define MACH_IPC_VOUCHER_CREATE_ATTR_DATA	0x8	/* Attr data for newly created voucher */
+#define MACH_IPC_VOUCHER_DESTROY		0x9	/* Voucher removed from global voucher hashtable */
+#define MACH_IPC_KMSG_INFO			0xa	/* Send/Receive info for a kmsg */
+#define MACH_IPC_KMSG_LINK			0xb	/* link a kernel kmsg pointer to user mach_msg_header_t */
 
 /* Codes for thread groups (DBG_MACH_THREAD_GROUP) */
-#define MACH_THREAD_GROUP_NEW           0x0
-#define MACH_THREAD_GROUP_FREE          0x1
-#define MACH_THREAD_GROUP_SET           0x2
-#define MACH_THREAD_GROUP_NAME          0x3
-#define MACH_THREAD_GROUP_NAME_FREE     0x4
-#define MACH_THREAD_GROUP_FLAGS         0x5
-#define MACH_THREAD_GROUP_BLOCK         0x6
-#define MACH_THREAD_GROUP_PREADOPT      0x7
-#define MACH_THREAD_GROUP_PREADOPT_NEXTTIME  0x8
-#define MACH_THREAD_GROUP_PREADOPT_CLEAR 0x9
-#define MACH_THREAD_GROUP_PREADOPT_NA 0xa
+#define MACH_THREAD_GROUP_NEW			0x0
+#define MACH_THREAD_GROUP_FREE			0x1
+#define MACH_THREAD_GROUP_SET			0x2
+#define MACH_THREAD_GROUP_NAME			0x3
+#define MACH_THREAD_GROUP_NAME_FREE		0x4
 
 /* Codes for coalitions (DBG_MACH_COALITION) */
-#define MACH_COALITION_NEW                      0x0
-#define MACH_COALITION_FREE                     0x1
-#define MACH_COALITION_ADOPT                    0x2
-#define MACH_COALITION_REMOVE                   0x3
-#define MACH_COALITION_THREAD_GROUP_SET         0x4
+#define	MACH_COALITION_NEW                      0x0
+#define	MACH_COALITION_FREE                     0x1
+#define	MACH_COALITION_ADOPT                    0x2
+#define	MACH_COALITION_REMOVE                   0x3
+#define	MACH_COALITION_THREAD_GROUP_SET         0x4
 
 /* Codes for pmap (DBG_MACH_PMAP) */
-#define PMAP__CREATE            0x0
-#define PMAP__DESTROY           0x1
-#define PMAP__PROTECT           0x2
-#define PMAP__PAGE_PROTECT      0x3
-#define PMAP__ENTER             0x4
-#define PMAP__REMOVE            0x5
-#define PMAP__NEST              0x6
-#define PMAP__UNNEST            0x7
-#define PMAP__FLUSH_TLBS        0x8
-#define PMAP__UPDATE_INTERRUPT  0x9
-#define PMAP__ATTRIBUTE_CLEAR   0xa
-#define PMAP__REUSABLE          0xb     /* This appears to be unused */
-#define PMAP__QUERY_RESIDENT    0xc
-#define PMAP__FLUSH_KERN_TLBS   0xd
-#define PMAP__FLUSH_DELAYED_TLBS        0xe
-#define PMAP__FLUSH_TLBS_TO     0xf
-#define PMAP__FLUSH_EPT         0x10
-#define PMAP__FAST_FAULT        0x11
-#define PMAP__SWITCH            0x12
-#define PMAP__TTE               0x13
-#define PMAP__SWITCH_USER_TTB   0x14
-#define PMAP__UPDATE_CACHING    0x15
-#define PMAP__ATTRIBUTE_CLEAR_RANGE 0x16
-#define PMAP__CLEAR_USER_TTB    0x17
-#define PMAP__IOMMU_INIT        0x18
-#define PMAP__IOMMU_IOVMALLOC   0x19
-#define PMAP__IOMMU_IOVMFREE    0x1a
-#define PMAP__IOMMU_MAP         0x1b
-#define PMAP__IOMMU_UNMAP       0x1c
-#define PMAP__IOMMU_IOCTL       0x1d
-#define PMAP__IOMMU_GRANT_PAGE  0x1e
-#define PMAP__BATCH_UPDATE_CACHING      0x1f
-#define PMAP__COLLECT_CACHE_OPS         0x20
+#define PMAP__CREATE		0x0
+#define PMAP__DESTROY		0x1
+#define PMAP__PROTECT		0x2
+#define PMAP__PAGE_PROTECT	0x3
+#define PMAP__ENTER		0x4
+#define PMAP__REMOVE		0x5
+#define PMAP__NEST		0x6
+#define PMAP__UNNEST		0x7
+#define PMAP__FLUSH_TLBS	0x8
+#define PMAP__UPDATE_INTERRUPT	0x9
+#define PMAP__ATTRIBUTE_CLEAR	0xa
+#define PMAP__REUSABLE		0xb	/* This appears to be unused */
+#define PMAP__QUERY_RESIDENT	0xc
+#define PMAP__FLUSH_KERN_TLBS	0xd
+#define PMAP__FLUSH_DELAYED_TLBS	0xe
+#define PMAP__FLUSH_TLBS_TO	0xf
+#define PMAP__FLUSH_EPT 	0x10
+#define PMAP__FAST_FAULT	0x11
 
 /* Codes for clock (DBG_MACH_CLOCK) */
-#define MACH_EPOCH_CHANGE       0x0     /* wake epoch change */
-#define MACH_BRIDGE_RCV_TS      0x1     /* receive timestamp pair from interrupt handler */
-#define MACH_BRIDGE_REMOTE_TIME 0x2     /* calculate remote timestamp */
-#define MACH_BRIDGE_RESET_TS    0x3     /* reset timestamp conversion parameters */
-#define MACH_BRIDGE_TS_PARAMS   0x4     /* recompute timestamp conversion parameters */
-#define MACH_BRIDGE_SKIP_TS     0x5     /* skip timestamp */
-#define MACH_BRIDGE_TS_MISMATCH 0x6     /* mismatch between predicted and received remote timestamp */
-#define MACH_BRIDGE_OBSV_RATE   0x7     /* out of range observed rates */
+#define	MACH_EPOCH_CHANGE	0x0	/* wake epoch change */
+#define MACH_BRIDGE_RCV_TS	0x1	/* receive timestamp pair from interrupt handler */
+#define MACH_BRIDGE_REMOTE_TIME	0x2	/* calculate remote timestamp */ 
 
 /* Codes for Stackshot/Microstackshot (DBG_MACH_STACKSHOT) */
-#define MICROSTACKSHOT_RECORD   0x0
-#define MICROSTACKSHOT_GATHER   0x1
-#define STACKSHOT_RECORD        0x2     /* START/END, syscall stackshot */
-#define STACKSHOT_RECORD_SHORT  0x3     /* ran out of space inside stackshot, growing buffer */
-#define STACKSHOT_KERN_RECORD   0x4     /* START/END, internal stackshot */
+#define MICROSTACKSHOT_RECORD	0x0
+#define MICROSTACKSHOT_GATHER	0x1
 
 /* Codes for sysdiagnose (DBG_MACH_SYSDIAGNOSE) */
 #define SYSDIAGNOSE_NOTIFY_USER 0x0
@@ -432,20 +326,20 @@ __BEGIN_DECLS
 #define SYSDIAGNOSE_TAILSPIN    0x3
 
 /* Codes for Selective Forced Idle (DBG_MACH_SFI) */
-#define SFI_SET_WINDOW                  0x0
-#define SFI_CANCEL_WINDOW               0x1
-#define SFI_SET_CLASS_OFFTIME           0x2
-#define SFI_CANCEL_CLASS_OFFTIME        0x3
-#define SFI_THREAD_DEFER                0x4
-#define SFI_OFF_TIMER                   0x5
-#define SFI_ON_TIMER                    0x6
-#define SFI_WAIT_CANCELED               0x7
-#define SFI_PID_SET_MANAGED             0x8
-#define SFI_PID_CLEAR_MANAGED           0x9
-#define SFI_GLOBAL_DEFER                0xa
+#define SFI_SET_WINDOW			0x0
+#define SFI_CANCEL_WINDOW		0x1
+#define SFI_SET_CLASS_OFFTIME		0x2
+#define SFI_CANCEL_CLASS_OFFTIME	0x3
+#define SFI_THREAD_DEFER		0x4
+#define SFI_OFF_TIMER			0x5
+#define SFI_ON_TIMER			0x6
+#define SFI_WAIT_CANCELED		0x7
+#define SFI_PID_SET_MANAGED		0x8
+#define SFI_PID_CLEAR_MANAGED		0x9
+#define SFI_GLOBAL_DEFER		0xa
 
 /* Codes for Zone Allocator (DBG_MACH_ZALLOC) */
-#define ZALLOC_ZCRAM                    0x0
+#define ZALLOC_ZCRAM 			0x0
 
 /* Codes for Mach resource management (DBG_MACH_RESOURCE) */
 /* _K32A/B codes start at double the low nibble */
@@ -470,169 +364,104 @@ __BEGIN_DECLS
 #define RMON_LOGWRITES_VIOLATED_K32B    0x025
 #define RMON_DISABLE_IO_MONITOR         0x02f
 
-/* Codes for x86 Hypervisor (DBG_MACH_HV) */
-#define HV_X86_ENTER                     0x00
-#define HV_X86_ENTER_ERROR               0x01
-#define HV_X86_TRAP_TASK                 0x02
-#define HV_X86_TRAP_THREAD               0x03
-#define HV_X86_INTERRUPT_INJECT          0x04
-#define HV_X86_INTERRUPT_RECV            0x05
-#define HV_X86_INTERRUPT_SEND            0x06
-#define HV_X86_IPI_SEND                  0x07
-#define HV_X86_NMI_INJECT                0x08
-#define HV_X86_NMI_SEND                  0x09
-#define HV_X86_LSC_HIT                   0x0a
-#define HV_X86_LSC_INSERT                0x0b
-#define HV_X86_LSC_INSERT_IMM32          0x0c
-#define HV_X86_LSC_INVALID               0x0d
-#define HV_X86_LSC_INVALIDATE            0x0e
-#define HV_X86_LSC_MISS                  0x0f
-#define HV_X86_TIMER_CANCEL              0x10
-#define HV_X86_TIMER_FIRE                0x11
-#define HV_X86_TIMER_SCHEDULE            0x12
-#define HV_X86_APIC_ACCESS_EXIT          0x13
-#define HV_X86_APIC_WRITE_EXIT           0x14
-#define HV_X86_EPT_VIOLATION_EXIT        0x15
-#define HV_X86_EXC_NMI_EXIT              0x16
-#define HV_X86_HLT_EXIT                  0x17
-#define HV_X86_IO_EXIT                   0x18
-#define HV_X86_IRQ_EXIT                  0x19
-#define HV_X86_IRQ_WND_EXIT              0x1a
-#define HV_X86_MOV_DR_EXIT               0x1b
-#define HV_X86_NMI_WND_EXIT              0x1c
-#define HV_X86_RDMSR_EXIT                0x1d
-#define HV_X86_RDPMC_EXIT                0x1e
-#define HV_X86_TPR_THRESHOLD_EXIT        0x1f
-#define HV_X86_VMX_TIMER_EXPIRED_EXIT    0x20
-#define HV_X86_WRMSR_EXIT                0x21
-#define HV_X86_VCPU_READ_APIC_TRAP       0x22
-#define HV_X86_VCPU_READ_VMCS_TRAP       0x23
-#define HV_X86_VCPU_RUN_TRAP             0x24
-#define HV_X86_VCPU_RUN_UNTIL_TRAP       0x25
-#define HV_X86_VCPU_WRITE_APIC_TRAP      0x26
-#define HV_X86_VM_ADDRSPACE_CREATE_TRAP  0x27
-#define HV_X86_VM_ADDRSPACE_DESTROY_TRAP 0x28
-#define HV_X86_VM_INTR_MSI_TRAP          0x29
-#define HV_X86_VM_MAP_TRAP               0x2a
-#define HV_X86_VM_PROTECT_TRAP           0x2b
-#define HV_X86_VM_UNMAP_TRAP             0x2c
-#define HV_X86_TSC_OFFSET_SET            0x2d
-
 /* **** The Kernel Debug Sub Classes for Network (DBG_NETWORK) **** */
-#define DBG_NETIP       1       /* Internet Protocol */
-#define DBG_NETARP      2       /* Address Resolution Protocol */
-#define DBG_NETUDP      3       /* User Datagram Protocol */
-#define DBG_NETTCP      4       /* Transmission Control Protocol */
-#define DBG_NETICMP     5       /* Internet Control Message Protocol */
-#define DBG_NETIGMP     6       /* Internet Group Management Protocol */
-#define DBG_NETRIP      7       /* Routing Information Protocol */
-#define DBG_NETOSPF     8       /* Open Shortest Path First */
-#define DBG_NETISIS     9       /* Intermediate System to Intermediate System */
-#define DBG_NETSNMP     10      /* Simple Network Management Protocol */
-#define DBG_NETSOCK     11      /* Socket Layer */
+#define DBG_NETIP	1	/* Internet Protocol */
+#define DBG_NETARP	2	/* Address Resolution Protocol */
+#define	DBG_NETUDP	3	/* User Datagram Protocol */
+#define	DBG_NETTCP	4	/* Transmission Control Protocol */
+#define	DBG_NETICMP	5	/* Internet Control Message Protocol */
+#define	DBG_NETIGMP	6	/* Internet Group Management Protocol */
+#define	DBG_NETRIP	7	/* Routing Information Protocol */
+#define	DBG_NETOSPF	8	/* Open Shortest Path First */
+#define	DBG_NETISIS	9	/* Intermediate System to Intermediate System */
+#define	DBG_NETSNMP	10	/* Simple Network Management Protocol */
+#define DBG_NETSOCK	11	/* Socket Layer */
 
 /* For Apple talk */
-#define DBG_NETAARP     100     /* Apple ARP */
-#define DBG_NETDDP      101     /* Datagram Delivery Protocol */
-#define DBG_NETNBP      102     /* Name Binding Protocol */
-#define DBG_NETZIP      103     /* Zone Information Protocol */
-#define DBG_NETADSP     104     /* Name Binding Protocol */
-#define DBG_NETATP      105     /* Apple Transaction Protocol */
-#define DBG_NETASP      106     /* Apple Session Protocol */
-#define DBG_NETAFP      107     /* Apple Filing Protocol */
-#define DBG_NETRTMP     108     /* Routing Table Maintenance Protocol */
-#define DBG_NETAURP     109     /* Apple Update Routing Protocol */
+#define	DBG_NETAARP	100	/* Apple ARP */
+#define	DBG_NETDDP	101	/* Datagram Delivery Protocol */
+#define	DBG_NETNBP	102	/* Name Binding Protocol */
+#define	DBG_NETZIP	103	/* Zone Information Protocol */
+#define	DBG_NETADSP	104	/* Name Binding Protocol */
+#define	DBG_NETATP	105	/* Apple Transaction Protocol */
+#define	DBG_NETASP	106	/* Apple Session Protocol */
+#define	DBG_NETAFP	107	/* Apple Filing Protocol */
+#define	DBG_NETRTMP	108	/* Routing Table Maintenance Protocol */
+#define	DBG_NETAURP	109	/* Apple Update Routing Protocol */
 
-#define DBG_NETIPSEC    128     /* IPsec Protocol  */
-#define DBG_NETVMNET    129     /* VMNet */
+#define	DBG_NETIPSEC	128	/* IPsec Protocol  */
+#define	DBG_NETVMNET	129	/* VMNet */
 
 /* **** The Kernel Debug Sub Classes for IOKIT (DBG_IOKIT) **** */
-#define DBG_IOINTC                      0       /* Interrupt controller */
-#define DBG_IOWORKLOOP                  1       /* Work from work loop */
-#define DBG_IOINTES                     2       /* Interrupt event source */
-#define DBG_IOCLKES                     3       /* Clock event source */
-#define DBG_IOCMDQ                      4       /* Command queue latencies */
-#define DBG_IOMCURS                     5       /* Memory Cursor */
-#define DBG_IOMDESC                     6       /* Memory Descriptors */
-#define DBG_IOPOWER                     7       /* Power Managerment */
-#define DBG_IOSERVICE                   8       /* Matching etc. */
-#define DBG_IOREGISTRY                  9       /* Registry */
-#define DBG_IOPORT                      10      /* IOPort */
+#define DBG_IOINTC			0	/* Interrupt controller */
+#define DBG_IOWORKLOOP			1	/* Work from work loop */
+#define DBG_IOINTES			2	/* Interrupt event source */
+#define DBG_IOCLKES			3	/* Clock event source */
+#define DBG_IOCMDQ			4	/* Command queue latencies */
+#define DBG_IOMCURS			5	/* Memory Cursor */
+#define DBG_IOMDESC			6	/* Memory Descriptors */
+#define DBG_IOPOWER			7	/* Power Managerment */
+#define DBG_IOSERVICE			8	/* Matching etc. */
+#define DBG_IOREGISTRY			9	/* Registry */
 
 /* **** 9-32 reserved for internal IOKit usage **** */
 
-#define DBG_IOSTORAGE           32      /* Storage layers */
-#define DBG_IONETWORK           33      /* Network layers */
-#define DBG_IOKEYBOARD          34      /* Keyboard */
-#define DBG_IOHID               35      /* HID Devices */
-#define DBG_IOAUDIO             36      /* Audio */
-#define DBG_IOSERIAL            37      /* Serial */
-#define DBG_IOTTY               38      /* TTY layers */
-#define DBG_IOSAM               39      /* SCSI Architecture Model layers */
-#define DBG_IOPARALLELATA       40      /* Parallel ATA */
-#define DBG_IOPARALLELSCSI      41      /* Parallel SCSI */
-#define DBG_IOSATA              42      /* Serial-ATA */
-#define DBG_IOSAS               43      /* SAS */
-#define DBG_IOFIBRECHANNEL      44      /* FiberChannel */
-#define DBG_IOUSB               45      /* USB */
-#define DBG_IOBLUETOOTH         46      /* Bluetooth */
-#define DBG_IOFIREWIRE          47      /* FireWire */
-#define DBG_IOINFINIBAND        48      /* Infiniband */
-#define DBG_IOCPUPM             49      /* CPU Power Management */
-#define DBG_IOGRAPHICS          50      /* Graphics */
-#define DBG_HIBERNATE           51      /* hibernation related events */
-#define DBG_IOTHUNDERBOLT       52      /* Thunderbolt */
-#define DBG_BOOTER              53      /* booter related events */
-#define DBG_IOAUDIO2            54      /* Audio (extended) */
-#define DBG_IOAFK               55      /* AppleFirmwareKit */
-
-#define DBG_IOSURFACEPA         64      /* IOSurface page mappings */
-#define DBG_IOMDPA              65      /* IOMemoryDescriptor page mappings */
-#define DBG_IODARTPA            66      /* DART page mappings */
-/* **** 67-79 reserved for physical address mapping information **** */
+#define DBG_IOSTORAGE		32	/* Storage layers */
+#define	DBG_IONETWORK		33	/* Network layers */
+#define	DBG_IOKEYBOARD		34	/* Keyboard */
+#define	DBG_IOHID		35	/* HID Devices */
+#define	DBG_IOAUDIO		36	/* Audio */
+#define	DBG_IOSERIAL		37	/* Serial */
+#define	DBG_IOTTY		38	/* TTY layers */
+#define DBG_IOSAM		39	/* SCSI Architecture Model layers */
+#define DBG_IOPARALLELATA   	40	/* Parallel ATA */
+#define DBG_IOPARALLELSCSI	41	/* Parallel SCSI */
+#define DBG_IOSATA		42	/* Serial-ATA */
+#define DBG_IOSAS		43	/* SAS */
+#define DBG_IOFIBRECHANNEL	44	/* FiberChannel */
+#define DBG_IOUSB		45	/* USB */
+#define DBG_IOBLUETOOTH		46	/* Bluetooth */
+#define DBG_IOFIREWIRE		47	/* FireWire */
+#define DBG_IOINFINIBAND	48	/* Infiniband */
+#define DBG_IOCPUPM		49	/* CPU Power Management */
+#define DBG_IOGRAPHICS		50	/* Graphics */
+#define DBG_HIBERNATE		51	/* hibernation related events */
+#define DBG_IOTHUNDERBOLT	52	/* Thunderbolt */
+#define DBG_BOOTER		53	/* booter related events */
 
 /* Backwards compatibility */
-#define DBG_IOPOINTING DBG_IOHID     /* OBSOLETE: Use DBG_IOHID instead */
-#define DBG_IODISK     DBG_IOSTORAGE /* OBSOLETE: Use DBG_IOSTORAGE instead */
+#define	DBG_IOPOINTING		DBG_IOHID			/* OBSOLETE: Use DBG_IOHID instead */
+#define DBG_IODISK			DBG_IOSTORAGE		/* OBSOLETE: Use DBG_IOSTORAGE instead */
 
 /* **** The Kernel Debug Sub Classes for Device Drivers (DBG_DRIVERS) **** */
-#define DBG_DRVSTORAGE        1 /* Storage layers */
-#define DBG_DRVNETWORK        2 /* Network layers */
-#define DBG_DRVKEYBOARD       3 /* Keyboard */
-#define DBG_DRVHID            4 /* HID Devices */
-#define DBG_DRVAUDIO          5 /* Audio */
-#define DBG_DRVSERIAL         7 /* Serial */
-#define DBG_DRVSAM            8 /* SCSI Architecture Model layers */
-#define DBG_DRVPARALLELATA    9 /* Parallel ATA */
-#define DBG_DRVPARALLELSCSI  10 /* Parallel SCSI */
-#define DBG_DRVSATA          11 /* Serial ATA */
-#define DBG_DRVSAS           12 /* SAS */
-#define DBG_DRVFIBRECHANNEL  13 /* FiberChannel */
-#define DBG_DRVUSB           14 /* USB */
-#define DBG_DRVBLUETOOTH     15 /* Bluetooth */
-#define DBG_DRVFIREWIRE      16 /* FireWire */
-#define DBG_DRVINFINIBAND    17 /* Infiniband */
-#define DBG_DRVGRAPHICS      18 /* Graphics */
-#define DBG_DRVSD            19 /* Secure Digital */
-#define DBG_DRVNAND          20 /* NAND drivers and layers */
-#define DBG_SSD              21 /* SSD */
-#define DBG_DRVSPI           22 /* SPI */
-#define DBG_DRVWLAN_802_11   23 /* WLAN 802.11 */
-#define DBG_DRVSSM           24 /* System State Manager(AppleSSM) */
-#define DBG_DRVSMC           25 /* System Management Controller */
-#define DBG_DRVMACEFIMANAGER 26 /* Mac EFI Manager */
-#define DBG_DRVANE           27 /* Apple Neural Engine */
-#define DBG_DRVETHERNET      28 /* Ethernet */
-#define DBG_DRVMCC           29 /* Memory Cache Controller */
-#define DBG_DRVACCESSORY     30 /* Accessories */
-#define DBG_SOCDIAGS         31 /* SoC Diagnostics */
-#define DBG_DRVVIRTIO        32 /* Hypervisor VirtIO */
-#define DBG_DRVCELLULAR      33 /* Cellular */
-#define DBG_DRVSPMI          34 /* System Power Management Interface */
+#define DBG_DRVSTORAGE       1 /* Storage layers */
+#define DBG_DRVNETWORK       2 /* Network layers */
+#define DBG_DRVKEYBOARD      3 /* Keyboard */
+#define DBG_DRVHID           4 /* HID Devices */
+#define DBG_DRVAUDIO         5 /* Audio */
+#define DBG_DRVSERIAL        7 /* Serial */
+#define DBG_DRVSAM           8 /* SCSI Architecture Model layers */
+#define DBG_DRVPARALLELATA   9 /* Parallel ATA */
+#define DBG_DRVPARALLELSCSI 10 /* Parallel SCSI */
+#define DBG_DRVSATA         11 /* Serial ATA */
+#define DBG_DRVSAS          12 /* SAS */
+#define DBG_DRVFIBRECHANNEL 13 /* FiberChannel */
+#define DBG_DRVUSB          14 /* USB */
+#define DBG_DRVBLUETOOTH    15 /* Bluetooth */
+#define DBG_DRVFIREWIRE     16 /* FireWire */
+#define DBG_DRVINFINIBAND   17 /* Infiniband */
+#define DBG_DRVGRAPHICS     18 /* Graphics */
+#define DBG_DRVSD           19 /* Secure Digital */
+#define DBG_DRVNAND         20 /* NAND drivers and layers */
+#define DBG_SSD             21 /* SSD */
+#define DBG_DRVSPI          22 /* SPI */
+#define DBG_DRVWLAN_802_11  23 /* WLAN 802.11 */
+#define DBG_DRVSSM          24 /* System State Manager(AppleSSM) */
+#define DBG_DRVSMC          25 /* System Management Controller */
 
 /* Backwards compatibility */
-#define DBG_DRVPOINTING         DBG_DRVHID      /* OBSOLETE: Use DBG_DRVHID instead */
-#define DBG_DRVDISK             DBG_DRVSTORAGE  /* OBSOLETE: Use DBG_DRVSTORAGE instead */
+#define	DBG_DRVPOINTING		DBG_DRVHID	/* OBSOLETE: Use DBG_DRVHID instead */
+#define DBG_DRVDISK		DBG_DRVSTORAGE	/* OBSOLETE: Use DBG_DRVSTORAGE instead */
 
 /* **** The Kernel Debug Sub Classes for the DLIL Layer (DBG_DLIL) **** */
 #define DBG_DLIL_STATIC 1       /* Static DLIL code */
@@ -640,6 +469,7 @@ __BEGIN_DECLS
 #define DBG_DLIL_IF_MOD 3       /* DLIL Interface Module */
 #define DBG_DLIL_PR_FLT 4       /* DLIL Protocol Filter */
 #define DBG_DLIL_IF_FLT 5       /* DLIL Interface FIlter */
+
 
 /* The Kernel Debug Sub Classes for File System (DBG_FSYSTEM) */
 #define DBG_FSRW      0x1     /* reads and writes to the filesystem */
@@ -652,33 +482,23 @@ __BEGIN_DECLS
 #define DBG_HFS       0x8     /* HFS-specific events; see the hfs project */
 #define DBG_APFS      0x9     /* APFS-specific events; see the apfs project */
 #define DBG_SMB       0xA     /* SMB-specific events; see the smb project */
-#define DBG_MOUNT     0xB     /* Mounting/unmounting operations */
 #define DBG_EXFAT     0xE     /* ExFAT-specific events; see the exfat project */
 #define DBG_MSDOS     0xF     /* FAT-specific events; see the msdosfs project */
 #define DBG_ACFS      0x10    /* Xsan-specific events; see the XsanFS project */
 #define DBG_THROTTLE  0x11    /* I/O Throttling events */
-#define DBG_DECMP     0x12    /* Decmpfs-specific events */
-#define DBG_VFS       0x13    /* VFS layer events */
-#define DBG_LIVEFS    0x14    /* LiveFS events; see the FSKit project */
-#define DBG_NFS       0x15    /* NFS-specific events; see the nfs project */
 #define DBG_CONTENT_PROT 0xCF /* Content Protection Events: see bsd/sys/cprotect.h */
 
 /*
  * For Kernel Debug Sub Class DBG_HFS, state bits for hfs_update event
  */
 #define DBG_HFS_UPDATE_ACCTIME   0x01
-#define DBG_HFS_UPDATE_MODTIME   0x02
-#define DBG_HFS_UPDATE_CHGTIME   0x04
-#define DBG_HFS_UPDATE_MODIFIED  0x08
+#define DBG_HFS_UPDATE_MODTIME	 0x02
+#define DBG_HFS_UPDATE_CHGTIME	 0x04
+#define DBG_HFS_UPDATE_MODIFIED	 0x08
 #define DBG_HFS_UPDATE_FORCE     0x10
 #define DBG_HFS_UPDATE_DATEADDED 0x20
 #define DBG_HFS_UPDATE_MINOR     0x40
-#define DBG_HFS_UPDATE_SKIPPED   0x80
-
-/*
- * Codes for Kernel Debug Sub Class DBG_VFS
- */
-#define DBG_VFS_IO_COMPRESSION_STATS 0x1000
+#define DBG_HFS_UPDATE_SKIPPED	 0x80
 
 /* The Kernel Debug Sub Classes for BSD */
 #define DBG_BSD_PROC              0x01 /* process/signals related */
@@ -702,17 +522,13 @@ __BEGIN_DECLS
 #define BSD_MEMSTAT_JETSAM           2  /* LRU jetsam */
 #define BSD_MEMSTAT_JETSAM_HIWAT     3  /* highwater jetsam */
 #define BSD_MEMSTAT_FREEZE           4  /* freeze process */
-#define BSD_MEMSTAT_FREEZE_SCAN      5  /* select a process to freeze and freeze it */
+#define BSD_MEMSTAT_LATENCY_COALESCE 5  /* delay imposed to coalesce jetsam reports */
 #define BSD_MEMSTAT_UPDATE           6  /* priority update */
 #define BSD_MEMSTAT_IDLE_DEMOTE      7  /* idle demotion fired */
 #define BSD_MEMSTAT_CLEAR_ERRORS     8  /* reset termination error state */
 #define BSD_MEMSTAT_DIRTY_TRACK      9  /* track the process state */
 #define BSD_MEMSTAT_DIRTY_SET       10  /* set the process state */
 #define BSD_MEMSTAT_DIRTY_CLEAR     11  /* clear the process state */
-#define BSD_MEMSTAT_FAST_JETSAM     15  /* Aggressive jetsam ("clear-the-deck") */
-#define BSD_MEMSTAT_COMPACTOR_RUN   16  /* run VM compactor after process kill */
-#define BSD_MEMSTAT_FREEZE_DISABLE  17  /* disable freeze and kill frozen processes */
-#define BSD_MEMSTAT_RELAUNCH_FLAGS  18  /* flags representing jetsam behavior; based on launchd data */
 
 /* Codes for BSD subcode class DBG_BSD_KEVENT */
 #define BSD_KEVENT_KQ_PROCESS_BEGIN   1
@@ -736,12 +552,11 @@ __BEGIN_DECLS
 #define BSD_KEVENT_KQWL_BIND          19
 #define BSD_KEVENT_KQWL_UNBIND        20
 #define BSD_KEVENT_KNOTE_ENABLE       21
-#define BSD_KEVENT_KNOTE_VANISHED     22
 
 /* The Kernel Debug Sub Classes for DBG_TRACE */
 #define DBG_TRACE_DATA      0
 #define DBG_TRACE_STRING    1
-#define DBG_TRACE_INFO      2
+#define	DBG_TRACE_INFO	    2
 
 /* The Kernel Debug events: */
 #define TRACE_DATA_NEWTHREAD            (TRACEDBG_CODE(DBG_TRACE_DATA, 1))
@@ -760,10 +575,9 @@ __BEGIN_DECLS
 #define TRACE_WRITING_EVENTS            (TRACEDBG_CODE(DBG_TRACE_INFO, 3))
 #define TRACE_INFO_STRING               (TRACEDBG_CODE(DBG_TRACE_INFO, 4))
 #define TRACE_RETROGRADE_EVENTS         (TRACEDBG_CODE(DBG_TRACE_INFO, 5))
-#define TRACE_PAST_EVENTS               (TRACEDBG_CODE(DBG_TRACE_INFO, 6))
 
 /* The Kernel Debug Sub Classes for DBG_CORESTORAGE */
-#define DBG_CS_IO       0
+#define DBG_CS_IO	0
 
 /* The Kernel Debug Sub Classes for DBG_SECURITY */
 #define DBG_SEC_KERNEL  0 /* raw entropy collected by the kernel */
@@ -772,32 +586,11 @@ __BEGIN_DECLS
 /* Sub-class codes for CoreGraphics (DBG_CG) are defined in its component. */
 
 /* The Kernel Debug Sub Classes for DBG_MONOTONIC */
-#define DBG_MT_INSTRS_CYCLES 1
-#define DBG_MT_DEBUG 2
-#define DBG_MT_RESOURCES_PROC_EXIT 3
-#define DBG_MT_RESOURCES_THR_EXIT 4
-#define DBG_MT_INSTRS_CYCLES_ON_CPU 5
-#define DBG_MT_TMPTH 0xfe
-#define DBG_MT_TMPCPU 0xff
-
-/* Kernel Debug events for the DBG_MT_RESOURCES_PROC_EXIT subclass */
-#define DBG_MT_INSTRS_CYCLES_PROC_EXIT MTDBG_RESOURCES_ON_PROC_EXIT(0)
-#define DBG_MT_P_INSTRS_CYCLES_PROC_EXIT MTDBG_RESOURCES_ON_PROC_EXIT(1)
-
-/* Kernel Debug events for the DBG_MT_RESOURCES_THR_EXIT subclass */
-#define DBG_MT_INSTRS_CYCLES_THR_EXIT  MTDBG_RESOURCES_ON_THR_EXIT(0)
-#define DBG_MT_P_INSTRS_CYCLES_THR_EXIT  MTDBG_RESOURCES_ON_THR_EXIT(1)
+#define DBG_MT_CPU 1
 
 /* The Kernel Debug Sub Classes for DBG_MISC */
-#define DBG_MISC_COREBRIGHTNESS  0x01
-#define DBG_MISC_VIDEOENG        0x02
-#define DBG_EVENT                0x10
-#define DBG_MISC_INSTRUMENTS     0x11
-#define DBG_MISC_INSTRUMENTSBT   0x12
-#define DBG_MISC_RUNLOOP_DETAILS 0x13
-#define DBG_MISC_RUNLOOP_BUSY    0x14
-#define DBG_MISC_LAYOUT          0x1a
-#define DBG_BUFFER               0x20
+#define DBG_EVENT	0x10
+#define	DBG_BUFFER	0x20
 
 /* The Kernel Debug Sub Classes for DBG_DYLD */
 #define DBG_DYLD_UUID (5)
@@ -818,99 +611,51 @@ __BEGIN_DECLS
 #define DBG_DYLD_UUID_SHARED_CACHE_32_A (12)
 #define DBG_DYLD_UUID_SHARED_CACHE_32_B (13)
 #define DBG_DYLD_UUID_SHARED_CACHE_32_C (14)
-#define DBG_DYLD_AOT_UUID_MAP_A         (15)
-#define DBG_DYLD_AOT_UUID_MAP_B         (16)
 
 /* The Kernel Debug modifiers for the DBG_DKRW sub class */
-#define DKIO_DONE       0x01
-#define DKIO_READ       0x02
-#define DKIO_ASYNC      0x04
-#define DKIO_META       0x08
-#define DKIO_PAGING     0x10
-#define DKIO_THROTTLE   0x20 /* Deprecated, still provided so fs_usage doesn't break */
-#define DKIO_PASSIVE    0x40
-#define DKIO_NOCACHE    0x80
-#define DKIO_TIER_MASK  0xF00
-#define DKIO_TIER_SHIFT 8
+#define DKIO_DONE 	0x01
+#define DKIO_READ	0x02
+#define DKIO_ASYNC	0x04
+#define DKIO_META	0x08
+#define DKIO_PAGING	0x10
+#define DKIO_THROTTLE	0x20 /* Deprecated, still provided so fs_usage doesn't break */
+#define DKIO_PASSIVE	0x40
+#define DKIO_NOCACHE	0x80
+#define DKIO_TIER_MASK	0xF00
+#define DKIO_TIER_SHIFT	8
 #define DKIO_TIER_UPGRADE 0x1000
 
 /* Kernel Debug Sub Classes for Applications (DBG_APPS) */
-#define DBG_APP_LOGINWINDOW      0x03
-#define DBG_APP_AUDIO            0x04
-#define DBG_APP_SYSTEMUI         0x05
-#define DBG_APP_SIGNPOST         0x0A
-#define DBG_APP_TAL              0x0B
-#define DBG_APP_APPKIT           0x0C
-#define DBG_APP_UIKIT            0x0D
-#define DBG_APP_DFR              0x0E
-#define DBG_APP_LAYOUT           0x0F
-#define DBG_APP_COREDATA         0x10
-#define DBG_APP_RUNLOOP_BASIC    0x11
-#define DBG_APP_RUNLOOP_ADVANCED 0x12
-#define DBG_APP_SAMBA            0x80
-#define DBG_APP_EOSSUPPORT       0x81
-#define DBG_APP_MACEFIMANAGER    0x82
-#define DBG_APP_ENTERPRISE       0x83
+#define DBG_APP_LOGINWINDOW     0x03
+#define DBG_APP_AUDIO           0x04
+#define DBG_APP_SYSTEMUI        0x05
+#define DBG_APP_SIGNPOST        0x0A
+#define DBG_APP_APPKIT          0x0C
+#define DBG_APP_DFR             0x0E
+#define DBG_APP_SAMBA           0x80
+#define DBG_APP_EOSSUPPORT      0x81
 
 /* Kernel Debug codes for Throttling (DBG_THROTTLE) */
-#define OPEN_THROTTLE_WINDOW    0x1
-#define PROCESS_THROTTLED       0x2
-#define IO_THROTTLE_DISABLE     0x3
+#define OPEN_THROTTLE_WINDOW	0x1
+#define PROCESS_THROTTLED	0x2
+#define IO_THROTTLE_DISABLE	0x3
 #define IO_TIER_UPL_MISMATCH    0x4
+
 
 /* Subclasses for MACH Importance Policies (DBG_IMPORTANCE) */
 /* TODO: Split up boost and task policy? */
-#define IMP_ASSERTION                       0x10    /* Task takes/drops a boost assertion */
-#define IMP_BOOST                           0x11    /* Task boost level changed */
-#define IMP_MSG                             0x12    /* boosting message sent by donating task on donating port */
-#define IMP_WATCHPORT                       0x13    /* port marked as watchport, and boost was transferred to the watched task */
-#define IMP_TASK_SUPPRESSION                0x17    /* Task changed suppression behaviors */
-#define IMP_TASK_APPTYPE                    0x18    /* Task launched with apptype */
-#define IMP_UPDATE                          0x19    /* Requested -> effective calculation */
-#define IMP_USYNCH_QOS_OVERRIDE             0x1A    /* Userspace synchronization applied QoS override to resource owning thread */
-#define IMP_DONOR_CHANGE                    0x1B    /* The iit_donor bit changed */
-#define IMP_MAIN_THREAD_QOS                 0x1C    /* The task's main thread QoS was set */
-#define IMP_SYNC_IPC_QOS                    0x1D    /* Sync IPC QOS override */
-/* DBG_IMPORTANCE subclasses  0x20 - 0x40 are reserved for task policy flavors */
-
-/* thread and task attributes */
-#define IMP_TASK_POLICY_DARWIN_BG           0x21
-#define IMP_TASK_POLICY_IOPOL               0x22
-#define IMP_TASK_POLICY_IO                  0x23
-#define IMP_TASK_POLICY_PASSIVE_IO          0x24
-
-/* task only attributes */
-#define IMP_TASK_POLICY_DARWIN_BG_IOPOL     0x27
-/* unused, was IMP_TASK_POLICY_TAL          0x28 */
-#define IMP_TASK_POLICY_BOOST               0x29
-#define IMP_TASK_POLICY_ROLE                0x2A
-/* unused                                   0x2B */
-#define IMP_TASK_POLICY_TERMINATED          0x2C
-#define IMP_TASK_POLICY_NEW_SOCKETS_BG      0x2D
-#define IMP_TASK_POLICY_SUP_ACTIVE          0x2E
-#define IMP_TASK_POLICY_LATENCY_QOS         0x2F
-#define IMP_TASK_POLICY_THROUGH_QOS         0x30
-#define IMP_TASK_POLICY_WATCHERS_BG         0x31
-
-#define IMP_TASK_POLICY_SFI_MANAGED         0x34
-#define IMP_TASK_POLICY_ALL_SOCKETS_BG      0x37
-
-#define IMP_TASK_POLICY_BASE_LATENCY_AND_THROUGHPUT_QOS  0x39 /* latency as value1, throughput as value2 */
-#define IMP_TASK_POLICY_OVERRIDE_LATENCY_AND_THROUGHPUT_QOS  0x3A /* latency as value1, throughput as value2 */
-
-/* thread only attributes */
-#define IMP_TASK_POLICY_PIDBIND_BG          0x32
-/* unused                                   0x33 */
-/* reserved                                 0x35 */
-#define IMP_TASK_POLICY_QOS_OVERRIDE        0x36
-#define IMP_TASK_POLICY_QOS_AND_RELPRIO     0x38 /* QoS as value1, relative priority as value2 */
-#define IMP_TASK_POLICY_QOS_WORKQ_OVERRIDE  0x3B
-#define IMP_TASK_POLICY_QOS_PROMOTE         0x3C
-#define IMP_TASK_POLICY_QOS_KEVENT_OVERRIDE 0x3D
-#define IMP_TASK_POLICY_QOS_IPC_OVERRIDE    IMP_TASK_POLICY_QOS_KEVENT_OVERRIDE /* legacy name */
-#define IMP_TASK_POLICY_QOS_SERVICER_OVERRIDE 0x3E
-#define IMP_TASK_POLICY_IOTIER_KEVENT_OVERRIDE 0x3F
-#define IMP_TASK_POLICY_WI_DRIVEN           0x40
+#define IMP_ASSERTION           0x10    /* Task takes/drops a boost assertion */
+#define IMP_BOOST               0x11    /* Task boost level changed */
+#define IMP_MSG                 0x12    /* boosting message sent by donating task on donating port */
+#define IMP_WATCHPORT           0x13    /* port marked as watchport, and boost was transferred to the watched task */
+#define IMP_TASK_SUPPRESSION    0x17    /* Task changed suppression behaviors */
+#define IMP_TASK_APPTYPE        0x18    /* Task launched with apptype */
+#define IMP_UPDATE              0x19    /* Requested -> effective calculation */
+#define IMP_USYNCH_QOS_OVERRIDE 0x1A    /* Userspace synchronization applied QoS override to resource owning thread */
+#define IMP_DONOR_CHANGE        0x1B    /* The iit_donor bit changed */
+#define IMP_MAIN_THREAD_QOS     0x1C    /* The task's main thread QoS was set */
+#define IMP_SYNC_IPC_QOS        0x1D    /* Sync IPC QOS override */
+/* DBG_IMPORTANCE subclasses  0x20 - 0x3F reserved for task policy flavors */
 
 /* Codes for IMP_ASSERTION */
 #define IMP_HOLD                0x2     /* Task holds a boost assertion */
@@ -929,12 +674,12 @@ __BEGIN_DECLS
 #define IMP_UPDATE_TASK_CREATE  0x1
 
 /* Codes for IMP_USYNCH_QOS_OVERRIDE */
-#define IMP_USYNCH_ADD_OVERRIDE         0x0             /* add override for a contended resource */
-#define IMP_USYNCH_REMOVE_OVERRIDE      0x1             /* remove override for a contended resource */
+#define IMP_USYNCH_ADD_OVERRIDE		0x0		/* add override for a contended resource */
+#define IMP_USYNCH_REMOVE_OVERRIDE	0x1		/* remove override for a contended resource */
 
 /* Codes for IMP_DONOR_CHANGE */
-#define IMP_DONOR_UPDATE_LIVE_DONOR_STATE       0x0
-#define IMP_DONOR_INIT_DONOR_STATE              0x1
+#define IMP_DONOR_UPDATE_LIVE_DONOR_STATE	0x0
+#define IMP_DONOR_INIT_DONOR_STATE		0x1
 
 /* Code for IMP_SYNC_IPC_QOS */
 #define IMP_SYNC_IPC_QOS_APPLIED                0x0
@@ -942,91 +687,60 @@ __BEGIN_DECLS
 #define IMP_SYNC_IPC_QOS_OVERFLOW               0x2
 #define IMP_SYNC_IPC_QOS_UNDERFLOW              0x3
 
-/* Subclasses for Turnstiles (DBG_TURNSTILE) */
-#define TURNSTILE_HEAP_OPERATIONS               0x10
-#define TURNSTILE_PRIORITY_OPERATIONS           0x20
-#define TURNSTILE_FREELIST_OPERATIONS           0x30
-
-/* Codes for TURNSTILE_HEAP_OPERATIONS */
-#define THREAD_ADDED_TO_TURNSTILE_WAITQ         0x1
-#define THREAD_REMOVED_FROM_TURNSTILE_WAITQ     0x2
-#define THREAD_MOVED_IN_TURNSTILE_WAITQ         0x3
-#define TURNSTILE_ADDED_TO_TURNSTILE_HEAP       0x4
-#define TURNSTILE_REMOVED_FROM_TURNSTILE_HEAP   0x5
-#define TURNSTILE_MOVED_IN_TURNSTILE_HEAP       0x6
-#define TURNSTILE_ADDED_TO_THREAD_HEAP          0x7
-#define TURNSTILE_REMOVED_FROM_THREAD_HEAP      0x8
-#define TURNSTILE_MOVED_IN_THREAD_HEAP          0x9
-#define TURNSTILE_UPDATE_STOPPED_BY_LIMIT       0xa
-#define THREAD_NOT_WAITING_ON_TURNSTILE         0xb
-
-/* Codes for TURNSTILE_PRIORITY_OPERATIONS */
-#define TURNSTILE_PRIORITY_CHANGE               0x1
-#define THREAD_USER_PROMOTION_CHANGE            0x2
-
-/* Codes for TURNSTILE_FREELIST_OPERATIONS */
-#define TURNSTILE_PREPARE                       0x1
-#define TURNSTILE_COMPLETE                      0x2
-
 /* Subclasses for MACH Bank Voucher Attribute Manager (DBG_BANK) */
-#define BANK_ACCOUNT_INFO               0x10    /* Trace points related to bank account struct */
-#define BANK_TASK_INFO                  0x11    /* Trace points related to bank task struct */
+#define BANK_ACCOUNT_INFO		0x10	/* Trace points related to bank account struct */
+#define BANK_TASK_INFO			0x11	/* Trace points related to bank task struct */
 
 /* Subclasses for MACH ATM Voucher Attribute Manager (ATM) */
-#define ATM_SUBAID_INFO                 0x10
-#define ATM_GETVALUE_INFO               0x20
-#define ATM_UNREGISTER_INFO             0x30
+#define ATM_SUBAID_INFO			0x10
+#define ATM_GETVALUE_INFO		0x20
+#define ATM_UNREGISTER_INFO		0x30
 
 /* Codes for BANK_ACCOUNT_INFO */
-#define BANK_SETTLE_CPU_TIME            0x1     /* Bank ledger(chit) rolled up to tasks. */
-#define BANK_SECURE_ORIGINATOR_CHANGED  0x2     /* Secure Originator changed. */
-#define BANK_SETTLE_ENERGY              0x3     /* Bank ledger(energy field) rolled up to tasks. */
+#define BANK_SETTLE_CPU_TIME		0x1	/* Bank ledger(chit) rolled up to tasks. */
+#define BANK_SECURE_ORIGINATOR_CHANGED	0x2	/* Secure Originator changed. */
+#define BANK_SETTLE_ENERGY		0x3	/* Bank ledger(energy field) rolled up to tasks. */
 
 /* Codes for ATM_SUBAID_INFO */
-#define ATM_MIN_CALLED                          0x1
-#define ATM_LINK_LIST_TRIM                      0x2
+#define ATM_MIN_CALLED				0x1
+#define ATM_LINK_LIST_TRIM			0x2
 
 /* Codes for ATM_GETVALUE_INFO */
-#define ATM_VALUE_REPLACED                      0x1
-#define ATM_VALUE_ADDED                         0x2
+#define ATM_VALUE_REPLACED			0x1
+#define ATM_VALUE_ADDED 			0x2
 
 /* Codes for ATM_UNREGISTER_INFO */
-#define ATM_VALUE_UNREGISTERED                  0x1
-#define ATM_VALUE_DIFF_MAILBOX                  0x2
+#define ATM_VALUE_UNREGISTERED			0x1
+#define ATM_VALUE_DIFF_MAILBOX			0x2
 
 /* Kernel Debug Sub Classes for daemons (DBG_DAEMON) */
 #define DBG_DAEMON_COREDUET 0x1
 #define DBG_DAEMON_POWERD   0x2
 
 /* Subclasses for the user space allocator */
-#define DBG_UMALLOC_EXTERNAL                    0x1
-#define DBG_UMALLOC_INTERNAL                    0x2
+#define DBG_UMALLOC_EXTERNAL			0x1
+#define DBG_UMALLOC_INTERNAL			0x2
+/**********************************************************************/
 
-#pragma mark - subsystem event ID macros
+#define KDBG_MIGCODE(msgid) ((DBG_MIG << KDBG_CLASS_OFFSET) | \
+                             (((msgid) & 0x3fffff) << KDBG_CODE_OFFSET))
 
-#define KDBG_MIGCODE(msgid) (((unsigned)DBG_MIG << KDBG_CLASS_OFFSET) | \
-	                     ((unsigned)((msgid) & 0x3fffff) << KDBG_CODE_OFFSET))
-
-#define MACHDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_MACH, SubClass, code)
-#define NETDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_NETWORK, SubClass, code)
-#define FSDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_FSYSTEM, SubClass, code)
-#define BSDDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_BSD, SubClass, code)
-#define IOKDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_IOKIT, SubClass, code)
-#define DRVDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_DRIVERS, SubClass, code)
-#define TRACEDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_TRACE, SubClass, code)
-#define SILICONDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_SILICON, SubClass, code)
-#define MISCDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_MISC, SubClass, code)
-#define DLILDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_DLIL, SubClass, code)
-#define SECURITYDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_SECURITY, SubClass, code)
-#define DYLDDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_DYLD, SubClass, code)
-#define QTDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_QT, SubClass, code)
-#define APPSDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_APPS, SubClass, code)
-#define ARIADNEDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_ARIADNE, SubClass, code)
-#define DAEMONDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_DAEMON, SubClass, code)
+#define MACHDBG_CODE(SubClass, code) KDBG_CODE(DBG_MACH, SubClass, code)
+#define NETDBG_CODE(SubClass, code) KDBG_CODE(DBG_NETWORK, SubClass, code)
+#define FSDBG_CODE(SubClass, code) KDBG_CODE(DBG_FSYSTEM, SubClass, code)
+#define BSDDBG_CODE(SubClass, code) KDBG_CODE(DBG_BSD, SubClass, code)
+#define IOKDBG_CODE(SubClass, code) KDBG_CODE(DBG_IOKIT, SubClass, code)
+#define DRVDBG_CODE(SubClass, code) KDBG_CODE(DBG_DRIVERS, SubClass, code)
+#define TRACEDBG_CODE(SubClass,code) KDBG_CODE(DBG_TRACE, SubClass, code)
+#define MISCDBG_CODE(SubClass,code) KDBG_CODE(DBG_MISC, SubClass, code)
+#define DLILDBG_CODE(SubClass,code) KDBG_CODE(DBG_DLIL, SubClass, code)
+#define SECURITYDBG_CODE(SubClass,code) KDBG_CODE(DBG_SECURITY, SubClass, code)
+#define DYLDDBG_CODE(SubClass,code) KDBG_CODE(DBG_DYLD, SubClass, code)
+#define QTDBG_CODE(SubClass,code) KDBG_CODE(DBG_QT, SubClass, code)
+#define APPSDBG_CODE(SubClass,code) KDBG_CODE(DBG_APPS, SubClass, code)
+#define ARIADNEDBG_CODE(SubClass, code) KDBG_CODE(DBG_ARIADNE, SubClass, code)
+#define DAEMONDBG_CODE(SubClass, code) KDBG_CODE(DBG_DAEMON, SubClass, code)
 #define CPUPM_CODE(code) IOKDBG_CODE(DBG_IOCPUPM, code)
-#define MTDBG_CODE(SubClass, code) KDBG_EVENTID(DBG_MONOTONIC, SubClass, code)
-#define MTDBG_RESOURCES_ON_PROC_EXIT(code) MTDBG_CODE(DBG_MT_RESOURCES_PROC_EXIT, code)
-#define MTDBG_RESOURCES_ON_THR_EXIT(code) MTDBG_CODE(DBG_MT_RESOURCES_THR_EXIT, code)
 
 #define KMEM_ALLOC_CODE MACHDBG_CODE(DBG_MACH_LEAKS, 0)
 #define KMEM_ALLOC_CODE_2 MACHDBG_CODE(DBG_MACH_LEAKS, 1)
@@ -1037,53 +751,330 @@ __BEGIN_DECLS
 #define ZFREE_CODE MACHDBG_CODE(DBG_MACH_LEAKS, 6)
 #define ZFREE_CODE_2 MACHDBG_CODE(DBG_MACH_LEAKS, 7)
 
-#define MEMSTAT_CODE(code) BSDDBG_CODE(DBG_BSD_MEMSTAT, code)
-
 #define PMAP_CODE(code) MACHDBG_CODE(DBG_MACH_PMAP, code)
 
-#define IMPORTANCE_CODE(SubClass, code) KDBG_EVENTID(DBG_IMPORTANCE, (SubClass), (code))
-#define BANK_CODE(SubClass, code) KDBG_EVENTID(DBG_BANK, (SubClass), (code))
-#define ATM_CODE(SubClass, code) KDBG_EVENTID(DBG_ATM, (SubClass), (code))
-#define TURNSTILE_CODE(SubClass, code) KDBG_EVENTID(DBG_TURNSTILE, (SubClass), (code))
 
-// Kernel Debug Macros for specific daemons
+#define IMPORTANCE_CODE(SubClass, code) KDBG_CODE(DBG_IMPORTANCE, (SubClass), (code))
+#define BANK_CODE(SubClass, code) KDBG_CODE(DBG_BANK, (SubClass), (code))
+#define ATM_CODE(SubClass, code) KDBG_CODE(DBG_ATM, (SubClass), (code))
+
+/* Kernel Debug Macros for specific daemons */
 #define COREDUETDBG_CODE(code) DAEMONDBG_CODE(DBG_DAEMON_COREDUET, code)
 #define POWERDDBG_CODE(code) DAEMONDBG_CODE(DBG_DAEMON_POWERD, code)
 
-// VFS lookup events
-#define VFS_LOOKUP      (FSDBG_CODE(DBG_FSRW,36))
-#define VFS_LOOKUP_DONE (FSDBG_CODE(DBG_FSRW,39))
+/*
+ * To use kdebug in the kernel:
+ *
+ * #include <sys/kdebug.h>
+ *
+ * #define DBG_NETIPINIT NETDBG_CODE(DBG_NETIP, 1)
+ *
+ * void
+ * ip_init(void)
+ * {
+ *     KDBG(DBG_NETIPINIT | DBG_FUNC_START, 1, 2, 3, 4);
+ *     ...
+ *     KDBG(DBG_NETIPINIT);
+ *     ...
+ *     KDBG(DBG_NETIPINIT | DBG_FUNC_END);
+ * }
+ */
 
-// Deprecated macro using legacy naming convention.
-#define KDBG_CODE(Class, SubClass, Code) KDBG_EVENTID(Class, SubClass, Code)
 
-/* Kernel trace events associated with timers and timer queues */
-#define DECR_TRAP_LATENCY       MACHDBG_CODE(DBG_MACH_EXCP_DECI, 0)
-#define DECR_SET_DEADLINE       MACHDBG_CODE(DBG_MACH_EXCP_DECI, 1)
-#define DECR_TIMER_CALLOUT      MACHDBG_CODE(DBG_MACH_EXCP_DECI, 2)
-#define DECR_PM_DEADLINE        MACHDBG_CODE(DBG_MACH_EXCP_DECI, 3)
-#define DECR_TIMER_MIGRATE      MACHDBG_CODE(DBG_MACH_EXCP_DECI, 4)
-#if defined(i386) || defined(x86_64)
-#define DECR_RDHPET             MACHDBG_CODE(DBG_MACH_EXCP_DECI, 5)
-#define DECR_SET_TSC_DEADLINE   MACHDBG_CODE(DBG_MACH_EXCP_DECI, 6)
-#define DECR_SET_APIC_DEADLINE  MACHDBG_CODE(DBG_MACH_EXCP_DECI, 16)
+extern unsigned int kdebug_enable;
+
+/*
+ * Bits used by kdebug_enable.  These control which events are traced at
+ * runtime.
+ */
+#define KDEBUG_ENABLE_TRACE   (1U << 0)
+#define KDEBUG_ENABLE_ENTROPY (1U << 1) /* obsolete */
+#define KDEBUG_ENABLE_CHUD    (1U << 2) /* obsolete */
+#define KDEBUG_ENABLE_PPT     (1U << 3)
+#define KDEBUG_ENABLE_SERIAL  (1U << 4)
+
+#define KDEBUG_TRACE (KDEBUG_ENABLE_TRACE)
+
+/*
+ * Specify KDEBUG_PPT to indicate that the event belongs to the limited PPT set.
+ * PPT is deprecated -- use a typefilter and the PPTDBG class instead.
+ */
+#define KDEBUG_PPT    (KDEBUG_ENABLE_PPT)
+#define KDEBUG_COMMON (KDEBUG_ENABLE_TRACE | KDEBUG_ENABLE_PPT)
+
+/*
+ * The kernel debug configuration level.  These values control which events are
+ * compiled in under different build configurations.
+ *
+ * Infer the supported kernel debug event level from config option.  Use
+ * (KDEBUG_LEVEL >= KDEBUG_LEVEL_STANDARD) as a guard to protect unaudited debug
+ * code.
+ */
+#define KDEBUG_LEVEL_NONE     0
+#define KDEBUG_LEVEL_IST      1
+#define KDEBUG_LEVEL_STANDARD 2
+#define KDEBUG_LEVEL_FULL     3
+
+#if NO_KDEBUG
+#define KDEBUG_LEVEL KDEBUG_LEVEL_NONE
+#elif IST_KDEBUG
+#define KDEBUG_LEVEL KDEBUG_LEVEL_IST
+	// currently configured for the iOS release kernel
+#elif KDEBUG
+#define KDEBUG_LEVEL KDEBUG_LEVEL_FULL
+#else
+#define KDEBUG_LEVEL KDEBUG_LEVEL_STANDARD
+/*
+ * Currently, all other kernel configurations (development, etc) build with
+ * KDEBUG_LEVEL_STANDARD.  As a result, KERNEL_DEBUG_CONSTANT*() are on by
+ * default but KERNEL_DEBUG*() are not.
+ */
 #endif
-#define DECR_TIMER_ENTER        MACHDBG_CODE(DBG_MACH_EXCP_DECI, 7)
-#define DECR_TIMER_CANCEL       MACHDBG_CODE(DBG_MACH_EXCP_DECI, 8)
-#define DECR_TIMER_QUEUE        MACHDBG_CODE(DBG_MACH_EXCP_DECI, 9)
-#define DECR_TIMER_EXPIRE       MACHDBG_CODE(DBG_MACH_EXCP_DECI,10)
-#define DECR_TIMER_ASYNC_DEQ    MACHDBG_CODE(DBG_MACH_EXCP_DECI,11)
-#define DECR_TIMER_UPDATE       MACHDBG_CODE(DBG_MACH_EXCP_DECI,12)
-#define DECR_TIMER_ESCALATE     MACHDBG_CODE(DBG_MACH_EXCP_DECI,13)
-#define DECR_TIMER_OVERDUE      MACHDBG_CODE(DBG_MACH_EXCP_DECI,14)
-#define DECR_TIMER_RESCAN       MACHDBG_CODE(DBG_MACH_EXCP_DECI,15)
-#define DECR_TIMER_PAUSE        MACHDBG_CODE(DBG_MACH_EXCP_DECI,17)
-#define DECR_TIMER_POSTPONE     MACHDBG_CODE(DBG_MACH_EXCP_DECI,18)
 
-#endif // __APPLE_API_UNSTABLE
+#define KDBG_IMPROBABLE
 
+/*
+ * KERNEL_DEBUG_CONSTANT_FILTERED events are omitted from tracing unless they
+ * are explicitly requested in the typefilter.  They are not emitted when
+ * tracing without a typefilter.
+ */
+#if (KDEBUG_LEVEL >= KDEBUG_LEVEL_STANDARD)
+#define KERNEL_DEBUG_CONSTANT_FILTERED(x, a, b, c, d, ...)             \
+	do {                                                               \
+		if (KDBG_IMPROBABLE(kdebug_enable & ~KDEBUG_ENABLE_PPT)) {     \
+			kernel_debug_filtered((x), (uintptr_t)(a), (uintptr_t)(b), \
+				(uintptr_t)(c), (uintptr_t)(d));                       \
+		}                                                              \
+	} while (0)
+#else /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_STANDARD) */
+#define KERNEL_DEBUG_CONSTANT_FILTERED(type, x, a, b, c, d, ...) do {} while (0)
+#endif /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_STANDARD) */
+
+#if (KDEBUG_LEVEL >= KDEBUG_LEVEL_STANDARD)
+#define KERNEL_DEBUG_CONSTANT(x, a, b, c, d, e)                               \
+	do {                                                                      \
+		if (KDBG_IMPROBABLE(kdebug_enable & ~KDEBUG_ENABLE_PPT)) {            \
+			kernel_debug((x), (uintptr_t)(a), (uintptr_t)(b), (uintptr_t)(c), \
+				(uintptr_t)(d),(uintptr_t)(e));                               \
+		}                                                                     \
+	} while (0)
+
+/*
+ * DO NOT USE THIS MACRO -- it breaks fundamental assumptions about ktrace and
+ * is only meant to be used by the pthread kext and other points in the kernel
+ * where the thread ID must be provided explicitly.
+ */
+#define KERNEL_DEBUG_CONSTANT1(x, a, b, c, d, e)                               \
+	do {                                                                       \
+		if (KDBG_IMPROBABLE(kdebug_enable & ~KDEBUG_ENABLE_PPT)) {             \
+			kernel_debug1((x), (uintptr_t)(a), (uintptr_t)(b), (uintptr_t)(c), \
+			(uintptr_t)(d), (uintptr_t)(e));                                   \
+		}                                                                      \
+	} while (0)
+
+#define KERNEL_DEBUG_EARLY(x, a, b, c, d)                                 \
+	do {                                                                  \
+		kernel_debug_early((uint32_t)(x), (uintptr_t)(a), (uintptr_t)(b), \
+			(uintptr_t)(c), (uintptr_t)(d));                              \
+	} while (0)
+#else /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_STANDARD) */
+#define KERNEL_DEBUG_CONSTANT(x, a, b, c, d, e) do {} while (0)
+#define KERNEL_DEBUG_CONSTANT1(x, a, b, c, d, e) do {} while (0)
+#define KERNEL_DEBUG_EARLY(x, a, b, c, d) do {} while (0)
+#endif /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_STANDARD) */
+
+/*
+ * KERNEL_DEBUG_CONSTANT_IST (in-system trace) events provide an audited subset
+ * of tracepoints for userland system tracing tools.  This tracing level was
+ * created by 8857227 to protect fairplayd and other PT_DENY_ATTACH processes.
+ * It has two effects: only KERNEL_DEBUG_CONSTANT_IST() traces are emitted and
+ * any PT_DENY_ATTACH processes will only emit basic traces as defined by the
+ * kernel_debug_filter() routine.
+ */
+#define KERNEL_DEBUG_CONSTANT_RELEASE(x, a, b, c, d, e) \
+	KERNEL_DEBUG_CONSTANT_IST(~KDEBUG_ENABLE_PPT, x, a, b, c, d, 0)
+
+#if (KDEBUG_LEVEL >= KDEBUG_LEVEL_IST)
+#define KERNEL_DEBUG_CONSTANT_IST(type, x, a, b, c, d, e)                     \
+	do {                                                                      \
+		if (KDBG_IMPROBABLE(kdebug_enable & (type))) {                        \
+			kernel_debug((x), (uintptr_t)(a), (uintptr_t)(b), (uintptr_t)(c), \
+				(uintptr_t)(d), (uintptr_t)(e));                              \
+		}                                                                     \
+	} while (0)
+#else /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_IST) */
+#define KERNEL_DEBUG_CONSTANT_IST(type, x, a, b, c, d, e) do {} while (0)
+#endif /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_IST) */
+
+#if NO_KDEBUG
+#define __kdebug_constant_only __unused
+#endif
+
+/*
+ * KERNEL_DEBUG events are only traced for DEBUG kernels.
+ */
+#define KERNEL_DEBUG_CONSTANT_DEBUG(x, a, b, c, d, e) \
+	KERNEL_DEBUG(x, a, b, c, d, e)
+
+#if (KDEBUG_LEVEL >= KDEBUG_LEVEL_FULL)
+#define __kdebug_only
+
+#define KERNEL_DEBUG(x, a, b, c, d, e)                                  \
+	do {                                                                \
+		if (KDBG_IMPROBABLE(kdebug_enable & ~KDEBUG_ENABLE_PPT)) {      \
+			kernel_debug((uint32_t)(x), (uintptr_t)(a), (uintptr_t)(b), \
+				(uintptr_t)(c), (uintptr_t)(d), (uintptr_t)(e));        \
+		}                                                               \
+	} while (0)
+
+/*
+ * DO NOT USE THIS MACRO -- see warning above for KERNEL_DEBUG_CONSTANT1.
+ */
+#define KERNEL_DEBUG1(x, a, b, c, d, e)                                  \
+	do {                                                                 \
+		if (KDBG_IMPROBABLE(kdebug_enable & ~KDEBUG_ENABLE_PPT)) {       \
+			kernel_debug1((uint32_t)(x), (uintptr_t)(a), (uintptr_t)(b), \
+				(uintptr_t)(c), (uintptr_t)(d), (uintptr_t)(e));         \
+		}                                                                \
+	} while (0)
+
+#else /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_FULL) */
+#define __kdebug_only __unused
+
+#define KERNEL_DEBUG(x,a,b,c,d,e) do {} while (0)
+#define KERNEL_DEBUG1(x,a,b,c,d,e) do {} while (0)
+#endif /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_FULL) */
+
+
+extern void kernel_debug(
+		uint32_t  debugid,
+		uintptr_t arg1,
+		uintptr_t arg2,
+		uintptr_t arg3,
+		uintptr_t arg4,
+		uintptr_t arg5);
+
+extern void kernel_debug1(
+		uint32_t  debugid,
+		uintptr_t arg1,
+		uintptr_t arg2,
+		uintptr_t arg3,
+		uintptr_t arg4,
+		uintptr_t arg5);
+
+extern void kernel_debug_filtered(
+		uint32_t  debugid,
+		uintptr_t arg1,
+		uintptr_t arg2,
+		uintptr_t arg3,
+		uintptr_t arg4);
+
+extern void kernel_debug_early(
+		uint32_t  debugid,
+		uintptr_t arg1,
+		uintptr_t arg2,
+		uintptr_t arg3,
+		uintptr_t arg4);
+
+/*
+ * EnergyTracing macros.
+ */
+
+#if (KDEBUG_LEVEL >= KDEBUG_LEVEL_IST)
+// whether to bother calculating EnergyTracing inputs
+// could change in future to see if DBG_ENERGYTRACE is active
+#define ENTR_SHOULDTRACE kdebug_enable
+// encode logical EnergyTracing into 32/64 KDebug trace
+#define ENTR_KDTRACE(component, opcode, lifespan, id, quality, value) 	\
+do {									\
+    uint32_t kdcode__;							\
+    uintptr_t highval__, lowval__, mask__ = 0xffffffff;			\
+    kdcode__ = KDBG_CODE(DBG_ENERGYTRACE,component,opcode)|(lifespan); 	\
+    highval__ = ((value) >> 32) & mask__;				\
+    lowval__ = (value) & mask__;					\
+    ENTR_KDTRACEFUNC(kdcode__, id, quality, highval__, lowval__);	\
+} while(0)
+
+/*
+    Trace the association of two existing activations.
+
+    An association is traced as a modification to the parent activation.
+    In order to fit the sub-activation's component, activation code, and
+    activation ID into a kdebug tracepoint, the arguments that would hold
+    the value are left separate, and one stores the component and opcode
+    of the sub-activation, while the other stores the pointer-sized
+    activation ID.
+
+	    arg2                   arg3               arg4
+    +-----------------+  +~+----+----+--------+   +----------+
+    |kEnTrModAssociate|  | |    |    |        |   |          |
+    +-----------------+  +~+----+----+--------+   +----------+
+			    8-bits unused       sub-activation ID
+				 8-bit sub-component
+				      16-bit sub-opcode
+
+*/
+#define kEnTrModAssociate (1 << 28)
+#define ENTR_KDASSOCIATE(par_comp, par_opcode, par_act_id,		\
+                         sub_comp, sub_opcode, sub_act_id)              \
+do {									\
+    unsigned sub_compcode = ((unsigned)sub_comp << 16) | sub_opcode;	\
+    ENTR_KDTRACEFUNC(KDBG_CODE(DBG_ENERGYTRACE,par_comp,par_opcode),	\
+		     par_act_id, kEnTrModAssociate, sub_compcode,	\
+		     sub_act_id);					\
+} while(0)
+
+#else /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_IST) */
+
+#define ENTR_SHOULDTRACE FALSE
+#define ENTR_KDTRACE(component, opcode, lifespan, id, quality, value) 	\
+				    do {} while (0)
+#define ENTR_KDASSOCIATE(par_comp, par_opcode, par_act_id,		\
+		   	 sub_comp, sub_opcode, sub_act_id)		\
+				    do {} while (0)
+
+#endif /* (KDEBUG_LEVEL >= KDEBUG_LEVEL_IST) */
+
+
+/*
+ * Bits set in the comm page for kdebug.
+ */
+#define KDEBUG_COMMPAGE_ENABLE_TRACE      0x1
+#define KDEBUG_COMMPAGE_ENABLE_TYPEFILTER 0x2 /* Forced to false if ENABLE_TRACE is 0 */
+
+// for EnergyTracing user space & clients
+#define kEnTrCompKernel	    2
+
+/*
+    EnergyTracing opcodes
+
+    Activations use DBG_FUNC_START/END.
+    Events are DBG_FUNC_NONE.
+ */
+
+/* Socket reads and writes are uniquely identified by the (sanitized)
+   pointer to the socket struct in question.  To associate this address
+   with the user space file descriptor, we have a socket activation with
+   the FD as its identifier and the socket struct pointer as its value.
+*/
+#define kEnTrActKernSocket	1
+#define kEnTrActKernSockRead	2
+#define kEnTrActKernSockWrite	3
+
+#define kEnTrActKernPoll	10
+#define kEnTrActKernSelect	11
+#define kEnTrActKernKQWait	12
+
+// events
+#define kEnTrEvUnblocked	256
+
+// EnergyTracing flags (the low-order 16 bits of 'quality')
+#define kEnTrFlagNonBlocking	1 << 0
+#define kEnTrFlagNoWork		1 << 1
+
+// and now the internal mechanism
+#endif /* __APPLE_API_UNSTABLE */
 __END_DECLS
 
 
-
-#endif // !defined(BSD_SYS_KDEBUG_H)
+#endif /* !BSD_SYS_KDEBUG_H */

@@ -1,8 +1,8 @@
 /*
    +----------------------------------------------------------------------+
-   | PHP Version 5                                                        |
+   | PHP Version 7                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2017 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: 26e3f3b2a614c7fef88059b9e69137f694a0de42 $ */
+/* $Id$ */
 
 #ifndef PHP_ICONV_H
 #define PHP_ICONV_H
@@ -27,12 +27,15 @@
 #  define PHP_ICONV_API __declspec(dllexport)
 # else
 #  define PHP_ICONV_API __declspec(dllimport)
-# endif 
+# endif
 #elif defined(__GNUC__) && __GNUC__ >= 4
 # define PHP_ICONV_API __attribute__ ((visibility("default")))
 #else
 # define PHP_ICONV_API
 #endif
+
+#include "php_version.h"
+#define PHP_ICONV_VERSION PHP_VERSION
 
 #ifdef PHP_ATOM_INC
 #include "ext/iconv/php_have_iconv.h"
@@ -72,22 +75,16 @@ ZEND_BEGIN_MODULE_GLOBALS(iconv)
 	char *output_encoding;
 ZEND_END_MODULE_GLOBALS(iconv)
 
-#ifdef ZTS
-# define ICONVG(v) TSRMG(iconv_globals_id, zend_iconv_globals *, v)
-#else
-# define ICONVG(v) (iconv_globals.v)
+#define ICONVG(v) ZEND_MODULE_GLOBALS_ACCESSOR(iconv, v)
+
+#if defined(ZTS) && defined(COMPILE_DL_ICONV)
+ZEND_TSRMLS_CACHE_EXTERN()
 #endif
 
 #ifdef HAVE_IBM_ICONV
-# define ICONV_INPUT_ENCODING "ISO8859-1"
-# define ICONV_OUTPUT_ENCODING "ISO8859-1"
-# define ICONV_INTERNAL_ENCODING "ISO8859-1"
 # define ICONV_ASCII_ENCODING "IBM-850"
 # define ICONV_UCS4_ENCODING "UCS-4"
 #else
-# define ICONV_INPUT_ENCODING "ISO-8859-1"
-# define ICONV_OUTPUT_ENCODING "ISO-8859-1"
-# define ICONV_INTERNAL_ENCODING "ISO-8859-1"
 # define ICONV_ASCII_ENCODING "ASCII"
 # define ICONV_UCS4_ENCODING "UCS-4LE"
 #endif
@@ -110,7 +107,7 @@ typedef enum _php_iconv_err_t {
 } php_iconv_err_t;
 /* }}} */
 
-PHP_ICONV_API php_iconv_err_t php_iconv_string(const char * in_p, size_t in_len, char **out, size_t *out_len, const char *out_charset, const char *in_charset);
+PHP_ICONV_API php_iconv_err_t php_iconv_string(const char * in_p, size_t in_len, zend_string **out, const char *out_charset, const char *in_charset);
 
 #else
 

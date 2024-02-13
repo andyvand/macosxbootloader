@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2011,2018 Apple Inc. All rights reserved.
+ * Copyright (c) 2006-2011 Apple Inc. All rights reserved.
  */
 
 
@@ -13,7 +13,7 @@
 #ifndef _SANDBOX_H_
 #define _SANDBOX_H_
 
-#include <os/availability.h>
+#include <Availability.h>
 #include <sys/cdefs.h>
 #include <stdint.h>
 
@@ -42,9 +42,7 @@ __BEGIN_DECLS
  *
  * @result 0 on success, -1 otherwise.
  */
-API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
-API_UNAVAILABLE(macCatalyst)
-__result_use_check
+__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_8,__IPHONE_2_0,__IPHONE_6_0)
 int sandbox_init(const char *profile, uint64_t flags, char **errorbuf);
 
 /*
@@ -58,30 +56,25 @@ int sandbox_init(const char *profile, uint64_t flags, char **errorbuf);
  */
 
 /* TCP/IP networking is prohibited. */
-API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
-API_UNAVAILABLE(macCatalyst)
+__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_8,__IPHONE_2_0,__IPHONE_6_0)
 extern const char kSBXProfileNoInternet[];
 
 /* All sockets-based networking is prohibited. */
-API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
-API_UNAVAILABLE(macCatalyst)
+__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_8,__IPHONE_2_0,__IPHONE_6_0)
 extern const char kSBXProfileNoNetwork[];
 
 /* File system writes are prohibited. */
-API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
-API_UNAVAILABLE(macCatalyst)
+__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_8,__IPHONE_2_0,__IPHONE_6_0)
 extern const char kSBXProfileNoWrite[];
 
 /* File system writes are restricted to temporary folders /var/tmp and
  * confstr(_CS_DARWIN_USER_DIR, ...).
  */
-API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
-API_UNAVAILABLE(macCatalyst)
+__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_8,__IPHONE_2_0,__IPHONE_6_0)
 extern const char kSBXProfileNoWriteExceptTemporary[];
 
 /* All operating system services are prohibited. */
-API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
-API_UNAVAILABLE(macCatalyst)
+__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_8,__IPHONE_2_0,__IPHONE_6_0)
 extern const char kSBXProfilePureComputation[];
 
 /*
@@ -93,8 +86,7 @@ extern const char kSBXProfilePureComputation[];
  *
  * @result void
  */
-API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
-API_UNAVAILABLE(macCatalyst)
+__OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_8,__IPHONE_2_0,__IPHONE_6_0)
 void sandbox_free_error(char *errorbuf);
 
 __END_DECLS

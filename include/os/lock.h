@@ -39,7 +39,8 @@ OS_ASSUME_NONNULL_BEGIN
 __BEGIN_DECLS
 
 #define OS_UNFAIR_LOCK_AVAILABILITY \
-		__API_AVAILABLE(macos(10.12), ios(10.0), tvos(10.0), watchos(3.0))
+		__OSX_AVAILABLE(10.12) __IOS_AVAILABLE(10.0) \
+		__TVOS_AVAILABLE(10.0) __WATCHOS_AVAILABLE(3.0)
 
 /*!
  * @typedef os_unfair_lock
@@ -47,41 +48,31 @@ __BEGIN_DECLS
  * @abstract
  * Low-level lock that allows waiters to block efficiently on contention.
  *
- * os_unfair_lock is an appropriate lock for cases where simple and lightweight
- * mutual exclusion is needed.
- * It can be intrusively stored inline in a datastructure without needing a
- * separate allocation, reducing memory consumption and cost of indirection.
- * For situations where something more sophisticated like condition waits or
- * FIFO ordering is needed, use appropriate higher level APIs such as those from
- * the pthread or dispatch subsystems.
+ * In general, higher level synchronization primitives such as those provided by
+ * the pthread or dispatch subsystems should be preferred.
  *
  * The values stored in the lock should be considered opaque and implementation
  * defined, they contain thread ownership information that the system may use
  * to attempt to resolve priority inversions.
  *
- * This lock must be unlocked from the same thread that locked it, attempts to
+ * This lock must be unlocked from the same thread that locked it, attemps to
  * unlock from a different thread will cause an assertion aborting the process.
  *
  * This lock must not be accessed from multiple processes or threads via shared
- * or multiply-mapped memory, because the lock implementation relies on the
- * address of the lock value and identity of the owning process.
+ * or multiply-mapped memory, the lock implementation relies on the address of
+ * the lock value and owning process.
  *
- * Must be initialized with OS_UNFAIR_LOCK_INIT.
+ * Must be initialized with OS_UNFAIR_LOCK_INIT
  *
  * @discussion
- * The name 'unfair' indicates that there is no attempt at enforcing acquisition
- * fairness, e.g. an unlocker can potentially immediately reacquire the lock
- * before a woken up waiter gets an opportunity to attempt to acquire the lock.
- * This is often advantageous for performance reasons, but also makes starvation
- * of waiters a possibility.
+ * Replacement for the deprecated OSSpinLock. Does not spin on contention but
+ * waits in the kernel to be woken up by an unlock.
  *
- * This lock is suitable as a drop-in replacement for the deprecated OSSpinLock,
- * providing much better behavior under contention.
- *
- * In Swift, note that use of the `&` operator on an unfair lock can copy or move
- * the lock memory, leading to misbehavior. Use an OSAllocatedUnfairLock to safely wrap
- * access to the lock memory instead. If you use os_unfair_lock APIs directly,
- * always make sure to store and use the lock in memory with a stable address.
+ * As with OSSpinLock there is no attempt at fairness or lock ordering, e.g. an
+ * unlocker can potentially immediately reacquire the lock before a woken up
+ * waiter gets an opportunity to attempt to acquire the lock. This may be
+ * advantageous for performance reasons, but also makes starvation of waiters a
+ * possibility.
  */
 OS_UNFAIR_LOCK_AVAILABILITY
 typedef struct os_unfair_lock_s {
@@ -111,7 +102,6 @@ typedef struct os_unfair_lock_s {
  */
 OS_UNFAIR_LOCK_AVAILABILITY
 OS_EXPORT OS_NOTHROW OS_NONNULL_ALL
-OS_SWIFT_UNAVAILABLE_FROM_ASYNC("Use OSAllocatedUnfairLock.performWhileLocked() for async-safe scoped locking")
 void os_unfair_lock_lock(os_unfair_lock_t lock);
 
 /*!
@@ -137,7 +127,6 @@ void os_unfair_lock_lock(os_unfair_lock_t lock);
  */
 OS_UNFAIR_LOCK_AVAILABILITY
 OS_EXPORT OS_NOTHROW OS_WARN_RESULT OS_NONNULL_ALL
-OS_SWIFT_UNAVAILABLE_FROM_ASYNC("Use OSAllocatedUnfairLock.tryPerformWhileLocked() for async-safe scoped locking")
 bool os_unfair_lock_trylock(os_unfair_lock_t lock);
 
 /*!
@@ -151,49 +140,7 @@ bool os_unfair_lock_trylock(os_unfair_lock_t lock);
  */
 OS_UNFAIR_LOCK_AVAILABILITY
 OS_EXPORT OS_NOTHROW OS_NONNULL_ALL
-OS_SWIFT_UNAVAILABLE_FROM_ASYNC("Use OSAllocatedUnfairLock.performWhileLocked() for async-safe scoped locking")
 void os_unfair_lock_unlock(os_unfair_lock_t lock);
-
-/*!
- * @function os_unfair_lock_assert_owner
- *
- * @abstract
- * Asserts that the calling thread is the current owner of the specified
- * unfair lock.
- *
- * @discussion
- * If the lock is currently owned by the calling thread, this function returns.
- *
- * If the lock is unlocked or owned by a different thread, this function
- * asserts and terminates the process.
- *
- * @param lock
- * Pointer to an os_unfair_lock.
- */
-OS_UNFAIR_LOCK_AVAILABILITY
-OS_EXPORT OS_NOTHROW OS_NONNULL_ALL
-void os_unfair_lock_assert_owner(const os_unfair_lock *lock);
-
-/*!
- * @function os_unfair_lock_assert_not_owner
- *
- * @abstract
- * Asserts that the calling thread is not the current owner of the specified
- * unfair lock.
- *
- * @discussion
- * If the lock is unlocked or owned by a different thread, this function
- * returns.
- *
- * If the lock is currently owned by the current thread, this function asserts
- * and terminates the process.
- *
- * @param lock
- * Pointer to an os_unfair_lock.
- */
-OS_UNFAIR_LOCK_AVAILABILITY
-OS_EXPORT OS_NOTHROW OS_NONNULL_ALL
-void os_unfair_lock_assert_not_owner(const os_unfair_lock *lock);
 
 __END_DECLS
 

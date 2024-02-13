@@ -15,7 +15,11 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the University of
+ *      California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -58,34 +62,17 @@
  * I don't have earlier versions available to check), or QNX-style
  * multiple-include protection (as per GitHub pull request #394).
  *
- * We trust that they will define structures and macros and types in
- * a fashion that's source-compatible and binary-compatible with our
- * definitions.
- *
  * We do not check for BPF_MAJOR_VERSION, as that's defined by
  * <linux/filter.h>, which is directly or indirectly included in some
  * programs that also include pcap.h, and <linux/filter.h> doesn't
- * define stuff we need.  We *do* protect against <linux/filter.h>
- * defining various macros for BPF code itself; <linux/filter.h> says
- *
- *	Try and keep these values and structures similar to BSD, especially
- *	the BPF code definitions which need to match so you can share filters
- *
- * so we trust that it will define them in a fashion that's source-compatible
- * and binary-compatible with our definitions.
+ * define stuff we need.
  *
  * This also provides our own multiple-include protection.
  */
 #if !defined(_NET_BPF_H_) && !defined(_NET_BPF_H_INCLUDED) && !defined(_BPF_H_) && !defined(_H_BPF) && !defined(lib_pcap_bpf_h)
 #define lib_pcap_bpf_h
 
-#include <pcap/funcattrs.h>
-
-#include <pcap/dlt.h>
-
-#ifdef __APPLE__
-#include <sys/types.h>		/* u_int */
-#endif /* __APPLE__ */
+#include <pcap/export-defs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -122,6 +109,8 @@ struct bpf_program {
 	u_int bf_len;
 	struct bpf_insn *bf_insns;
 };
+
+#include <pcap/dlt.h>
 
 /*
  * The instruction encodings.
@@ -254,35 +243,30 @@ struct bpf_insn {
 };
 
 /*
- * Macros for insn array initializers.
- *
- * In case somebody's included <linux/filter.h>, or something else that
- * gives the kernel's definitions of BPF statements, get rid of its
- * definitions, so we can supply ours instead.  If some kernel's
- * definitions aren't *binary-compatible* with what BPF has had
- * since it first sprung from the brows of Van Jacobson and Steve
- * McCanne, that kernel should be fixed.
+ * Auxiliary data, for use when interpreting a filter intended for the
+ * Linux kernel when the kernel rejects the filter (requiring us to
+ * run it in userland).  It contains VLAN tag information.
  */
-#ifdef BPF_STMT
-#undef BPF_STMT
-#endif
+struct bpf_aux_data {
+	u_short vlan_tag_present;
+	u_short vlan_tag;
+};
+
+/*
+ * Macros for insn array initializers.
+ */
 #define BPF_STMT(code, k) { (u_short)(code), 0, 0, k }
-#ifdef BPF_JUMP
-#undef BPF_JUMP
-#endif
 #define BPF_JUMP(code, k, jt, jf) { (u_short)(code), jt, jf, k }
 
-PCAP_AVAILABLE_0_4
-PCAP_API u_int	bpf_filter(const struct bpf_insn *, const u_char *, u_int, u_int);
-
-PCAP_AVAILABLE_0_6
-PCAP_API int	bpf_validate(const struct bpf_insn *f, int len);
-
-PCAP_AVAILABLE_0_4
-PCAP_API char	*bpf_image(const struct bpf_insn *, int);
-
-PCAP_AVAILABLE_0_6
-PCAP_API void	bpf_dump(const struct bpf_program *, int);
+#if __STDC__ || defined(__cplusplus)
+PCAP_API int bpf_validate(const struct bpf_insn *, int);
+PCAP_API u_int bpf_filter(const struct bpf_insn *, const u_char *, u_int, u_int);
+extern u_int bpf_filter_with_aux_data(const struct bpf_insn *, const u_char *, u_int, u_int, const struct bpf_aux_data *);
+#else
+PCAP_API int bpf_validate();
+PCAP_API u_int bpf_filter();
+extern u_int bpf_filter_with_aux_data();
+#endif
 
 /*
  * Number of scratch memory words (for BPF_LD|BPF_MEM and BPF_ST).

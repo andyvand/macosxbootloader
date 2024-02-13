@@ -39,8 +39,6 @@
 #ifndef _BITSTRING_H_
 #define	_BITSTRING_H_
 
-#include <stdlib.h>
-
 typedef	unsigned char bitstr_t;
 
 /* internal macros */

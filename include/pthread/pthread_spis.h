@@ -63,17 +63,20 @@ __BEGIN_DECLS
 #if (!defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)) || defined(_DARWIN_C_SOURCE)
 /* firstfit */
 #define PTHREAD_FIRSTFIT_MUTEX_INITIALIZER {_PTHREAD_FIRSTFIT_MUTEX_SIG_init, {0}}
-
 /*
  * Mutex attributes
  */
-#define _PTHREAD_MUTEX_POLICY_NONE			PTHREAD_MUTEX_POLICY_NONE
-#define _PTHREAD_MUTEX_POLICY_FAIRSHARE		PTHREAD_MUTEX_POLICY_FAIRSHARE_NP
-#define _PTHREAD_MUTEX_POLICY_FIRSTFIT		PTHREAD_MUTEX_POLICY_FIRSTFIT_NP
+#define _PTHREAD_MUTEX_POLICY_NONE		0
+#define _PTHREAD_MUTEX_POLICY_FAIRSHARE		1
+#define _PTHREAD_MUTEX_POLICY_FIRSTFIT		2
+
+/* sets the mutex policy attributes */
+__API_AVAILABLE(macos(10.7), ios(5.0))
+int pthread_mutexattr_setpolicy_np(pthread_mutexattr_t *, int );
 
 #endif /* (!_POSIX_C_SOURCE && !_XOPEN_SOURCE) || _DARWIN_C_SOURCE */
 
-__API_AVAILABLE(macos(10.11)) __API_UNAVAILABLE(ios, tvos, watchos)
+__API_AVAILABLE(macos(10.11))
 void _pthread_mutex_enable_legacy_mode(void);
 
 /*
@@ -84,7 +87,7 @@ void _pthread_mutex_enable_legacy_mode(void);
  * It is not safe to call this function concurrently.
  */
 __API_AVAILABLE(macos(10.12), ios(10.0), tvos(10.0), watchos(3.0))
-#if !_PTHREAD_SWIFT_IMPORTER_NULLABILITY_COMPAT()
+#if !_PTHREAD_SWIFT_IMPORTER_NULLABILITY_COMPAT
 int pthread_create_from_mach_thread(
 		pthread_t _Nullable * _Nonnull __restrict,
 		const pthread_attr_t * _Nullable __restrict,

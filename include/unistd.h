@@ -121,7 +121,7 @@
 #define	_POSIX_SEMAPHORES		(-1)		/* [SEM] */
 #define	_POSIX_SHARED_MEMORY_OBJECTS	(-1)		/* [SHM] */
 #define	_POSIX_SHELL			200112L
-#define	_POSIX_SPAWN			200112L		/* [SPN] */
+#define	_POSIX_SPAWN			(-1)		/* [SPN] */
 #define	_POSIX_SPIN_LOCKS		(-1)		/* [SPI] */
 #define	_POSIX_SPORADIC_SERVER		(-1)		/* [SS] */
 #define	_POSIX_SYNCHRONIZED_IO		(-1)		/* [SIO] */
@@ -164,8 +164,7 @@
 #endif /* __DARWIN_C_LEVEL */
 
 #define	__ILP32_OFF32          (-1)
-#define	__ILP32_OFFBIG         (-1)
-
+#define	__ILP32_OFFBIG         (1)
 #define	__LP64_OFF64           (1)
 #define	__LPBIG_OFFBIG         (1)
 
@@ -522,7 +521,6 @@ __END_DECLS
  */
 
 #if __DARWIN_C_LEVEL >= 199506L
-#include <_ctermid.h>
                                /* These F_* are really XSI or Issue 6 */
 #define F_ULOCK         0      /* unlock locked section */
 #define	F_LOCK          1      /* lock a section for exclusive use */
@@ -542,6 +540,11 @@ int	 chroot(const char *) __POSIX_C_DEPRECATED(199506L);
 #endif
 
 char	*crypt(const char *, const char *);
+#ifndef __CTERMID_DEFINED
+/* Multiply defined in stdio.h and unistd.h by SUS */
+#define __CTERMID_DEFINED 1
+char    *ctermid(char *);
+#endif
 #if __DARWIN_UNIX03
 void	 encrypt(char *, int) __DARWIN_ALIAS(encrypt);
 #else /* !__DARWIN_UNIX03 */
@@ -599,10 +602,6 @@ void	 sync(void);
 int	 truncate(const char *, off_t);
 useconds_t	 ualarm(useconds_t, useconds_t);
 int	 usleep(useconds_t) __DARWIN_ALIAS_C(usleep);
-
-#if !defined(_POSIX_C_SOURCE)
-__deprecated_msg("Use posix_spawn or fork")
-#endif
 pid_t	 vfork(void) __WATCHOS_PROHIBITED __TVOS_PROHIBITED;
 /* End XSI */
 
@@ -652,7 +651,6 @@ int	 execvP(const char * __file, const char * __searchpath, char * const * __arg
 char	*fflagstostr(unsigned long);
 int	 getdomainname(char *, int);
 int	 getgrouplist(const char *, int, int *, int *);
-__END_DECLS
 #if defined(__has_include)
 #if __has_include(<gethostuuid_private.h>)
 #include <gethostuuid_private.h>
@@ -662,7 +660,6 @@ __END_DECLS
 #else
 #include <gethostuuid.h>
 #endif
-__BEGIN_DECLS
 mode_t	 getmode(const void *, mode_t);
 int	 getpeereid(int, uid_t *, gid_t *);
 int	 getsgroups_np(int *, uuid_t);

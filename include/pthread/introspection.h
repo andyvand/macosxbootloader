@@ -64,40 +64,18 @@ typedef void (*pthread_introspection_hook_t)(unsigned int event,
 
 /*!
  * @enum pthread_introspection_event_t
- * Events sent by libpthread about threads lifetimes.
  *
- * @const PTHREAD_INTROSPECTION_THREAD_CREATE
- * The specified pthread_t was created, and there will be a paired
- * PTHREAD_INTROSPECTION_THREAD_DESTROY event. However, there may not be
- * a START/TERMINATE pair of events for this pthread_t.
+ * @constant PTHREAD_INTROSPECTION_THREAD_CREATE
+ * pthread_t was created.
  *
- * Starting with macOS 10.14, and iOS 12, this event is always sent before
- * PTHREAD_INTROSPECTION_THREAD_START is sent. This event is however not sent
- * for the main thread.
+ * @constant PTHREAD_INTROSPECTION_THREAD_START
+ * Thread has started and stack was allocated.
  *
- * This event may not be sent from the context of the passed in pthread_t.
+ * @constant PTHREAD_INTROSPECTION_THREAD_TERMINATE
+ * Thread is about to be terminated and stack will be deallocated.
  *
- * Note that all properties of this thread may not be functional yet, and it is
- * not permitted to call functions on this thread past observing its address.
- *
- * @const PTHREAD_INTROSPECTION_THREAD_START
- * Thread has started and its stack was allocated. There will be a matching
- * PTHREAD_INTROSPECTION_THREAD_TERMINATE event.
- *
- * This event is always sent from the context of the passed in pthread_t.
- *
- * @const PTHREAD_INTROSPECTION_THREAD_TERMINATE
- * Thread is about to be terminated and stack will be deallocated. This always
- * matches a PTHREAD_INTROSPECTION_THREAD_START event.
- *
- * This event is always sent from the context of the passed in pthread_t.
- *
- * @const PTHREAD_INTROSPECTION_THREAD_DESTROY
- * pthread_t is about to be destroyed. This always matches
- * a PTHREAD_INTROSPECTION_THREAD_CREATE event, but there may not have been
- * a START/TERMINATE pair of events for this pthread_t.
- *
- * This event may not be sent from the context of the passed in pthread_t.
+ * @constant PTHREAD_INTROSPECTION_THREAD_DESTROY
+ * pthread_t is about to be destroyed.
  */
 enum {
 	PTHREAD_INTROSPECTION_THREAD_CREATE = 1,
@@ -127,50 +105,6 @@ __API_AVAILABLE(macos(10.9), ios(7.0))
 __attribute__((__nonnull__, __warn_unused_result__))
 extern pthread_introspection_hook_t
 pthread_introspection_hook_install(pthread_introspection_hook_t hook);
-
-/*!
- * @function pthread_introspection_setspecific_np
- *
- * @abstract
- * Performs the moral equivalent of pthread_setspecific() on a target thread
- * during the @c PTHREAD_INTROSPECTION_START callback.
- *
- * @description
- * This function is only valid to call during the delivery
- * of an @c PTHREAD_INTROSPECTION_THREAD_CREATE introspection hook.
- *
- * Using this function outside of this context is undefined.
- *
- * If the created thread is started, then the destructor for this key
- * will be called when the thread is terminated. However if the thread
- * is not started, it will not be called, and
- * pthread_introspection_getspecific_np() must be called manually during
- * the @c PTHREAD_INTROSPECTION_THREAD_DESTROY callback to perform manual
- * cleanup.
- */
-__API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), watchos(7.0))
-int
-pthread_introspection_setspecific_np(pthread_t thread,
-		pthread_key_t key, const void * _Nullable value);
-
-/*!
- * @function pthread_introspection_getspecific_np
- *
- * @abstract
- * Performs the moral equivalent of pthread_getspecific() on a target thread
- * during the @c PTHREAD_INTROSPECTION_THREAD_DESTROY callback.
- *
- * @description
- * This function is only valid to call during the delivery
- * of an @c PTHREAD_INTROSPECTION_THREAD_DESTROY introspection hook.
- *
- * If the thread was started then this will always return NULL even
- * when pthread_introspection_setspecific_np() was used.
- */
-__API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), watchos(7.0))
-void * _Nullable
-pthread_introspection_getspecific_np(pthread_t _Nonnull thread,
-		pthread_key_t key);
 
 __END_DECLS
 

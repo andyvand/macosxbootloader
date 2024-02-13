@@ -895,6 +895,150 @@ typedef struct _X86_DBGKD_CONTROL_SET
 	UINT32																	CurrentSymbolEnd;
 }DBGKD_CONTROL_SET;
 
+//
+// 128bits
+//
+typedef struct _M128A
+{
+    //
+    // low
+    //
+    UINT64                                                                    Low;
+
+    //
+    // high
+    //
+    INT64                                                                    High;
+}M128A;
+
+typedef struct _KEXCEPTION_FRAME
+{
+    //
+    // P1Home
+    //
+    UINT32                                                                    P1Home;
+
+    //
+    // P2Home
+    //
+    UINT32                                                                    P2Home;
+
+    //
+    // P3Home
+    //
+    UINT32                                                                    P3Home;
+
+    //
+    // P4Home
+    //
+    UINT32                                                                    P4Home;
+
+    //
+    // P5Home
+    //
+    UINT32                                                                    P5Home;
+
+    //
+    // P6Home
+    //
+    UINT32                                                                    InitialStack;
+
+    //
+    // Xmm6
+    //
+    M128A                                                                    Xmm6;
+
+    //
+    // Xmm7
+    //
+    M128A                                                                    Xmm7;
+
+    //
+    // Xmm8
+    //
+    M128A                                                                    Xmm8;
+
+    //
+    // Xmm9
+    //
+    M128A                                                                    Xmm9;
+
+    //
+    // Xmm10
+    //
+    M128A                                                                    Xmm10;
+
+    //
+    // Xmm11
+    //
+    M128A                                                                    Xmm11;
+
+    //
+    // Xmm12
+    //
+    M128A                                                                    Xmm12;
+
+    //
+    // Xmm13
+    //
+    M128A                                                                    Xmm13;
+
+    //
+    // Xmm14
+    //
+    M128A                                                                    Xmm14;
+
+    //
+    // Xmm15
+    //
+    M128A                                                                    Xmm15;
+
+    //
+    // trap frame
+    //
+    UINT32                                                                    TrapFrame;
+
+    //
+    // callback buffer
+    //
+    UINT32                                                                    CallbackBuffer;
+
+    //
+    // output buffer
+    //
+    UINT32                                                                    OutputBuffer;
+
+    //
+    // output length
+    //
+    UINT32                                                                    OutputLength;
+
+    //
+    // mxcsr
+    //
+    UINT32                                                                    MxCsr;
+
+    //
+    // rbp
+    //
+    UINT32                                                                    Ebp;
+
+    //
+    // rbx
+    //
+    UINT32                                                                    Ebx;
+
+    //
+    // rdi
+    //
+    UINT32                                                                    Edi;
+
+    //
+    // rsi
+    //
+    UINT32                                                                    Esi;
+}KEXCEPTION_FRAME;
+
 #ifdef __cplusplus
 extern "C"
 {

@@ -1,4 +1,0 @@
-module EndpointSecurity [system] {
-	umbrella header "EndpointSecurity.h"
-	export *
-}

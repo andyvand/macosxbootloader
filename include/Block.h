@@ -18,14 +18,8 @@
 #   endif
 #endif
 
-#if __has_include(<Availability.h>)
 #include <Availability.h>
-#else
-#define __OSX_AVAILABLE_STARTING(m,i)
-#endif
-
 #include <TargetConditionals.h>
-#include <sys/cdefs.h>
 
 #if __cplusplus
 extern "C" {
@@ -34,11 +28,11 @@ extern "C" {
 // Create a heap based copy of a Block or simply add a reference to an existing one.
 // This must be paired with Block_release to recover memory, even when running
 // under Objective-C Garbage Collection.
-BLOCK_EXPORT void *__single _Block_copy(const void *__single aBlock)
+BLOCK_EXPORT void *_Block_copy(const void *aBlock)
     __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_2);
 
 // Lose the reference, and if heap based and last reference, recover the memory
-BLOCK_EXPORT void _Block_release(const void *__single aBlock)
+BLOCK_EXPORT void _Block_release(const void *aBlock)
     __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_2);
 
 
@@ -63,8 +57,8 @@ BLOCK_EXPORT void * _NSConcreteStackBlock[32]
 
 // Type correct macros
 
-#define Block_copy(...) ((__typeof(__VA_ARGS__))_Block_copy(__unsafe_forge_single(const void *, (const void *)(__VA_ARGS__))))
-#define Block_release(...) _Block_release(__unsafe_forge_single(const void *, (const void *)(__VA_ARGS__)))
+#define Block_copy(...) ((__typeof(__VA_ARGS__))_Block_copy((const void *)(__VA_ARGS__)))
+#define Block_release(...) _Block_release((const void *)(__VA_ARGS__))
 
 
 #endif

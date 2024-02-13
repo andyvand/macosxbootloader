@@ -46,10 +46,6 @@
 #ifndef __ASSERTMACROS__
 #define __ASSERTMACROS__
 
-#ifdef DEBUG_ASSERT_CONFIG_INCLUDE
-    #include DEBUG_ASSERT_CONFIG_INCLUDE
-#endif
-
 /*
  *  Macro overview:
  *  
@@ -214,15 +210,10 @@
  *  If you do not define DEBUG_ASSERT_MESSAGE, a simple printf to stderr will be used.
  */
 #ifndef DEBUG_ASSERT_MESSAGE
-#include <TargetConditionals.h>
    #ifdef KERNEL
       #include <libkern/libkern.h>
       #define DEBUG_ASSERT_MESSAGE(name, assertion, label, message, file, line, value) \
                                   printf( "AssertMacros: %s, %s file: %s, line: %d, value: %ld\n", assertion, (message!=0) ? message : "", file, line, (long) (value));
-   #elif TARGET_OS_DRIVERKIT
-      #include <os/log.h>
-      #define DEBUG_ASSERT_MESSAGE(name, assertion, label, message, file, line, value) \
-                                  os_log(OS_LOG_DEFAULT, "AssertMacros: %s, %s file: %s, line: %d, value: %ld\n", assertion, (message!=0) ? message : "", file, line, (long) (value));
    #else
       #include <stdio.h>
       #define DEBUG_ASSERT_MESSAGE(name, assertion, label, message, file, line, value) \
@@ -1226,14 +1217,8 @@
  */
 #ifndef __Check_Compile_Time
     #ifdef __GNUC__ 
-     #if (__cplusplus >= 201103L)
-        #define __Check_Compile_Time( expr )    static_assert( expr , "__Check_Compile_Time")        
-     #elif (__STDC_VERSION__ >= 201112L)
-        #define __Check_Compile_Time( expr )    _Static_assert( expr , "__Check_Compile_Time")
-     #else
         #define __Check_Compile_Time( expr )    \
             extern int compile_time_assert_failed[ ( expr ) ? 1 : -1 ] __attribute__( ( unused ) )
-     #endif
     #else
         #define __Check_Compile_Time( expr )    \
             extern int compile_time_assert_failed[ ( expr ) ? 1 : -1 ]
@@ -1255,7 +1240,7 @@
  *  of the old macros into the new equivalents.  To do so, in Terminal go into the directory containing the
  *  sources to be converted and run this command.
  *
-    find -E . -regex '.*\.(c|cc|cp|cpp|m|mm|h)' -print0 |  xargs -0 tops -verbose \
+    find . -name '*.[c|cc|cp|cpp|m|mm|h]' -print0 |  xargs -0 tops -verbose \
       replace "check(<b args>)" with "__Check(<args>)" \
       replace "check_noerr(<b args>)" with "__Check_noErr(<args>)" \
       replace "check_noerr_string(<b args>)" with "__Check_noErr_String(<args>)" \

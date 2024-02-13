@@ -70,7 +70,6 @@
 #ifndef _RPC_AUTH_UNIX_H
 #define _RPC_AUTH_UNIX_H
 #include <sys/cdefs.h>
-#include <rpc/auth.h>
 
 /* The machine name is part of a credential; it may not exceed 255 bytes */
 #define MAX_MACHINE_NAME 255

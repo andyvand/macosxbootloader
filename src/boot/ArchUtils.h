@@ -12,6 +12,8 @@
 #pragma once
 #endif
 
+#include "MachO.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -483,7 +483,7 @@ typedef struct _CONTEXT
 			//
 			M128A															Xmm15;
 		}Xmm;
-	};
+	} XMM;
 
 	//
 	// vector registers. offset = 0x300
@@ -995,7 +995,7 @@ typedef struct _KTRAP_FRAME
 			//
 			UINT64															LastBranchMsr;
 		}BranchControl;
-	};
+	} Branch;
 
 	//
 	// ds

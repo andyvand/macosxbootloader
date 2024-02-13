@@ -63,9 +63,9 @@
  */
 
 subsystem
-#if	KERNEL_SERVER || KOBJECT_SERVER
-	KernelServer
-#endif	/* KERNEL_SERVER || KOBJECT_SERVER */
+#if	KERNEL_SERVER
+	  KernelServer
+#endif	/* KERNEL_SERVER */
 	  processor 3000;
 
 #include <mach/std_types.defs>
@@ -78,26 +78,15 @@ subsystem
 /*
  *	Start processor.
  */
-
-#ifdef KERNEL_SERVER
-routine	processor_start_from_user(
-		processor	: processor_t);
-#else
 routine	processor_start(
 		processor	: processor_t);
-#endif
 
 /*
  *	Exit processor -- may not be restartable.
  */
 
-#ifdef KERNEL_SERVER
-routine	processor_exit_from_user(
-		processor	: processor_t);
-#else
 routine	processor_exit(
 		processor	: processor_t);
-#endif
 
 /*
  *	Return information about this processor.

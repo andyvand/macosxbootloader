@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021 Apple, Inc. All rights reserved.
+ * Copyright (c) 2004-2010 Apple, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -36,7 +36,6 @@
 #include <stdint.h>
 
 __BEGIN_DECLS
-__ptrcheck_abi_assume_single()
 struct _copyfile_state;
 typedef struct _copyfile_state * copyfile_state_t;
 typedef uint32_t copyfile_flags_t;
@@ -53,7 +52,7 @@ typedef uint32_t copyfile_flags_t;
  *   int	negative for error
  */
 
-int copyfile(const char *__unsafe_indexable from, const char *__unsafe_indexable to, copyfile_state_t state, copyfile_flags_t flags);
+int copyfile(const char *from, const char *to, copyfile_state_t state, copyfile_flags_t flags);
 int fcopyfile(int from_fd, int to_fd, copyfile_state_t, copyfile_flags_t flags);
 
 int copyfile_state_free(copyfile_state_t);
@@ -63,7 +62,7 @@ copyfile_state_t copyfile_state_alloc(void);
 int copyfile_state_get(copyfile_state_t s, uint32_t flag, void * dst);
 int copyfile_state_set(copyfile_state_t s, uint32_t flag, const void * src);
 
-typedef int (*copyfile_callback_t)(int, int, copyfile_state_t, const char *__unsafe_indexable, const char *__unsafe_indexable, void *);
+typedef int (*copyfile_callback_t)(int, int, copyfile_state_t, const char *, const char *, void *);
 
 #define COPYFILE_STATE_SRC_FD		1
 #define COPYFILE_STATE_SRC_FILENAME	2
@@ -75,10 +74,6 @@ typedef int (*copyfile_callback_t)(int, int, copyfile_state_t, const char *__uns
 #define	COPYFILE_STATE_COPIED		8
 #define	COPYFILE_STATE_XATTRNAME	9
 #define	COPYFILE_STATE_WAS_CLONED	10
-#define	COPYFILE_STATE_SRC_BSIZE	11
-#define	COPYFILE_STATE_DST_BSIZE	12
-#define	COPYFILE_STATE_BSIZE		13
-#define	COPYFILE_STATE_FORBID_CROSS_MOUNT	14
 
 
 #define	COPYFILE_DISABLE_VAR	"COPYFILE_DISABLE"
@@ -110,10 +105,6 @@ typedef int (*copyfile_callback_t)(int, int, copyfile_state_t, const char *__uns
 #define COPYFILE_CLONE_FORCE	(1<<25)
 
 #define COPYFILE_RUN_IN_PLACE	(1<<26)
-
-#define COPYFILE_DATA_SPARSE	(1<<27)
-
-#define COPYFILE_PRESERVE_DST_TRACKED	(1<<28)
 
 #define COPYFILE_VERBOSE	(1<<30)
 

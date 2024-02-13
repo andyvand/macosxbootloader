@@ -5,7 +5,14 @@
 //	purpose:	console
 //********************************************************************
 
+#ifndef __CONSOLE_H__
+#define __CONSOLE_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif
+
+#include "BootArgs.h"
 
 //
 // initialize
@@ -71,3 +78,5 @@ VOID CsDrawPreview(HIBERNATE_PREVIEW* previewBuffer, UINT32 imageIndex, UINT8 pr
 // update progress
 //
 VOID CsUpdateProgress(UINT8 progressSaveUnder[HIBERNATE_PROGRESS_COUNT][HIBERNATE_PROGRESS_SAVE_UNDER_SIZE], UINTN prevBlob, UINTN currentBlob);
+
+#endif /* __CONSOLE_H__ */

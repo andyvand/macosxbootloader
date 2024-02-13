@@ -1,11 +1,16 @@
 /*
  * API definitions for CUPS.
  *
- * Copyright © 2007-2020 by Apple Inc.
- * Copyright © 1997-2007 by Easy Software Products.
+ * Copyright 2007-2017 by Apple Inc.
+ * Copyright 1997-2007 by Easy Software Products.
  *
- * Licensed under Apache License v2.0.  See the file "LICENSE" for more
- * information.
+ * These coded instructions, statements, and computer programs are the
+ * property of Apple Inc. and are protected by Federal copyright
+ * law.  Distribution and use rights are outlined in the file "LICENSE.txt"
+ * which should have been included with this file.  If this file is
+ * missing or damaged, see the license at "http://www.cups.org/".
+ *
+ * This file is subject to the Apple OS-Developed Software exception.
  */
 
 #ifndef _CUPS_CUPS_H_
@@ -16,12 +21,12 @@
  */
 
 #  include <sys/types.h>
-#  if defined(_WIN32) && !defined(__CUPS_SSIZE_T_DEFINED)
+#  if defined(WIN32) && !defined(__CUPS_SSIZE_T_DEFINED)
 #    define __CUPS_SSIZE_T_DEFINED
 #    include <stddef.h>
 /* Windows does not support the ssize_t type, so map it to long... */
 typedef long ssize_t;			/* @private@ */
-#  endif /* _WIN32 && !__CUPS_SSIZE_T_DEFINED */
+#  endif /* WIN32 && !__CUPS_SSIZE_T_DEFINED */
 
 #  include "file.h"
 #  include "ipp.h"
@@ -42,9 +47,9 @@ extern "C" {
  * Constants...
  */
 
-#  define CUPS_VERSION			2.0304
+#  define CUPS_VERSION			2.0204
 #  define CUPS_VERSION_MAJOR		2
-#  define CUPS_VERSION_MINOR		3
+#  define CUPS_VERSION_MINOR		2
 #  define CUPS_VERSION_PATCH		4
 
 #  define CUPS_BC_FD			3
@@ -190,6 +195,7 @@ extern "C" {
 #  define CUPS_SIDES_TWO_SIDED_PORTRAIT	"two-sided-long-edge"
 #  define CUPS_SIDES_TWO_SIDED_LANDSCAPE "two-sided-short-edge"
 
+
 /*
  * Types and structures...
  */
@@ -318,11 +324,6 @@ typedef const char *(*cups_password_cb2_t)(const char *prompt, http_t *http,
 					/* New password callback
 					 * @since CUPS 1.4/macOS 10.6@ */
 
-typedef char* (*bearer_token_callback_t)(http_t* http,
-                                            const char* resource,
-                                               void* user_data);
-
-
 typedef int (*cups_server_cert_cb_t)(http_t *http, void *tls,
 				     cups_array_t *certs, void *user_data);
 					/* Server credentials callback
@@ -333,55 +334,55 @@ typedef int (*cups_server_cert_cb_t)(http_t *http, void *tls,
  * Functions...
  */
 
-extern int		cupsCancelJob(const char *name, int job_id) _CUPS_PUBLIC;
+extern int		cupsCancelJob(const char *name, int job_id);
 extern ipp_t		*cupsDoFileRequest(http_t *http, ipp_t *request,
 			                   const char *resource,
-					   const char *filename) _CUPS_PUBLIC;
+					   const char *filename);
 extern ipp_t		*cupsDoRequest(http_t *http, ipp_t *request,
-			               const char *resource) _CUPS_PUBLIC;
+			               const char *resource);
 extern http_encryption_t cupsEncryption(void);
-extern void		cupsFreeJobs(int num_jobs, cups_job_t *jobs) _CUPS_PUBLIC;
+extern void		cupsFreeJobs(int num_jobs, cups_job_t *jobs);
 extern int		cupsGetClasses(char ***classes) _CUPS_DEPRECATED_MSG("Use cupsEnumDests instead.");
-extern const char	*cupsGetDefault(void) _CUPS_PUBLIC;
+extern const char	*cupsGetDefault(void);
 extern int		cupsGetJobs(cups_job_t **jobs, const char *name,
-			            int myjobs, int whichjobs) _CUPS_PUBLIC;
+			            int myjobs, int whichjobs);
 extern int		cupsGetPrinters(char ***printers) _CUPS_DEPRECATED_MSG("Use cupsEnumDests instead.");
-extern ipp_status_t	cupsLastError(void) _CUPS_PUBLIC;
+extern ipp_status_t	cupsLastError(void);
 extern int		cupsPrintFile(const char *name, const char *filename,
 			              const char *title, int num_options,
-				      cups_option_t *options) _CUPS_PUBLIC;
+				      cups_option_t *options);
 extern int		cupsPrintFiles(const char *name, int num_files,
 			               const char **files, const char *title,
-				       int num_options, cups_option_t *options) _CUPS_PUBLIC;
+				       int num_options, cups_option_t *options);
 extern char		*cupsTempFile(char *filename, int len) _CUPS_DEPRECATED_MSG("Use cupsTempFd or cupsTempFile2 instead.");
-extern int		cupsTempFd(char *filename, int len) _CUPS_PUBLIC;
+extern int		cupsTempFd(char *filename, int len);
 
 extern int		cupsAddDest(const char *name, const char *instance,
-			            int num_dests, cups_dest_t **dests) _CUPS_PUBLIC;
-extern void		cupsFreeDests(int num_dests, cups_dest_t *dests) _CUPS_PUBLIC;
+			            int num_dests, cups_dest_t **dests);
+extern void		cupsFreeDests(int num_dests, cups_dest_t *dests);
 extern cups_dest_t	*cupsGetDest(const char *name, const char *instance,
-			             int num_dests, cups_dest_t *dests) _CUPS_PUBLIC;
-extern int		cupsGetDests(cups_dest_t **dests) _CUPS_PUBLIC;
-extern void		cupsSetDests(int num_dests, cups_dest_t *dests) _CUPS_PUBLIC;
+			             int num_dests, cups_dest_t *dests);
+extern int		cupsGetDests(cups_dest_t **dests);
+extern void		cupsSetDests(int num_dests, cups_dest_t *dests);
 
 extern int		cupsAddOption(const char *name, const char *value,
-			              int num_options, cups_option_t **options) _CUPS_PUBLIC;
+			              int num_options, cups_option_t **options);
 extern void		cupsEncodeOptions(ipp_t *ipp, int num_options,
-					  cups_option_t *options) _CUPS_PUBLIC;
+					  cups_option_t *options);
 extern void		cupsFreeOptions(int num_options,
-			                cups_option_t *options) _CUPS_PUBLIC;
+			                cups_option_t *options);
 extern const char	*cupsGetOption(const char *name, int num_options,
-			               cups_option_t *options) _CUPS_PUBLIC;
+			               cups_option_t *options);
 extern int		cupsParseOptions(const char *arg, int num_options,
-			                 cups_option_t **options) _CUPS_PUBLIC;
+			                 cups_option_t **options);
 
-extern const char	*cupsGetPassword(const char *prompt) _CUPS_PUBLIC;
-extern const char	*cupsServer(void) _CUPS_PUBLIC;
-extern void		cupsSetEncryption(http_encryption_t e) _CUPS_PUBLIC;
-extern void		cupsSetPasswordCB(cups_password_cb_t cb) _CUPS_PUBLIC;
-extern void		cupsSetServer(const char *server) _CUPS_PUBLIC;
-extern void		cupsSetUser(const char *user) _CUPS_PUBLIC;
-extern const char	*cupsUser(void) _CUPS_PUBLIC;
+extern const char	*cupsGetPassword(const char *prompt);
+extern const char	*cupsServer(void);
+extern void		cupsSetEncryption(http_encryption_t e);
+extern void		cupsSetPasswordCB(cups_password_cb_t cb);
+extern void		cupsSetServer(const char *server);
+extern void		cupsSetUser(const char *user);
+extern const char	*cupsUser(void);
 
 /**** New in CUPS 1.1.20 ****/
 extern int		cupsDoAuthentication(http_t *http, const char *method,
@@ -389,7 +390,7 @@ extern int		cupsDoAuthentication(http_t *http, const char *method,
 			                     _CUPS_API_1_1_20;
 extern http_status_t	cupsGetFile(http_t *http, const char *resource,
 			            const char *filename) _CUPS_API_1_1_20;
-extern http_status_t	cupsGetFd(http_t *http, const char *resource, int fd) _CUPS_API_1_1_20;
+extern http_status_t	cupsGetFd(http_t *http, const char *resource, int fd);
 extern http_status_t	cupsPutFile(http_t *http, const char *resource,
 			            const char *filename) _CUPS_API_1_1_20;
 extern http_status_t	cupsPutFd(http_t *http, const char *resource, int fd)
@@ -415,6 +416,10 @@ extern int		cupsSetDests2(http_t *http, int num_dests,
 			              cups_dest_t *dests) _CUPS_API_1_1_21;
 
 /**** New in CUPS 1.2/macOS 10.5 ****/
+extern ssize_t		cupsBackChannelRead(char *buffer, size_t bytes,
+			                    double timeout) _CUPS_API_1_2;
+extern ssize_t		cupsBackChannelWrite(const char *buffer, size_t bytes,
+			                     double timeout) _CUPS_API_1_2;
 extern void		cupsEncodeOptions2(ipp_t *ipp, int num_options,
 					   cups_option_t *options,
 					   ipp_tag_t group_tag) _CUPS_API_1_2;
@@ -600,15 +605,6 @@ extern ssize_t		cupsHashData(const char *algorithm, const void *data, size_t dat
 /* New in CUPS 2.2.4 */
 extern int		cupsAddIntegerOption(const char *name, int value, int num_options, cups_option_t **options) _CUPS_API_2_2_4;
 extern int		cupsGetIntegerOption(const char *name, int num_options, cups_option_t *options) _CUPS_API_2_2_4;
-
-/* New in CUPS 2.2.7 */
-extern const char	*cupsHashString(const unsigned char *hash, size_t hashsize, char *buffer, size_t bufsize) _CUPS_API_2_2_7;
-
-/* New in CUPS 2.3 */
-extern int		cupsAddDestMediaOptions(http_t *http, cups_dest_t *dest, cups_dinfo_t *dinfo, unsigned flags, cups_size_t *size, int num_options, cups_option_t **options) _CUPS_API_2_3;
-extern ipp_attribute_t	*cupsEncodeOption(ipp_t *ipp, ipp_tag_t group_tag, const char *name, const char *value) _CUPS_API_2_3;
-
-extern void             cupsSetBearerTokenCB(http_t *http, bearer_token_callback_t cb, void* user_data) _CUPS_API_2_3;
 
 #  ifdef __cplusplus
 }

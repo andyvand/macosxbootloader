@@ -128,6 +128,7 @@ extern int __mb_cur_max;
 #include <malloc/_malloc.h>
 
 __BEGIN_DECLS
+#if 0
 void	 abort(void) __cold __dead2;
 int	 abs(int) __pure2;
 int	 atexit(void (* _Nonnull)(void));
@@ -374,6 +375,7 @@ __BEGIN_DECLS
 #pragma GCC poison mbstowcs mbtowc wcstombs wctomb
 #endif
 __END_DECLS
+#endif
 
 #ifdef _USE_EXTENDED_LOCALES_
 #include <xlocale/_stdlib.h>

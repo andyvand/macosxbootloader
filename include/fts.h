@@ -65,9 +65,6 @@
 
 #include <Availability.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wstrict-prototypes"
-
 typedef struct {
 	struct _ftsent *fts_cur;	/* current node */
 	struct _ftsent *fts_child;	/* linked list of children */
@@ -104,7 +101,6 @@ typedef struct {
 
 #define	FTS_NAMEONLY	0x100		/* (private) child names only */
 #define	FTS_STOP	0x200		/* (private) unrecoverable error */
-#define	FTS_THREAD_FCHDIR	0x400	/* (private) use pthread_fchdir_np */
 #ifdef __BLOCKS__
 #define	FTS_BLOCK_COMPAR 0x80000000	/* fts_compar is a block */
 #endif /* __BLOCKS__ */
@@ -120,7 +116,7 @@ typedef struct _ftsent {
 	char *fts_accpath;		/* access path */
 	char *fts_path;			/* root path */
 	int fts_errno;			/* errno for this node */
-	int fts_symfd;			/* fd for symlink or chdir */
+	int fts_symfd;			/* fd for symlink */
 	unsigned short fts_pathlen;	/* strlen(fts_path) */
 	unsigned short fts_namelen;	/* strlen(fts_name) */
 
@@ -152,7 +148,6 @@ typedef struct _ftsent {
 #define	FTS_DONTCHDIR	 0x01		/* don't chdir .. to the parent */
 #define	FTS_SYMFOLLOW	 0x02		/* followed a symlink to get here */
 #define	FTS_ISW		 0x04		/* this is a whiteout object */
-#define	FTS_CHDIRFD 0x08 /* indicates the fts_symfd field was set for chdir */
 	unsigned short fts_flags;	/* private flags for FTSENT structure */
 
 #define	FTS_AGAIN	 1		/* read node again */
@@ -174,19 +169,11 @@ int	 fts_close(FTS *) __DARWIN_INODE64(fts_close);
 FTS	*fts_open(char * const *, int,
 	    int (*)(const FTSENT **, const FTSENT **)) __DARWIN_INODE64(fts_open);
 #ifdef __BLOCKS__
-#if __has_attribute(noescape)
-#define __fts_noescape __attribute__((__noescape__))
-#else
-#define __fts_noescape
-#endif
 FTS	*fts_open_b(char * const *, int,
-	    int (^)(const FTSENT **, const FTSENT **) __fts_noescape)
-	    __DARWIN_INODE64(fts_open_b) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_2);
+	    int (^)(const FTSENT **, const FTSENT **)) __DARWIN_INODE64(fts_open_b) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_2);
 #endif /* __BLOCKS__ */
 FTSENT	*fts_read(FTS *) __DARWIN_INODE64(fts_read);
 int	 fts_set(FTS *, FTSENT *, int) __DARWIN_INODE64(fts_set);
 __END_DECLS
 
-#pragma clang diagnostic pop
 #endif /* !_FTS_H_ */
-

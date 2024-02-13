@@ -29,7 +29,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <os/availability.h>
 
 #if TARGET_OS_WIN32
 
@@ -118,7 +117,7 @@ typedef size_t cache_cost_t;
  * 
  *@result Returns 0 for success, non-zero for failure.
  */
-CACHE_PUBLIC_API int cache_create(const char *name, const cache_attributes_t *attrs, cache_t **cache_out) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+CACHE_PUBLIC_API int cache_create(const char *name, const cache_attributes_t *attrs, cache_t **cache_out);
 
 /*!
  * @function cache_set_and_retain
@@ -154,7 +153,7 @@ CACHE_PUBLIC_API int cache_create(const char *name, const cache_attributes_t *at
  * memory pressure to select which cache values to evict.  Zero is a 
  * valid cost. 
  */
-CACHE_PUBLIC_API int cache_set_and_retain(cache_t *cache, void *key, void *value, cache_cost_t cost) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+CACHE_PUBLIC_API int cache_set_and_retain(cache_t *cache, void *key, void *value, cache_cost_t cost);
 
 /*!
  * @function cache_get_and_retain
@@ -177,7 +176,7 @@ CACHE_PUBLIC_API int cache_set_and_retain(cache_t *cache, void *key, void *value
  * Fetches value for key, retains value, and stores value in value_out.
  * Caller should release value using cache_release_value(). 
  */
-CACHE_PUBLIC_API int cache_get_and_retain(cache_t *cache, void *key, void **value_out) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+CACHE_PUBLIC_API int cache_get_and_retain(cache_t *cache, void *key, void **value_out);
 
 /*!
  * @function cache_release_value
@@ -197,7 +196,7 @@ CACHE_PUBLIC_API int cache_get_and_retain(cache_t *cache, void *key, void **valu
  * Releases a previously retained cache value. When the reference count 
  * reaches zero the cache may make the value purgeable or destroy it. 
  */
-CACHE_PUBLIC_API int cache_release_value(cache_t *cache, void *value) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+CACHE_PUBLIC_API int cache_release_value(cache_t *cache, void *value);
 
 /*!
  * @function cache_remove
@@ -218,7 +217,7 @@ CACHE_PUBLIC_API int cache_release_value(cache_t *cache, void *value) API_AVAILA
  * will fail.  Invokes the key release callback immediately.  Invokes the 
  * value release callback once value's retain count is zero. 
  */
-CACHE_PUBLIC_API int cache_remove(cache_t *cache, void *key) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+CACHE_PUBLIC_API int cache_remove(cache_t *cache, void *key);
 
 /*!
  *@function cache_remove_all
@@ -231,7 +230,7 @@ CACHE_PUBLIC_API int cache_remove(cache_t *cache, void *key) API_AVAILABLE(macos
  *
  * @result Returns 0 for success, non-zero for failure.
  */
-CACHE_PUBLIC_API int cache_remove_all(cache_t *cache) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+CACHE_PUBLIC_API int cache_remove_all(cache_t *cache);
 
 /*! 
  * @function cache_destroy
@@ -250,7 +249,7 @@ CACHE_PUBLIC_API int cache_remove_all(cache_t *cache) API_AVAILABLE(macos(10.6),
  * the cache object is freed.  If retained cache values exist then 
  * returns EAGAIN. 
  */
-CACHE_PUBLIC_API int cache_destroy(cache_t *cache) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+CACHE_PUBLIC_API int cache_destroy(cache_t *cache);
 
 /*!
  * @group Cache Callbacks
@@ -421,7 +420,7 @@ struct CACHE_PUBLIC_API cache_attributes_s {
     cache_key_hash_cb_t key_hash_cb;                               
     cache_key_is_equal_cb_t key_is_equal_cb;                        
     
-    cache_key_retain_cb_t key_retain_cb;
+    cache_key_retain_cb_t  key_retain_cb;
     cache_release_cb_t key_release_cb;
     cache_release_cb_t value_release_cb;                           
     

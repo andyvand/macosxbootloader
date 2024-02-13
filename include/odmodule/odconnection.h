@@ -213,6 +213,7 @@ OS_EXPORT OS_NOTHROW OS_WARN_RESULT CF_RETURNS_RETAINED
 CFStringRef
 odconnection_copy_destination(od_connection_t connection);
 
+
 /*!
  * @function odconnection_has_credentials
  *

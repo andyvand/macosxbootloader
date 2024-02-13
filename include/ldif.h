@@ -26,9 +26,7 @@
 #ifndef _LDIF_H
 #define _LDIF_H
 
-#include <lber_types.h>
 #include <ldap_cdefs.h>
-#include <stdio.h>
 
 LDAP_BEGIN_DECL
 

@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2018 Apple Inc. All rights reserved.
- */
 /*	$FreeBSD: src/include/ifaddrs.h,v 1.3.32.1.4.1 2010/06/14 02:09:06 kensmith Exp $	*/
 
 /*
@@ -31,7 +28,7 @@
 #ifndef	_IFADDRS_H_
 #define	_IFADDRS_H_
 
-#include <os/availability.h>
+#include <Availability.h>
 
 struct ifaddrs {
 	struct ifaddrs  *ifa_next;
@@ -63,8 +60,8 @@ struct ifmaddrs {
 __BEGIN_DECLS
 extern int getifaddrs(struct ifaddrs **);
 extern void freeifaddrs(struct ifaddrs *);
-extern int getifmaddrs(struct ifmaddrs **) API_AVAILABLE(macos(10.7), ios(4.3), watchos(4.0), tvos(11.0));
-extern void freeifmaddrs(struct ifmaddrs *) API_AVAILABLE(macos(10.7), ios(4.3), watchos(4.0), tvos(11.0));
+extern int getifmaddrs(struct ifmaddrs **) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
+extern void freeifmaddrs(struct ifmaddrs *) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
 __END_DECLS
 
 #endif

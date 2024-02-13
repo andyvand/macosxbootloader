@@ -20,7 +20,7 @@ VOID MmFinalize();
 //
 // translate address
 //
-extern "C" BOOLEAN BOOTAPI MmTranslateVirtualAddress(VOID* virtualAddress, UINT64* physicalAddress);
+BOOLEAN BOOTAPI MmTranslateVirtualAddress(VOID* virtualAddress, UINT64* physicalAddress);
 
 //
 // allocate pool
@@ -35,12 +35,12 @@ VOID MmFreePool(VOID* freeBuffer);
 //
 // allocate page
 //
-extern "C" VOID* MmAllocatePages(EFI_ALLOCATE_TYPE allocateType, EFI_MEMORY_TYPE memoryType, UINTN pagesCount, UINT64* physicalAddress);
+VOID* MmAllocatePages(EFI_ALLOCATE_TYPE allocateType, EFI_MEMORY_TYPE memoryType, UINTN pagesCount, UINT64* physicalAddress);
 
 //
 // free pages
 //
-extern "C" VOID MmFreePages(UINT64 phyAddress);
+VOID MmFreePages(UINT64 phyAddress);
 
 //
 // allocate kernel memory

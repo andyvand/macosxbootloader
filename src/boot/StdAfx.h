@@ -5,7 +5,12 @@
 //	purpose:	stdafx
 //********************************************************************
 
+#ifndef __STDAFX_H__
+#define __STDAFX_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif
 
 #define DEBUG_LDRP_CALL_CSPRINTF											0
 #define DEBUG_NVRAM_CALL_CSPRINTF											0
@@ -50,8 +55,6 @@
 	#define DEBUG_BOARD_ID_CSPRINTF											0
 #endif
 
-
-
 #define NOTHING
 #define BOOTAPI																__cdecl
 #define CHAR8_CONST_STRING(S)												(CHAR8 CONST*)(S)
@@ -62,7 +65,7 @@
 #define ARRAYSIZE(A)														(sizeof((A)) / sizeof((A)[0]))
 #define ArchConvertAddressToPointer(P,T)									((T)((UINTN)(P)))
 #define ArchConvertPointerToAddress(A)										((UINTN)(A))
-#define ArchNeedEFI64Mode()													(MmGetKernelVirtualStart() > static_cast<UINT32>(-1) || sizeof(UINTN) == sizeof(UINT64))
+#define ArchNeedEFI64Mode()													(MmGetKernelVirtualStart() > (UINT32)(-1) || sizeof(UINTN) == sizeof(UINT64))
 #define LdrStaticVirtualToPhysical(V)										((V) & (1 * 1024 * 1024 * 1024 - 1))
 #define Add2Ptr(P, O, T)													ArchConvertAddressToPointer(ArchConvertPointerToAddress(P) + (O), T)
 #define PAGE_ALIGN(A)														((A) & ~EFI_PAGE_MASK)
@@ -142,3 +145,5 @@
 #include "MemoryMap.h"
 #include "PanicDialog.h"
 #include "FileVault.h"
+
+#endif /* __STDAFX_H__ */

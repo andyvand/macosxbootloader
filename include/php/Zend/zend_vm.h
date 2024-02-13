@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2014 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2017 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,8 +21,16 @@
 #ifndef ZEND_VM_H
 #define ZEND_VM_H
 
+BEGIN_EXTERN_C()
+
 ZEND_API void zend_vm_use_old_executor(void);
 ZEND_API void zend_vm_set_opcode_handler(zend_op* opcode);
+ZEND_API void zend_vm_set_opcode_handler_ex(zend_op* opcode, uint32_t op1_info, uint32_t op2_info, uint32_t res_info);
+ZEND_API void zend_serialize_opcode_handler(zend_op *op);
+ZEND_API void zend_deserialize_opcode_handler(zend_op *op);
+ZEND_API int zend_vm_call_opcode_handler(zend_execute_data *ex);
+
+END_EXTERN_C()
 
 #define ZEND_VM_SET_OPCODE_HANDLER(opline) zend_vm_set_opcode_handler(opline)
 

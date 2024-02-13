@@ -25,10 +25,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#ifndef __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_ATTR
-#define __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_COUNTEDBY_ATTR(C) __unsafe_indexable
-#endif
-	extern int mig_strncpy_zerofill(char * dest, const char * src, int len) __attribute__((weak_import));
+	extern int mig_strncpy_zerofill(char *dest, const char *src, int len) __attribute__((weak_import));
 #ifdef __cplusplus
 }
 #endif
@@ -44,7 +41,7 @@ extern "C" {
 #define FUNCTION_PTR_T
 typedef void (*function_ptr_t)(mach_port_t, char *, mach_msg_type_number_t);
 typedef struct {
-        char            * name;
+        char            *name;
         function_ptr_t  function;
 } function_table_entry;
 typedef function_table_entry   *function_table_t;
@@ -55,7 +52,6 @@ typedef function_table_entry   *function_table_t;
 #define	mach_voucher_MSG_COUNT	5
 #endif	/* mach_voucher_MSG_COUNT */
 
-#include <Availability.h>
 #include <mach/std_types.h>
 #include <mach/mig.h>
 #include <mach/mig.h>
@@ -135,7 +131,7 @@ extern
 #endif	/* mig_external */
 kern_return_t mach_voucher_debug_info
 (
-	ipc_space_read_t task,
+	ipc_space_t task,
 	mach_port_name_t voucher_name,
 	mach_voucher_attr_raw_recipe_array_t recipes,
 	mach_msg_type_number_t *recipesCnt
@@ -160,7 +156,7 @@ __END_DECLS
 #define __Request__mach_voucher_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -169,11 +165,11 @@ __END_DECLS
 		mach_msg_type_number_t contentCnt;
 	} __Request__mach_voucher_extract_attr_content_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -182,11 +178,11 @@ __END_DECLS
 		mach_msg_type_number_t recipeCnt;
 	} __Request__mach_voucher_extract_attr_recipe_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -194,11 +190,11 @@ __END_DECLS
 		mach_msg_type_number_t recipesCnt;
 	} __Request__mach_voucher_extract_all_attr_recipes_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -210,11 +206,11 @@ __END_DECLS
 		mach_msg_type_number_t out_contentCnt;
 	} __Request__mach_voucher_attr_command_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -223,7 +219,7 @@ __END_DECLS
 		mach_msg_type_number_t recipesCnt;
 	} __Request__mach_voucher_debug_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 #endif /* !__Request__mach_voucher_subsystem__defined */
 
@@ -245,7 +241,7 @@ union __RequestUnion__mach_voucher_subsystem {
 #define __Reply__mach_voucher_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -255,11 +251,11 @@ union __RequestUnion__mach_voucher_subsystem {
 		uint8_t content[4096];
 	} __Reply__mach_voucher_extract_attr_content_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -269,11 +265,11 @@ union __RequestUnion__mach_voucher_subsystem {
 		uint8_t recipe[4096];
 	} __Reply__mach_voucher_extract_attr_recipe_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -283,11 +279,11 @@ union __RequestUnion__mach_voucher_subsystem {
 		uint8_t recipes[5120];
 	} __Reply__mach_voucher_extract_all_attr_recipes_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -297,11 +293,11 @@ union __RequestUnion__mach_voucher_subsystem {
 		uint8_t out_content[4096];
 	} __Reply__mach_voucher_attr_command_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -311,7 +307,7 @@ union __RequestUnion__mach_voucher_subsystem {
 		uint8_t recipes[5120];
 	} __Reply__mach_voucher_debug_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 #endif /* !__Reply__mach_voucher_subsystem__defined */
 

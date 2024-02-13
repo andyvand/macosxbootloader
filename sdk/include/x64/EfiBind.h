@@ -93,7 +93,7 @@ Abstract:
   // No ANSI C 2000 stdint.h integer width declarations, so define equivalents
   //
  
-  #if _MSC_EXTENSIONS 
+  #if _MSC_EXTENSIONS
     //
     // use Microsoft* C complier dependent interger width types
     //
@@ -104,7 +104,11 @@ Abstract:
     typedef unsigned short      uint16_t;
     typedef short               int16_t;
     typedef unsigned char       uint8_t;
-    typedef char                int8_t;
+    #ifdef __GNUC__
+      typedef __signed char       int8_t;
+    #else
+      typedef char                int8_t;
+    #endif
   #else
 
     //
@@ -118,13 +122,17 @@ Abstract:
     typedef unsigned short      uint16_t;
     typedef short               int16_t;
     typedef unsigned char       uint8_t;
-    typedef char                int8_t;
+    #ifdef __GNUC__
+      typedef __signed char       int8_t;
+    #else
+      typedef char                int8_t;
+    #endif
   #endif
 #else
   //
   // Use ANSI C 2000 stdint.h integer width declarations
   //
-  #include "stdint.h"
+  #include <stdint.h>
 #endif
 
 //

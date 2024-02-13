@@ -24,11 +24,6 @@
 #ifndef _XLOCALE__INTTYPES_H_
 #define _XLOCALE__INTTYPES_H_
 
-#include <sys/cdefs.h>
-#include <stdint.h>
-#include <stddef.h> /* wchar_t */
-#include <_xlocale.h>
-
 __BEGIN_DECLS
 intmax_t  strtoimax_l(const char * __restrict nptr, char ** __restrict endptr,
 		int base, locale_t);

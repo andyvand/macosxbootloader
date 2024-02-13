@@ -5,7 +5,14 @@
 //	purpose:	mach-o
 //********************************************************************
 
+#ifndef __MACHO_H__
+#define __MACHO_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif
+
+#include "FileIo.h"
 
 //
 // loaded mach-o info
@@ -82,3 +89,5 @@ EFI_STATUS MachLoadMachO(IO_FILE_HANDLE* fileHandle, MACH_O_LOADED_INFO* loadedI
 // get symbol virtual address by name
 //
 UINT64 MachFindSymbolVirtualAddressByName(MACH_O_LOADED_INFO* loadedInfo, CHAR8 CONST* symbolName);
+
+#endif /* __MACHO_H__ */

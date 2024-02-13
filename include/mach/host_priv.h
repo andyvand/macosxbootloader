@@ -25,10 +25,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#ifndef __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_ATTR
-#define __MIG_STRNCPY_ZEROFILL_FORWARD_TYPE_DECLS_CSTRING_COUNTEDBY_ATTR(C) __unsafe_indexable
-#endif
-	extern int mig_strncpy_zerofill(char * dest, const char * src, int len) __attribute__((weak_import));
+	extern int mig_strncpy_zerofill(char *dest, const char *src, int len) __attribute__((weak_import));
 #ifdef __cplusplus
 }
 #endif
@@ -44,7 +41,7 @@ extern "C" {
 #define FUNCTION_PTR_T
 typedef void (*function_ptr_t)(mach_port_t, char *, mach_msg_type_number_t);
 typedef struct {
-        char            * name;
+        char            *name;
         function_ptr_t  function;
 } function_table_entry;
 typedef function_table_entry   *function_table_t;
@@ -55,7 +52,6 @@ typedef function_table_entry   *function_table_t;
 #define	host_priv_MSG_COUNT	26
 #endif	/* host_priv_MSG_COUNT */
 
-#include <Availability.h>
 #include <mach/std_types.h>
 #include <mach/mig.h>
 #include <mach/mig.h>
@@ -413,17 +409,17 @@ __END_DECLS
 #define __Request__host_priv_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 	} __Request__host_get_boot_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -431,11 +427,11 @@ __END_DECLS
 		int options;
 	} __Request__host_reboot_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -444,11 +440,11 @@ __END_DECLS
 		mach_msg_type_number_t host_info_outCnt;
 	} __Request__host_priv_statistics_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -460,11 +456,11 @@ __END_DECLS
 		memory_object_cluster_size_t cluster_size;
 	} __Request__host_default_memory_manager_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -478,11 +474,11 @@ __END_DECLS
 		vm_prot_t desired_access;
 	} __Request__vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -494,11 +490,11 @@ __END_DECLS
 		boolean_t wired;
 	} __Request__thread_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -512,21 +508,21 @@ __END_DECLS
 		int flags;
 	} __Request__vm_allocate_cpm_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 	} __Request__host_processors_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -534,11 +530,11 @@ __END_DECLS
 		clock_id_t clock_id;
 	} __Request__host_get_clock_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -546,11 +542,11 @@ __END_DECLS
 		vm_address_t info;
 	} __Request__kmod_create_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -558,11 +554,11 @@ __END_DECLS
 		kmod_t module;
 	} __Request__kmod_destroy_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -576,11 +572,11 @@ __END_DECLS
 		mach_msg_type_number_t dataCnt;
 	} __Request__kmod_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -589,11 +585,11 @@ __END_DECLS
 		int which;
 	} __Request__host_get_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -605,11 +601,11 @@ __END_DECLS
 		int which;
 	} __Request__host_set_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -623,11 +619,11 @@ __END_DECLS
 		thread_state_flavor_t new_flavor;
 	} __Request__host_set_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -635,11 +631,11 @@ __END_DECLS
 		exception_mask_t exception_mask;
 	} __Request__host_get_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -653,11 +649,11 @@ __END_DECLS
 		thread_state_flavor_t new_flavor;
 	} __Request__host_swap_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -671,21 +667,21 @@ __END_DECLS
 		vm_prot_t desired_access;
 	} __Request__mach_vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 	} __Request__host_processor_sets_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -695,11 +691,11 @@ __END_DECLS
 		/* end of the kernel processed data */
 	} __Request__host_processor_set_priv_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -709,21 +705,21 @@ __END_DECLS
 		/* end of the kernel processed data */
 	} __Request__host_set_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
 	} __Request__host_get_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -736,7 +732,7 @@ __END_DECLS
 		mach_msg_type_number_t request_dataCnt;
 	} __Request__kext_request_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 #endif /* !__Request__host_priv_subsystem__defined */
 
@@ -776,7 +772,7 @@ union __RequestUnion__host_priv_subsystem {
 #define __Reply__host_priv_subsystem__defined
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -787,11 +783,11 @@ union __RequestUnion__host_priv_subsystem {
 		char boot_info[4096];
 	} __Reply__host_get_boot_info_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -799,11 +795,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__host_reboot_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -813,11 +809,11 @@ union __RequestUnion__host_priv_subsystem {
 		integer_t host_info_out[68];
 	} __Reply__host_priv_statistics_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -827,11 +823,11 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 	} __Reply__host_default_memory_manager_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -839,11 +835,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -851,11 +847,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__thread_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -864,11 +860,11 @@ union __RequestUnion__host_priv_subsystem {
 		vm_address_t address;
 	} __Reply__vm_allocate_cpm_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -880,11 +876,11 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_type_number_t out_processor_listCnt;
 	} __Reply__host_processors_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -894,11 +890,11 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 	} __Reply__host_get_clock_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -907,11 +903,11 @@ union __RequestUnion__host_priv_subsystem {
 		kmod_t module;
 	} __Reply__kmod_create_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -919,11 +915,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__kmod_destroy_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -935,11 +931,11 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_type_number_t dataCnt;
 	} __Reply__kmod_control_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -949,11 +945,11 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 	} __Reply__host_get_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -961,11 +957,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__host_set_special_port_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -973,11 +969,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__host_set_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -992,11 +988,11 @@ union __RequestUnion__host_priv_subsystem {
 		thread_state_flavor_t old_flavors[32];
 	} __Reply__host_get_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1011,11 +1007,11 @@ union __RequestUnion__host_priv_subsystem {
 		thread_state_flavor_t old_flavors[32];
 	} __Reply__host_swap_exception_ports_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1023,11 +1019,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__mach_vm_wire_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1039,11 +1035,11 @@ union __RequestUnion__host_priv_subsystem {
 		mach_msg_type_number_t processor_setsCnt;
 	} __Reply__host_processor_sets_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1053,11 +1049,11 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 	} __Reply__host_processor_set_priv_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1065,11 +1061,11 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t RetCode;
 	} __Reply__host_set_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1079,11 +1075,11 @@ union __RequestUnion__host_priv_subsystem {
 		/* end of the kernel processed data */
 	} __Reply__host_get_UNDServer_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 
 #ifdef  __MigPackStructs
-#pragma pack(push, 4)
+#pragma pack(4)
 #endif
 	typedef struct {
 		mach_msg_header_t Head;
@@ -1098,7 +1094,7 @@ union __RequestUnion__host_priv_subsystem {
 		kern_return_t op_result;
 	} __Reply__kext_request_t __attribute__((unused));
 #ifdef  __MigPackStructs
-#pragma pack(pop)
+#pragma pack()
 #endif
 #endif /* !__Reply__host_priv_subsystem__defined */
 

@@ -1,5 +1,5 @@
-#ifndef __TIDY_PLATFORM_H__
-#define __TIDY_PLATFORM_H__
+#ifndef __PLATFORM_H__
+#define __PLATFORM_H__
 
 /* platform.h -- Platform specifics
 
@@ -359,10 +359,6 @@ extern "C" {
 
 #endif
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
 #include <ctype.h>
 #include <stdio.h>
 #include <setjmp.h>  /* for longjmp on error exit */
@@ -381,10 +377,6 @@ extern "C" {
 
 #ifdef NEEDS_UNISTD_H
 #include <unistd.h>  /* needed for unlink on some Unix systems */
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 /* This can be set at compile time.  Usually Windows,
@@ -451,10 +443,6 @@ extern "C" {
 #endif
 #endif
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
 #if defined(MAC_OS_X) || (!defined(MAC_OS_CLASSIC) && !defined(__MSL__))
 #include <sys/types.h> 
 #include <sys/stat.h>
@@ -467,10 +455,6 @@ extern "C" {
 #else
 #include <utime.h>
 #endif /* HASFUTIME */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
   MS Windows needs _ prefix for Unix file functions.
@@ -537,13 +521,7 @@ extern "C" {
 /* hack for gnu sys/types.h file which defines uint and ulong */
 
 #if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(OSF_OS) || defined(IRIX_OS) || defined(AIX_OS)
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 #include <sys/types.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 #endif
 #if !defined(HPUX_OS) && !defined(CYGWIN_OS) && !defined(MAC_OS_X) && !defined(BE_OS) && !defined(SOLARIS_OS) && !defined(BSD_BASED_OS) && !defined(OSF_OS) && !defined(IRIX_OS) && !defined(AIX_OS) && !defined(LINUX_OS)
 # undef uint
@@ -628,6 +606,16 @@ typedef enum
 extern void* null;
 */
 
+#if defined(DMALLOC)
+#include "dmalloc.h"
+#endif
+
+void *MemAlloc(size_t size);
+void *MemRealloc(void *mem, size_t newsize);
+void MemFree(void *mem);
+void ClearMemory(void *, size_t size);
+void FatalError( ctmbstr msg );
+
 /* Opaque data structure.
 *  Cast to implementation type struct within lib.
 *  This will reduce inter-dependencies/conflicts w/ application code.
@@ -650,4 +638,4 @@ opaque_type( TidyIterator );
 } /* extern "C" */
 #endif
 
-#endif /* __TIDY_PLATFORM_H__ */
+#endif /* __PLATFORM_H__ */

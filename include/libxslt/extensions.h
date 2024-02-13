@@ -246,7 +246,7 @@ XSLTPUBFUN xmlHashTablePtr XSLTCALL
 					 const xmlChar *URI);
 
 /**
- * Test of the extension module API
+ * Test module http://xmlsoft.org/XSLT/
  */
 XSLTPUBFUN void XSLTCALL
 		xsltRegisterTestModule	(void);

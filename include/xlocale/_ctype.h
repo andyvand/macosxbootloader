@@ -24,9 +24,6 @@
 #ifndef _XLOCALE__CTYPE_H_
 #define _XLOCALE__CTYPE_H_
 
-#include <_ctype.h>
-#include <_xlocale.h>
-
 /*
  * Use inline functions if we are allowed to and the compiler supports them.
  */

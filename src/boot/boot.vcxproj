@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -228,25 +228,25 @@
     <ClInclude Include="x86\ArchDefine.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AcpiUtils.cpp" />
-    <ClCompile Include="Base64.cpp" />
-    <ClCompile Include="BootArgs.cpp" />
-    <ClCompile Include="Config.cpp" />
-    <ClCompile Include="Console.cpp" />
-    <ClCompile Include="FileIo.cpp" />
-    <ClCompile Include="FileVault.cpp" />
-    <ClCompile Include="Hibernate.cpp" />
-    <ClCompile Include="LoadDrivers.cpp" />
-    <ClCompile Include="LoadKernel.cpp" />
-    <ClCompile Include="MachO.cpp" />
-    <ClCompile Include="MD5.cpp" />
-    <ClCompile Include="MemoryMap.cpp" />
-    <ClCompile Include="NetBoot.cpp" />
-    <ClCompile Include="Options.cpp" />
-    <ClCompile Include="PanicDialog.cpp" />
-    <ClCompile Include="PlatformExpert.cpp" />
-    <ClCompile Include="SHA256.cpp" />
-    <ClCompile Include="x64\ArchUtilsX64.cpp">
+    <ClCompile Include="AcpiUtils.c" />
+    <ClCompile Include="Base64.c" />
+    <ClCompile Include="BootArgs.c" />
+    <ClCompile Include="Config.c" />
+    <ClCompile Include="Console.c" />
+    <ClCompile Include="FileIo.c" />
+    <ClCompile Include="FileVault.c" />
+    <ClCompile Include="Hibernate.c" />
+    <ClCompile Include="LoadDrivers.c" />
+    <ClCompile Include="LoadKernel.c" />
+    <ClCompile Include="MachO.c" />
+    <ClCompile Include="MD5.c" />
+    <ClCompile Include="MemoryMap.c" />
+    <ClCompile Include="NetBoot.c" />
+    <ClCompile Include="Options.c" />
+    <ClCompile Include="PanicDialog.c" />
+    <ClCompile Include="PlatformExpert.c" />
+    <ClCompile Include="SHA256.c" />
+    <ClCompile Include="x64\ArchUtilsX64.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">true</ExcludedFromBuild>
@@ -258,19 +258,19 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Black)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (Grey)|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="BootDebugger.cpp" />
-    <ClCompile Include="Crc32.cpp" />
-    <ClCompile Include="Debug1394.cpp" />
-    <ClCompile Include="DebugUsb.cpp" />
-    <ClCompile Include="DevicePath.cpp" />
-    <ClCompile Include="DeviceTree.cpp" />
-    <ClCompile Include="GuidDefine.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Memory.cpp" />
-    <ClCompile Include="MiscUtils.cpp" />
-    <ClCompile Include="PeImage.cpp" />
-    <ClCompile Include="RuntimeLib.cpp" />
-    <ClCompile Include="StdAfx.cpp">
+    <ClCompile Include="BootDebugger.c" />
+    <ClCompile Include="Crc32.c" />
+    <ClCompile Include="Debug1394.c" />
+    <ClCompile Include="DebugUsb.c" />
+    <ClCompile Include="DevicePath.c" />
+    <ClCompile Include="DeviceTree.c" />
+    <ClCompile Include="GuidDefine.c" />
+    <ClCompile Include="Main.c" />
+    <ClCompile Include="Memory.c" />
+    <ClCompile Include="MiscUtils.c" />
+    <ClCompile Include="PeImage.c" />
+    <ClCompile Include="RuntimeLib.c" />
+    <ClCompile Include="StdAfx.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

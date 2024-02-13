@@ -28,7 +28,7 @@
 #ifndef _OBJC_OBJC_H_
 #define _OBJC_OBJC_H_
 
-#include <stdlib.h>
+#include <sys/types.h>      // for __DARWIN_NULL
 #include <Availability.h>
 #include <objc/objc-api.h>
 #include <stdbool.h>
@@ -67,7 +67,7 @@ typedef id _Nullable (*IMP)(id _Nonnull, SEL _Nonnull, ...);
 #   endif
 #else
     // __OBJC_BOOL_IS_BOOL not set.
-#   if TARGET_OS_OSX || TARGET_OS_MACCATALYST || ((TARGET_OS_IOS || 0) && !__LP64__ && !__ARM_ARCH_7K)
+#   if TARGET_OS_OSX || (TARGET_OS_IOS && !__LP64__ && !__ARM_ARCH_7K)
 #      define OBJC_BOOL_IS_BOOL 0
 #   else
 #      define OBJC_BOOL_IS_BOOL 1
@@ -127,8 +127,6 @@ typedef id _Nullable (*IMP)(id _Nonnull, SEL _Nonnull, ...);
 # endif
 #endif
 
-/// Forward declaration for zone support
-typedef struct _malloc_zone_t *objc_zone_t;
 
 /** 
  * Returns the name of the method specified by a given selector.
@@ -182,7 +180,8 @@ OBJC_EXPORT const char * _Nonnull object_getClassName(id _Nullable obj)
  * @note In a garbage-collected environment, the memory is scanned conservatively.
  */
 OBJC_EXPORT void * _Nullable object_getIndexedIvars(id _Nullable obj)
-    OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0);
+    OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0)
+    OBJC_ARC_UNAVAILABLE;
 
 /** 
  * Identifies a selector as being valid or invalid.
@@ -218,19 +217,35 @@ typedef const void* objc_objectptr_t;
 // Obsolete ARC conversions.
 
 OBJC_EXPORT id _Nullable objc_retainedObject(objc_objectptr_t _Nullable obj)
-#if !OBJC_DECLARE_SYMBOLS
-    OBJC_UNAVAILABLE("use CFBridgingRelease() or a (__bridge_transfer id) cast instead")
-#endif
-    ;
+    OBJC_UNAVAILABLE("use CFBridgingRelease() or a (__bridge_transfer id) cast instead");
 OBJC_EXPORT id _Nullable objc_unretainedObject(objc_objectptr_t _Nullable obj)
-#if !OBJC_DECLARE_SYMBOLS
-    OBJC_UNAVAILABLE("use a (__bridge id) cast instead")
-#endif
-    ;
+    OBJC_UNAVAILABLE("use a (__bridge id) cast instead");
 OBJC_EXPORT objc_objectptr_t _Nullable objc_unretainedPointer(id _Nullable obj)
-#if !OBJC_DECLARE_SYMBOLS
-    OBJC_UNAVAILABLE("use a __bridge cast instead")
+    OBJC_UNAVAILABLE("use a __bridge cast instead");
+
+
+#if !__OBJC2__
+
+// The following declarations are provided here for source compatibility.
+
+#if defined(__LP64__)
+    typedef long arith_t;
+    typedef unsigned long uarith_t;
+#   define ARITH_SHIFT 32
+#else
+    typedef int arith_t;
+    typedef unsigned uarith_t;
+#   define ARITH_SHIFT 16
 #endif
-    ;
+
+typedef char *STR;
+
+#define ISSELECTOR(sel) sel_isMapped(sel)
+#define SELNAME(sel)	sel_getName(sel)
+#define SELUID(str)	sel_getUid(str)
+#define NAMEOF(obj)     object_getClassName(obj)
+#define IV(obj)         object_getIndexedIvars(obj)
+
+#endif
 
 #endif  /* _OBJC_OBJC_H_ */

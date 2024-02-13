@@ -56,7 +56,7 @@ NASMFLAGS=-f win64 -DAPPLE
 MTOC=mv -f
 endif
 
-CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -nostdinc -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I../../include -DGNU -U__declspec -D__declspec\(x\)= -D__APPLE__"
+CFLAGS = "$(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -nostdinc -fshort-wchar -fno-strict-aliasing -ffunction-sections -fdata-sections -Os -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -DGNU -U__declspec -D__declspec\(x\)= -D__APPLE__"
 CXXFLAGS = $(CFLAGS)
 
 ifeq ("$(ARCH)", "i386")
@@ -126,8 +126,8 @@ ARCHCFLAGS = -target x86_64-pc-win32-macho -funsigned-char -fno-ms-extensions -f
 EXTRAOBJS=
 endif
 
-CFLAGS = "-Wall $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions -nostdinc $(ARCHCFLAGS) -std=gnu11 -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I../../include -fno-exceptions"
-CXXFLAGS = "-Wall $(DEBUGFLAGS) $(ARCHFLAGS) $(HACKFLAGS) -fborland-extensions -nostdinc $(ARCHCFLAGS) -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -I../../include -fno-exceptions -std=gnu++11"
+CFLAGS = "-Wall -Werror $(DEBUGFLAGS) $(ARCHFLAGS) $(ARCHCFLAGS) $(HACKFLAGS) -I../../include -fborland-extensions -nostdinc $(ARCHCFLAGS) -std=gnu11 -Oz -DEFI_SPECIFICATION_VERSION=0x0001000a -DTIANO_RELEASE_VERSION=1 -fno-exceptions"
+CXXFLAGS = "-Wall -Werror $(DEBUGFLAGS) $(ARCHFLAGS) $(ARCHCFLAGS) $(HACKFLAGS) -I../../include -fborland-extensions -nostdinc -fno-exceptions -std=gnu++11"
 LDFLAGS = "$(ARCHFLAGS) -preload -segalign 0x20 $(ARCHLDFLAGS) -pie -all_load -dead_strip -image_base 0x240 -compatibility_version 1.0 -current_version 2.1 -flat_namespace -print_statistics -map boot.map -sectalign __TEXT __text 0x20  -sectalign __TEXT __eh_frame  0x20 -sectalign __TEXT __ustring 0x20  -sectalign __TEXT __const 0x20   -sectalign __TEXT __ustring 0x20 -sectalign __DATA __data 0x20  -sectalign __DATA __bss 0x20  -sectalign __DATA __common 0x20 -final_output boot.efi"
 
 ifeq ("$(ARCH)", "i386")

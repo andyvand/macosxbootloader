@@ -1,5 +1,5 @@
-#ifndef __TIDY_BUFFIO_H__
-#define __TIDY_BUFFIO_H__
+#ifndef __BUFFIO_H__
+#define __BUFFIO_H__
 
 /** @file buffio.h - Treat buffer as an I/O stream.
 
@@ -93,6 +93,6 @@ TIDY_EXPORT void TIDY_CALL tidyInitInputBuffer( TidyInputSource* inp, TidyBuffer
 TIDY_EXPORT void TIDY_CALL tidyInitOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf );
 
 #ifdef __cplusplus
-} /* extern "C" */
+}
 #endif
-#endif /* __TIDY_BUFFIO_H__ */
+#endif /* __BUFFIO_H__ */

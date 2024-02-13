@@ -2,6 +2,7 @@
 //  CommonCryptoError.h
 //  CommonCrypto
 //
+//  Created by Richard Murphy on 4/15/14.
 //  Copyright (c) 2014 Platform Security. All rights reserved.
 //
 
@@ -51,7 +52,6 @@ extern "C" {
                                     properly.
     @constant   kCCUnimplemented    Function not implemented for the current 
                                     algorithm.
-    @constant   kCCInvalidKey       Key is not valid.
  */
 enum {
     kCCSuccess          = 0,
@@ -66,7 +66,6 @@ enum {
     kCCUnspecifiedError = -4308,
     kCCCallSequenceError= -4309,
     kCCKeySizeError     = -4310,
-    kCCInvalidKey       = -4311,
 };
 typedef int32_t CCStatus;
 typedef int32_t CCCryptorStatus;

@@ -94,7 +94,6 @@
 #ifndef _RPC_PMAPPROT_H
 #define _RPC_PMAPPROT_H
 #include <sys/cdefs.h>
-#include <rpc/xdr.h>
 
 #define PMAPPORT		((unsigned short)111)
 #ifdef __LP64__

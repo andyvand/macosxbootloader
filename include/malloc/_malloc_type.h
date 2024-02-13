@@ -37,7 +37,7 @@
 #include <sys/_types/_size_t.h> /* size_t */
 #include <sys/cdefs.h> /* __BEGIN_DECLS */
 
-#define _MALLOC_TYPE_AVAILABILITY __API_UNAVAILABLE(macos, ios, tvos, watchos, visionos)
+#define _MALLOC_TYPE_AVAILABILITY __API_UNAVAILABLE(macos, ios, tvos, watchos)
 
 __BEGIN_DECLS
 

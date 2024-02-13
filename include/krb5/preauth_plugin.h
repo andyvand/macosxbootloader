@@ -36,7 +36,6 @@
 #ifndef KRB5_PREAUTH_PLUGIN_H_INCLUDED
 #define KRB5_PREAUTH_PLUGIN_H_INCLUDED
 #include <krb5/krb5.h>
-#include <Availability.h>
 
 /*
  * While arguments of these types are passed-in, for the most part a preauth
@@ -108,7 +107,7 @@ struct _krb5_preauth_client_rock;
  * define a new typedef here instead of making the existing one public to
  * isolate ourselves from potential future changes.
  */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_get_as_key_proc)(krb5_context,
 			   krb5_principal,
 			   krb5_enctype,
@@ -129,8 +128,8 @@ enum krb5plugin_preauth_client_request_type {
     krb5plugin_preauth_client_get_etype = 1,
     /* Free the data returned from krb5plugin_preauth_client_req_get_etype */
     krb5plugin_preauth_client_free_etype = 2
-} __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst);
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+};
+typedef krb5_error_code
 (*preauth_get_client_data_proc)(krb5_context,
 				struct _krb5_preauth_client_rock *,
 				krb5_int32 request_type,
@@ -142,17 +141,17 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * may be called multiple times in case the plugin is used in
  * multiple contexts.  The returned context lives the lifetime of
  * the krb5_context */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_client_plugin_init_proc)(krb5_context context,
 				   void **plugin_context);
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) void
+typedef void
 (*preauth_client_plugin_fini_proc)(krb5_context context,
 				   void *plugin_context);
 
 /* A callback which returns flags indicating if the module is a "real" or
  * an "info" mechanism, and so on.  This function is called for each entry
  * in the client_pa_type_list. */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) int
+typedef int
 (*preauth_client_get_flags_proc)(krb5_context context,
 				 krb5_preauthtype pa_type);
 
@@ -161,11 +160,11 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * request_fini function is called when processing of the request is
  * complete.  This is optional.  It may be called multiple times in
  * the lifetime of a krb5_context. */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) void
+typedef void
 (*preauth_client_request_init_proc)(krb5_context context,
 				    void *plugin_context,
 				    void **request_context);
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) void
+typedef void
 (*preauth_client_request_fini_proc)(krb5_context context,
 				    void *plugin_context,
 				    void *request_context);
@@ -178,7 +177,7 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * NOTE! the encoded_previous_request will be NULL the first time this
  * function is called, because it is expected to only ever contain the data
  * obtained from a previous call to this function. */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_client_process_proc)(krb5_context context,
 			       void *plugin_context,
 			       void *request_context,
@@ -202,7 +201,7 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * try to recover from the given error.  If this function is not NULL, and
  * it stores data in out_pa_data which is different data from the contents
  * of in_pa_data, then the client library will retransmit the request. */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_client_tryagain_proc)(krb5_context context,
 				void *plugin_context,
 				void *request_context,
@@ -228,7 +227,7 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * The attr and value information supplied should be copied locally by
  * the module if it wishes to reference it after returning from this call.
  */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_client_supply_gic_opts_proc)(krb5_context context,
 				       void *plugin_context,
 				       krb5_get_init_creds_opt *opt,
@@ -241,7 +240,7 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * versions of the table will add either more callbacks or more arguments to
  * callbacks, and in both cases we'll be able to wrap the v0 functions.
  */
-typedef struct __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5plugin_preauth_client_ftable_v1 {
+typedef struct krb5plugin_preauth_client_ftable_v1 {
     /* Not-usually-visible name. */
     char *name;
 
@@ -298,7 +297,7 @@ typedef struct __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UN
      */
     preauth_client_supply_gic_opts_proc gic_opts;
 
-} krb5plugin_preauth_client_ftable_v1 __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst);
+} krb5plugin_preauth_client_ftable_v1;
 
 
 /***************************************************************************
@@ -328,9 +327,9 @@ enum krb5plugin_preauth_entry_request_type {
      * what the client sent, so don't go creating any fatal errors if it
      * doesn't match up. */
     krb5plugin_preauth_request_body = 4
-}  __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst);
+};
 
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_get_entry_data_proc)(krb5_context,
 			       krb5_kdc_req *,
 			       struct _krb5_db_entry_new *,
@@ -338,13 +337,13 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
 			       krb5_data **);
 
 /* Preauth plugin initialization function */
-typedef  __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_server_init_proc)(krb5_context context,
 			    void **plugin_context,
 			    const char** realmnames);
 
 /* Preauth plugin cleanup function */
-typedef  __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) void
+typedef void
 (*preauth_server_fini_proc)(krb5_context context, void *plugin_context);
 
 /* Return the flags which the KDC should use for this module.  This is a
@@ -354,7 +353,7 @@ typedef  __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILA
  * site administrator can force a particular preauthentication type to be
  * supported using only hardware).  This function is called for each entry
  * entry in the server_pa_type_list. */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) int
+typedef int
 (*preauth_server_flags_proc)(krb5_context context, krb5_preauthtype patype);
 
 /* Get preauthentication data to send to the client as part of the "you
@@ -365,7 +364,7 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * to create a context because we have no guarantee that the client will
  * ever call again (or that it will hit this server if it does), in which
  * case a context might otherwise hang around forever. */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_server_edata_proc)(krb5_context,
 			     krb5_kdc_req *request,
 			     struct _krb5_db_entry_new *client,
@@ -389,14 +388,14 @@ typedef krb5_error_code
 			      void *pa_module_context,
 			      void **pa_request_context,
 			      krb5_data **e_data,
-			      krb5_authdata ***authz_data) __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst);
+			      krb5_authdata ***authz_data);
 
 /* Generate preauthentication response data to send to the client as part
  * of the AS-REP.  If it needs to override the key which is used to encrypt
  * the response, it can do so.  The module is expected (but not required,
  * if a preauth_server_free_reqcontext_proc is also provided) to free any
  * context data it saved in "pa_request_context". */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_server_return_proc)(krb5_context context,
 			      krb5_pa_data * padata,
 			      struct _krb5_db_entry_new *client,
@@ -413,7 +412,7 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
 /* Free up the server-side per-request context, in cases where
  * server_return_proc() didn't or for whatever reason was not called.
  * Can be NULL. */
-typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) krb5_error_code
+typedef krb5_error_code
 (*preauth_server_free_reqcontext_proc)(krb5_context,
 				       void *pa_module_context,
 				       void **request_pa_context);
@@ -426,7 +425,7 @@ typedef __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILAB
  * more arguments to callbacks, and in both cases we'll be able to wrap the v0
  * functions.
  */
-typedef struct __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) Kkrb5plugin_preauth_server_ftable_v1 {
+typedef struct krb5plugin_preauth_server_ftable_v1 {
     /* Not-usually-visible name. */
     char *name;
 
@@ -477,7 +476,32 @@ typedef struct __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UN
      * Can be NULL. */
     preauth_server_free_reqcontext_proc freepa_reqcontext_proc;
 
-} krb5plugin_preauth_server_ftable_v1 __API_DEPRECATED("Use GSS.framework", macos(10.0, 10.8)) __API_UNAVAILABLE(macCatalyst) ;
+} krb5plugin_preauth_server_ftable_v1;
 
+
+/*
+ * This function allows a preauth plugin to obtain preauth
+ * options.  The preauth_data returned from this function
+ * should be freed by calling krb5_get_init_creds_opt_free_pa().
+ *
+ * The 'opt' pointer supplied to this function must have been
+ * obtained using krb5_get_init_creds_opt_alloc()
+ */
+krb5_error_code KRB5_CALLCONV
+krb5_get_init_creds_opt_get_pa
+		(krb5_context context,
+		krb5_get_init_creds_opt *opt,
+		int *num_preauth_data,
+		krb5_gic_opt_pa_data **preauth_data);
+
+/*
+ * This function frees the preauth_data that was returned by
+ * krb5_get_init_creds_opt_get_pa().
+ */
+void KRB5_CALLCONV
+krb5_get_init_creds_opt_free_pa
+		(krb5_context context,
+		 int num_preauth_data,
+		 krb5_gic_opt_pa_data *preauth_data);
 
 #endif /* KRB5_PREAUTH_PLUGIN_H_INCLUDED */

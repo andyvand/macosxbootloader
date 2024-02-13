@@ -12,8 +12,11 @@
 //
 #define isspace(ch)															((ch) == ' ' || (ch) == '\t' || (ch) == '\r' || (ch) == '\n')
 
+#ifdef __cplusplus
 extern "C"
 {
+#endif
+
 	//
 	// allocate from stack
 	//
@@ -111,4 +114,8 @@ extern "C"
 	// lower case
 	//
 	CHAR8* strlwr(CHAR8* stringBuffer);
+
+#ifdef __cplusplus
 }
+#endif
+

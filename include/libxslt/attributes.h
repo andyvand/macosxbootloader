@@ -13,7 +13,6 @@
 
 #include <libxml/tree.h>
 #include "xsltexports.h"
-#include "xsltInternals.h"
 
 #ifdef __cplusplus
 extern "C" {

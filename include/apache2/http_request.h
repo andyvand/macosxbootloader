@@ -332,14 +332,14 @@ void ap_process_async_request(request_rec *r);
 
 /**
  * Kill the current request
- * @param type Why the request is dying
+ * @param type Why the request is dieing
  * @param r The current request
  */
 AP_DECLARE(void) ap_die(int type, request_rec *r);
 
 /**
  * Check whether a connection is still established and has data available,
- * optionally consuming blank lines ([CR]LF).
+ * optionnaly consuming blank lines ([CR]LF).
  * @param c The current connection
  * @param bb The brigade to filter
  * @param max_blank_lines Max number of blank lines to consume, or zero
@@ -361,18 +361,6 @@ AP_DECLARE(apr_status_t) ap_check_pipeline(conn_rec *c, apr_bucket_brigade *bb,
  * @ingroup hooks
  */
 AP_DECLARE_HOOK(int,create_request,(request_rec *r))
-
-/**
- * This hook allow modules an opportunity to translate the URI into an
- * actual filename, before URL decoding happens.
- * @param r The current request
- * @return DECLINED to let other modules handle the pre-translation,
- *         OK if it was handled and no other module should process it,
- *         DONE if no further transformation should happen on the URI,
- *         HTTP_... in case of error.
- * @ingroup hooks
- */
-AP_DECLARE_HOOK(int,pre_translate_name,(request_rec *r))
 
 /**
  * This hook allow modules an opportunity to translate the URI into an
@@ -455,7 +443,7 @@ AP_DECLARE_HOOK(int,access_checker,(request_rec *r))
  * This hook should be registered with ap_hook_check_access_ex().
  *
  * @param r the current request
- * @return OK (allow access), DECLINED (let later modules decide),
+ * @return OK (allow acces), DECLINED (let later modules decide),
  *         or HTTP_... (deny access)
  * @ingroup hooks
  * @see ap_hook_check_access_ex
@@ -561,7 +549,7 @@ AP_DECLARE_HOOK(void,insert_filter,(request_rec *r))
  * This hook allows modules to affect the request immediately after the
  * per-directory configuration for the request has been generated.
  * @param r The current request
- * @return OK (allow access), DECLINED (let later modules decide),
+ * @return OK (allow acces), DECLINED (let later modules decide),
  *         or HTTP_... (deny access)
  * @ingroup hooks
  */
@@ -601,7 +589,7 @@ AP_DECLARE_DATA extern const apr_bucket_type_t ap_bucket_type_eor;
  * @param e The bucket to inspect
  * @return true or false
  */
-#define AP_BUCKET_IS_EOR(e)         ((e)->type == &ap_bucket_type_eor)
+#define AP_BUCKET_IS_EOR(e)         (e->type == &ap_bucket_type_eor)
 
 /**
  * Make the bucket passed in an End Of REQUEST (EOR) bucket

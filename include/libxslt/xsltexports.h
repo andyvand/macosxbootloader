@@ -113,8 +113,8 @@
   #endif
 #endif
 
-/* Cygwin platform (does not define _WIN32), GNU compiler */
-#if defined(__CYGWIN__)
+/* Cygwin platform, GNU compiler */
+#if defined(_WIN32) && defined(__CYGWIN__)
   #undef XSLTPUBFUN
   #undef XSLTPUBVAR
   #undef XSLTCALL
@@ -126,28 +126,11 @@
     #if !defined(LIBXSLT_STATIC)
       #define XSLTPUBVAR __declspec(dllimport) extern
     #else
-      #define XSLTPUBVAR extern
+      #define XSLTPUBVAR
     #endif
   #endif
   #define XSLTCALL __cdecl
 #endif
-
-/* Apple/Darwin platforms */
-#ifdef __APPLE__
-  #undef XSLTPUBFUN
-  #undef XSLTPUBVAR
-  #if defined(IN_LIBXSLT) && !defined(LIBXSLT_STATIC)
-    #define XSLTPUBFUN extern __attribute__((visibility ("default")))
-    #define XSLTPUBVAR extern __attribute__((visibility ("default")))
-  #else
-    #define XSLTPUBFUN
-    #if !defined(LIBXSLT_STATIC)
-      #define XSLTPUBVAR extern __attribute__((visibility ("default")))
-    #else
-      #define XSLTPUBVAR extern
-    #endif
-  #endif
-#endif /* __APPLE__ */
 
 /* Compatibility */
 #if !defined(LIBXSLT_PUBLIC)

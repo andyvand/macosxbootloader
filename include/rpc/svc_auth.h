@@ -63,8 +63,6 @@
 #ifndef _RPC_SVCAUTH_H
 #define _RPC_SVCAUTH_H
 
-#include <rpc/auth.h>
-
 /*
  * Server side authenticator
  */

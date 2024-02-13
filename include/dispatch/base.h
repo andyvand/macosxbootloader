@@ -65,29 +65,6 @@
 #define DISPATCH_ALWAYS_INLINE __attribute__((__always_inline__))
 #define DISPATCH_UNAVAILABLE __attribute__((__unavailable__))
 #define DISPATCH_UNAVAILABLE_MSG(msg) __attribute__((__unavailable__(msg)))
-#elif defined(_MSC_VER)
-#define DISPATCH_NORETURN __declspec(noreturn)
-#define DISPATCH_NOTHROW __declspec(nothrow)
-#define DISPATCH_NONNULL1
-#define DISPATCH_NONNULL2
-#define DISPATCH_NONNULL3
-#define DISPATCH_NONNULL4
-#define DISPATCH_NONNULL5
-#define DISPATCH_NONNULL6
-#define DISPATCH_NONNULL7
-#define DISPATCH_NONNULL_ALL
-#define DISPATCH_SENTINEL
-#define DISPATCH_PURE
-#define DISPATCH_CONST
-#if (_MSC_VER >= 1700)
-#define DISPATCH_WARN_RESULT _Check_return_
-#else
-#define DISPATCH_WARN_RESULT
-#endif
-#define DISPATCH_MALLOC
-#define DISPATCH_ALWAYS_INLINE __forceinline
-#define DISPATCH_UNAVAILABLE
-#define DISPATCH_UNAVAILABLE_MSG(msg)
 #else
 /*! @parseOnly */
 #define DISPATCH_NORETURN
@@ -127,41 +104,12 @@
 #define DISPATCH_UNAVAILABLE_MSG(msg)
 #endif
 
-#if defined(__cplusplus)
-# if __cplusplus >= 201703L
-#  define DISPATCH_FALLTHROUGH [[fallthrough]]
-# elif __cplusplus >= 201103L
-#  if defined(__clang__)
-#   define DISPATCH_FALLTHROUGH [[clang::fallthrough]]
-#  elif defined(__GNUC__) && __GNUC__ >= 7
-#   define DISPATCH_FALLTHROUGH [[gnu::fallthrough]]
-#  else
-#   define DISPATCH_FALLTHROUGH
-#  endif
-# else
-#  define DISPATCH_FALLTHROUGH
-# endif
-#elif defined(__GNUC__) && __GNUC__ >= 7
-# define DISPATCH_FALLTHROUGH __attribute__((__fallthrough__))
-#elif defined(__clang__)
-# if __has_attribute(fallthrough) && __clang_major__ >= 5
-#  define DISPATCH_FALLTHROUGH __attribute__((__fallthrough__))
-# else
-#  define DISPATCH_FALLTHROUGH
-# endif
-#else
-# define DISPATCH_FALLTHROUGH
-#endif
-
-
-#define DISPATCH_LINUX_UNAVAILABLE()
-
-#ifdef __FreeBSD__
-#define DISPATCH_FREEBSD_UNAVAILABLE() \
+#ifdef __linux__
+#define DISPATCH_LINUX_UNAVAILABLE() \
 		DISPATCH_UNAVAILABLE_MSG( \
-		"This interface is unavailable on FreeBSD systems")
+		"This interface is unavailable on linux systems")
 #else
-#define DISPATCH_FREEBSD_UNAVAILABLE()
+#define DISPATCH_LINUX_UNAVAILABLE()
 #endif
 
 #ifndef DISPATCH_ALIAS_V2
@@ -172,12 +120,15 @@
 #endif
 #endif
 
-#if defined(_WIN32)
-#if defined(__cplusplus)
-#define DISPATCH_EXPORT extern "C" __declspec(dllimport)
-#else
+#if TARGET_OS_WIN32 && defined(__DISPATCH_BUILDING_DISPATCH__) && \
+		defined(__cplusplus)
+#define DISPATCH_EXPORT extern "C" extern __declspec(dllexport)
+#elif TARGET_OS_WIN32 && defined(__DISPATCH_BUILDING_DISPATCH__)
+#define DISPATCH_EXPORT extern __declspec(dllexport)
+#elif TARGET_OS_WIN32 && defined(__cplusplus)
+#define DISPATCH_EXPORT extern "C" extern __declspec(dllimport)
+#elif TARGET_OS_WIN32
 #define DISPATCH_EXPORT extern __declspec(dllimport)
-#endif
 #elif __GNUC__
 #define DISPATCH_EXPORT extern __attribute__((visibility("default")))
 #else
@@ -216,12 +167,6 @@
 #define DISPATCH_NOESCAPE
 #endif
 
-#if __has_attribute(cold)
-#define DISPATCH_COLD __attribute__((__cold__))
-#else
-#define DISPATCH_COLD
-#endif
-
 #if __has_feature(assume_nonnull)
 #define DISPATCH_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
 #define DISPATCH_ASSUME_NONNULL_END   _Pragma("clang assume_nonnull end")
@@ -229,27 +174,6 @@
 #define DISPATCH_ASSUME_NONNULL_BEGIN
 #define DISPATCH_ASSUME_NONNULL_END
 #endif
-
-#if __has_feature(bounds_attributes)
-#define DISPATCH_ASSUME_ABI_SINGLE_BEGIN	_Pragma("clang abi_ptr_attr set(single)")
-#define DISPATCH_ASSUME_ABI_SINGLE_END		_Pragma("clang abi_ptr_attr set(unsafe_indexable)")
-#define DISPATCH_UNSAFE_INDEXABLE __attribute__((__unsafe_indexable__))
-#define DISPATCH_COUNTED_BY(X) __attribute__((__counted_by__(X)))
-#define DISPATCH_SIZED_BY(X) __attribute__((__sized_by__(X)))
-#else
-#define DISPATCH_ASSUME_ABI_SINGLE_BEGIN
-#define DISPATCH_ASSUME_ABI_SINGLE_END
-#define DISPATCH_UNSAFE_INDEXABLE
-#define DISPATCH_COUNTED_BY(X)
-#define DISPATCH_SIZED_BY(X)
-#endif
-
-#define DISPATCH_OSX_SUPPORTS_AT_LEAST(macos, ios, tvos, watchos) \
-	 (	(defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= macos) \
-	||	(defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED >= ios) \
-	||	(defined(__TV_OS_VERSION_MIN_REQUIRED) && __TV_OS_VERSION_MIN_REQUIRED >= tvos) \
-	||	(defined(__WATCH_OS_VERSION_MIN_REQUIRED) && __WATCH_OS_VERSION_MIN_REQUIRED >= watchos) \
-	)
 
 #if !__has_feature(nullability)
 #ifndef _Nullable
@@ -271,35 +195,13 @@
 #endif
 #endif
 
-#if __has_attribute(enum_extensibility)
-#define __DISPATCH_ENUM_ATTR __attribute__((__enum_extensibility__(open)))
-#define __DISPATCH_ENUM_ATTR_CLOSED __attribute__((__enum_extensibility__(closed)))
-#else
-#define __DISPATCH_ENUM_ATTR
-#define __DISPATCH_ENUM_ATTR_CLOSED
-#endif // __has_attribute(enum_extensibility)
-
-#if __has_attribute(flag_enum)
-#define __DISPATCH_OPTIONS_ATTR __attribute__((__flag_enum__))
-#else
-#define __DISPATCH_OPTIONS_ATTR
-#endif // __has_attribute(flag_enum)
-
-
-#if __has_feature(objc_fixed_enum) || __has_extension(cxx_strong_enums) || \
-		__has_extension(cxx_fixed_enum) || defined(_WIN32)
+#if __has_feature(objc_fixed_enum) || __has_extension(cxx_strong_enums)
 #define DISPATCH_ENUM(name, type, ...) \
-		typedef enum : type { __VA_ARGS__ } __DISPATCH_ENUM_ATTR name##_t
-#define DISPATCH_OPTIONS(name, type, ...) \
-		typedef enum : type { __VA_ARGS__ } __DISPATCH_OPTIONS_ATTR __DISPATCH_ENUM_ATTR name##_t
+		typedef enum : type { __VA_ARGS__ } name##_t
 #else
 #define DISPATCH_ENUM(name, type, ...) \
-		enum { __VA_ARGS__ } __DISPATCH_ENUM_ATTR; typedef type name##_t
-#define DISPATCH_OPTIONS(name, type, ...) \
-		enum { __VA_ARGS__ } __DISPATCH_OPTIONS_ATTR __DISPATCH_ENUM_ATTR; typedef type name##_t
-#endif // __has_feature(objc_fixed_enum) ...
-
-
+		enum { __VA_ARGS__ }; typedef type name##_t
+#endif
 
 #if __has_feature(enumerator_attributes)
 #define DISPATCH_ENUM_API_AVAILABLE(...) API_AVAILABLE(__VA_ARGS__)
@@ -312,11 +214,12 @@
 #define DISPATCH_ENUM_API_DEPRECATED_WITH_REPLACEMENT(...)
 #endif
 
-#ifdef __swift__
+#if defined(SWIFT_SDK_OVERLAY_DISPATCH_EPOCH) && \
+		SWIFT_SDK_OVERLAY_DISPATCH_EPOCH >= 2
 #define DISPATCH_SWIFT3_OVERLAY 1
-#else // __swift__
+#else
 #define DISPATCH_SWIFT3_OVERLAY 0
-#endif // __swift__
+#endif // SWIFT_SDK_OVERLAY_DISPATCH_EPOCH >= 2
 
 #if __has_feature(attribute_availability_swift)
 #define DISPATCH_SWIFT_UNAVAILABLE(_msg) \
@@ -349,11 +252,6 @@
 #define DISPATCH_TRANSPARENT_UNION
 #endif
 
-DISPATCH_ASSUME_ABI_SINGLE_BEGIN
-
-DISPATCH_SWIFT_UNAVAILABLE("Unavailable in Swift")
 typedef void (*dispatch_function_t)(void *_Nullable);
-
-DISPATCH_ASSUME_ABI_SINGLE_END
 
 #endif
