@@ -1,9 +1,9 @@
 %ifdef ARCH32
-global ?ArchStartKernel@@YAXPAX0@Z
-?ArchStartKernel@@YAXPAX0@Z:
+global ArchStartKernel
+ArchStartKernel:
 %else
-global __Z15ArchStartKernelPvS_
-__Z15ArchStartKernelPvS_:
+global _ArchStartKernel
+_ArchStartKernel:
 %endif
 	cli
 	mov edx, [esp+4]
