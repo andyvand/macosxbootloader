@@ -40,7 +40,7 @@ EFI_STATUS ArchCheck64BitCpu()
 VOID ArchCpuId(UINT32 command, UINT32* eaxValue, UINT32* ebxValue, UINT32* ecxValue, UINT32* edxValue)
 {
 #ifdef _MSC_VER
-	__asm
+	asm
 	{
 		push		ebx
 		push		edi

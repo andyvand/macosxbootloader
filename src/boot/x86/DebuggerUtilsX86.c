@@ -306,8 +306,8 @@ VOID BdTrap01()
           "mov    $0x80000004,%eax\n"
           "mov    0x68(%ebp),%ebx\n"
           "xor    %ecx,%ecx\n"
-          "call   _Z15BdpTrapDispatchv\n"
-          "jmp    _Z11BdpTrapExitv\n");
+          "call   _BdpTrapDispatch\n"
+          "jmp    _BdpTrapExit\n");
 #else
     __asm("push   $0x0\n"
           "push   %ebp\n"
@@ -330,8 +330,8 @@ VOID BdTrap01()
           "mov    $0x80000004,%eax\n"
           "mov    0x68(%ebp),%ebx\n"
           "xor    %ecx,%ecx\n"
-          "call   __Z15BdpTrapDispatchv\n"
-          "jmp    __Z11BdpTrapExitv\n");
+          "call   _BdpTrapDispatch\n"
+          "jmp    _BdpTrapExit\n");
 #endif
 #endif
 #endif
@@ -421,8 +421,8 @@ VOID BdTrap03()
           "mov    0x68(%ebp),%ebx\n"
           "mov    $0x0,%ecx\n"
           "xor    %edx,%edx\n"
-          "call   _Z15BdpTrapDispatchv\n"
-          "jmp    _Z11BdpTrapExitv\n");
+          "call   _BdpTrapDispatch\n"
+          "jmp    _BdpTrapExit\n");
 #else
     __asm("push   $0x0\n"
           "push   %ebp\n"
@@ -446,8 +446,8 @@ VOID BdTrap03()
           "mov    0x68(%ebp),%ebx\n"
           "mov    $0x0,%ecx\n"
           "xor    %edx,%edx\n"
-          "call   __Z15BdpTrapDispatchv\n"
-          "jmp    __Z11BdpTrapExitv\n");
+          "call   _BdpTrapDispatch\n"
+          "jmp    _BdpTrapExit\n");
 #endif
 #endif
 #endif
@@ -540,7 +540,7 @@ loop_forever:
           "mov    $0x1,%ecx\n"
           "mov    0x64(%ebp),%edx\n"
           "and    $0xffff,%edx\n"
-          "call   _Z15BdpTrapDispatchv\n"
+          "call   _BdpTrapDispatch\n"
           "jmp    Lloop_forever0d\n");
 #else
     __asm("push   $0x0\n"
@@ -566,7 +566,7 @@ loop_forever:
           "mov    $0x1,%ecx\n"
           "mov    0x64(%ebp),%edx\n"
           "and    $0xffff,%edx\n"
-          "call   __Z15BdpTrapDispatchv\n"
+          "call   _BdpTrapDispatch\n"
           "jmp    Lloop_forever0d\n");
 #endif
 #endif
@@ -666,7 +666,7 @@ loop_forever:
           "and    $0x2,%edx\n"
           "mov    %cr2,%edi\n"
           "xor    %esi,%esi\n"
-          "call   _Z15BdpTrapDispatchv\n"
+          "call   _BdpTrapDispatch\n"
           "jmp    Lloop_forever0e\n");
 #else
     __asm("push   $0x0\n"
@@ -694,7 +694,7 @@ loop_forever:
           "and    $0x2,%edx\n"
           "mov    %cr2,%edi\n"
           "xor    %esi,%esi\n"
-          "call   __Z15BdpTrapDispatchv\n"
+          "call   _BdpTrapDispatch\n"
           "jmp    Lloop_forever0e\n");
 #endif
 #endif
@@ -791,8 +791,8 @@ VOID BdTrap2d()
           "mov    0x44(%ebp),%edx\n"
           "mov    0x40(%ebp),%edi\n"
           "mov    0x3c(%ebp),%esi\n"
-          "call   _Z15BdpTrapDispatchv\n"
-          "jmp    _Z11BdpTrapExitv\n");
+          "call   _BdpTrapDispatch\n"
+          "jmp    _BdpTrapExit\n");
 #else
     __asm("push   $0x0\n"
           "push   %ebp\n"
@@ -818,8 +818,8 @@ VOID BdTrap2d()
           "mov    0x44(%ebp),%edx\n"
           "mov    0x40(%ebp),%edi\n"
           "mov    0x3c(%ebp),%esi\n"
-          "call   __Z15BdpTrapDispatchv\n"
-          "jmp    __Z11BdpTrapExitv\n");
+          "call   _BdpTrapDispatch\n"
+          "jmp    _BdpTrapExit\n");
 #endif
 #endif
 #endif
