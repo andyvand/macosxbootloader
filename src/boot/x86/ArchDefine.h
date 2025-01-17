@@ -10,7 +10,9 @@
 
 #if defined(_MSC_VER)
 #pragma once
-#endif
+#endif /* _MSC_VER */
+
+#include "../macros.h"
 
 //
 // consts
@@ -34,7 +36,7 @@
 //
 #if defined(_MSC_VER)
 #include <pshpack1.h>
-#endif
+#endif /* _MSC_VER */
 
 //
 // gdtr and idtr
@@ -55,7 +57,7 @@ typedef struct _DESCRIPTOR
 	// base
 	//
 	UINT32																	Base;
-}KDESCRIPTOR;
+} KDESCRIPTOR GNUPACK;
 
 //
 // idt entry
@@ -81,7 +83,7 @@ typedef struct _KIDTENTRY
 	// extended offset
 	//
 	UINT16																	ExtendedOffset;
-}KIDTENTRY;
+} KIDTENTRY GNUPACK;
 
 //
 // special register
@@ -162,7 +164,7 @@ typedef struct _KSPECIAL_REGISTERS
 	// padding
 	//
 	UINT32																	Reserved[6];
-}KSPECIAL_REGISTERS;
+} KSPECIAL_REGISTERS GNUPACK;
 
 //
 // floating save area
@@ -213,7 +215,7 @@ typedef struct _FLOATING_SAVE_AREA
 	// npx state
 	//
 	UINT32																	Cr0NpxState;
-}FLOATING_SAVE_AREA;
+} FLOATING_SAVE_AREA GNUPACK;
 
 //
 // context
@@ -344,7 +346,7 @@ typedef struct _CONTEXT
 	// extended registers
 	//
 	UINT8																	ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
-}CONTEXT;
+} CONTEXT GNUPACK;
 
 //
 // processor state
@@ -360,7 +362,7 @@ typedef struct _KPROCESSOR_STATE
 	// special register
 	//
 	KSPECIAL_REGISTERS														SpecialRegisters;
-}KPROCESSOR_STATE;
+} KPROCESSOR_STATE GNUPACK;
 
 //
 // trap frame
@@ -552,7 +554,7 @@ typedef struct _KTRAP_FRAME
 	// v86 mode gs
 	//
 	UINT32																	V86Gs;
-}KTRAP_FRAME;
+} KTRAP_FRAME GNUPACK;
 
 //
 // processor control block (PRCB)
@@ -628,7 +630,7 @@ typedef struct _KPRCB
 	// reserved
 	//
 	UINT8																	Reserved1[0xb84];
-}KPRCB;
+} KPRCB GNUPACK;
 
 //
 // pcr
@@ -799,14 +801,7 @@ typedef struct _KPCR
 	// prcb
 	//
 	KPRCB																	PrcbData;
-}KPCR;
-
-//
-// restore pack
-//
-#if defined(_MSC_VER)
-#include <poppack.h>
-#endif
+} KPCR GNUPACK;
 
 //
 // control report
@@ -867,7 +862,7 @@ typedef struct _X86_DBGKD_CONTROL_REPORT
 	// pading
 	//
 	UINT32																	Padding[2];
-}DBGKD_CONTROL_REPORT;
+} DBGKD_CONTROL_REPORT GNUPACK;
 
 //
 // control sets for supported architectures
@@ -893,7 +888,7 @@ typedef struct _X86_DBGKD_CONTROL_SET
 	// symbol end
 	//
 	UINT32																	CurrentSymbolEnd;
-}DBGKD_CONTROL_SET;
+} DBGKD_CONTROL_SET GNUPACK;
 
 //
 // 128bits
@@ -909,7 +904,7 @@ typedef struct _M128A
     // high
     //
     INT64                                                                    High;
-}M128A;
+} M128A GNUPACK;
 
 typedef struct _KEXCEPTION_FRAME
 {
@@ -1037,12 +1032,19 @@ typedef struct _KEXCEPTION_FRAME
     // rsi
     //
     UINT32                                                                    Esi;
-}KEXCEPTION_FRAME;
+} KEXCEPTION_FRAME GNUPACK;
+
+//
+// restore pack
+//
+#if defined(_MSC_VER)
+#include <poppack.h>
+#endif /* _MSC_VER */
 
 #ifdef __cplusplus
 extern "C"
 {
-#endif
+#endif /* __cplusplus */
 
 //
 // get cs
@@ -1076,6 +1078,6 @@ VOID ArchSetIdtEntry(UINT32 base, UINT32 index, UINT32 segCs, VOID* offset,UINT3
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* __ARCHDEFINE_H__ */

@@ -1,15 +1,15 @@
 TOPDIR=../..
 PREBUILT=$(TOPDIR)/Prebuilt
-CC=../../Prebuilt/clang
-CXX=../../Prebuilt/clang
+CC2=../../Prebuilt/clang
+CXX2=../../Prebuilt/clang
 
 ### Boot ###
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC2) $(CFLAGS) -c $< -o $@
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX2) $(CXXFLAGS) -c $< -o $@
 
 ifeq ("$(ARCH)", "i386")
 ARCHDEP = __umoddi3.o __udivdi3.o __udivmoddi4.o x86/libx86.a

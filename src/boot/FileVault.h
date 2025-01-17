@@ -5,7 +5,12 @@
 //	purpose:	FileVault2
 //********************************************************************
 
+#ifndef __FILEVAULT_H__
+#define __FILEVAULT_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 //
 // load and unlock core volume
@@ -21,3 +26,5 @@ BOOLEAN FvFindCoreVolumeKey(UINT8 CONST* volumeIdent, UINT8* volumeKey, UINTN vo
 // setup device tree
 //
 EFI_STATUS FvSetupDeviceTree(UINT64* keyStorePhysicalAddress, UINTN* keyStoreSize, BOOLEAN setupDeviceTree);
+
+#endif /* __FILEVAULT_H__ */

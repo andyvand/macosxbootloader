@@ -5,7 +5,12 @@
 //	purpose:	pe image
 //********************************************************************
 
+#ifndef __PEIMAGE_H__
+#define __PEIMAGE_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 //
 // get image nt header
@@ -26,3 +31,5 @@ UINT32 PeImageGetChecksum(VOID* ntHeaders);
 // get entry point
 //
 VOID* PeImageGetEntryPoint(VOID* imageBase);
+
+#endif /* __PEIMAGE_H__ */

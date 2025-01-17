@@ -8,6 +8,8 @@
 #ifndef __ARCHDEFINE_H__
 #define __ARCHDEFINE_H__
 
+#include "../macros.h"
+
 #if defined(_MSC_VER)
 #pragma once
 #endif /* _MSC_VER */
@@ -24,8 +26,8 @@
 #define CONTEXT_FULL														(CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_FLOATING_POINT)
 
 #if defined(_MSC_VER)
-#include "pshpack1.h"
-#endif
+#include <pshpack1.h>
+#endif /* _MSC_VER */
 
 //
 // gdtr and idtr
@@ -46,7 +48,7 @@ typedef struct _DESCRIPTOR
 	// base
 	//
 	UINT64																	Base;
-}KDESCRIPTOR;
+} KDESCRIPTOR GNUPACK;
 
 //
 // idt entry
@@ -82,7 +84,7 @@ typedef struct _KIDTENTRY
 	// reserved
 	//
 	UINT32																	Reserved;
-}KIDTENTRY;
+} KIDTENTRY GNUPACK;
 
 //
 // 128bits
@@ -98,7 +100,7 @@ typedef struct _M128A
 	// high
 	//
 	INT64																	High;
-}M128A;
+} M128A GNUPACK;
 
 //
 // format of data for 32-bit fxsave/fxrstor instructions.
@@ -184,7 +186,7 @@ typedef struct _XMM_SAVE_AREA32
 	// reserved
 	//
 	UINT8																	Reserved4[96];
-}XMM_SAVE_AREA32;
+} XMM_SAVE_AREA32 GNUPACK;
 
 typedef struct _CONTEXT
 {
@@ -519,7 +521,7 @@ typedef struct _CONTEXT
 	// last exception from
 	//
 	UINT64																	LastExceptionFromRip;
-}CONTEXT;
+} CONTEXT GNUPACK;
 
 //
 // special registers. size = 0xe0
@@ -660,7 +662,7 @@ typedef struct _KSPECIAL_REGISTERS
 	// syscall mask
 	//
 	UINT64																	MsrSyscallMask;
-}KSPECIAL_REGISTERS;
+} KSPECIAL_REGISTERS GNUPACK;
 
 //
 // processor state
@@ -681,7 +683,7 @@ typedef struct _KPROCESSOR_STATE
 	// context frame. offset = 0xe0
 	//
 	CONTEXT																	ContextFrame;
-}KPROCESSOR_STATE;
+} KPROCESSOR_STATE GNUPACK;
 
 //
 // processor control block (PRCB)
@@ -767,7 +769,7 @@ typedef struct _KPRCB
 	// reserved
 	//
 	UINT8																	Reserved3[0x3530];
-}KPRCB;
+} KPRCB GNUPACK;
 
 //
 // trap frame
@@ -1109,7 +1111,7 @@ typedef struct _KTRAP_FRAME
 	// patch
 	//
 	UINT32																	CodePatchCycle;
-}KTRAP_FRAME;
+} KTRAP_FRAME GNUPACK;
 
 //
 // exception frame
@@ -1260,7 +1262,7 @@ typedef struct _KEXCEPTION_FRAME
 	// r15
 	//
 	UINT64																	R15;
-}KEXCEPTION_FRAME;
+} KEXCEPTION_FRAME GNUPACK;
 
 //
 // pcr
@@ -1396,7 +1398,7 @@ typedef struct _KPCR
 	// prcb
 	//
 	KPRCB																	Prcb;
-}KPCR;
+} KPCR GNUPACK;
 
 //
 // control sets for supported architectures
@@ -1422,11 +1424,7 @@ typedef struct _X64_DBGKD_CONTROL_SET
 	// symbol end
 	//
 	UINT64																	CurrentSymbolEnd;
-}DBGKD_CONTROL_SET;
-
-#if defined(_MSC_VER)
-#include "poppack.h"
-#endif
+} DBGKD_CONTROL_SET GNUPACK;
 
 //
 // control report
@@ -1482,7 +1480,11 @@ typedef struct _X64_DBGKD_CONTROL_REPORT
 	// fs
 	//
 	UINT16																	SegFs;
-}DBGKD_CONTROL_REPORT;
+} DBGKD_CONTROL_REPORT GNUPACK;
+
+#if defined(_MSC_VER)
+#include <poppack.h>
+#endif /*¨_MSC_VER */
 
 #ifdef __cplusplus
 extern "C"

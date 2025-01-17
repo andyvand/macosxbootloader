@@ -10,7 +10,7 @@
 
 #ifdef _MSC_VER
 #pragma once
-#endif
+#endif /* _MSC_VER */
 
 #include "BootArgs.h"
 

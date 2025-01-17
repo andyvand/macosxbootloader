@@ -7,6 +7,13 @@
 //	Note:		The data was copied from Apple's boot.efi
 //********************************************************************
 
+#ifndef __PANICDIALOGDATA_H__
+#define __PANICDIALOGDATA_H__
+
+#ifdef _MSC_VER
+#pragma once
+#endif /* _MSC_VER */
+
 #if LEGACY_GREY_SUPPORT
 
 // Data in Tiamo's boot.efi = 126057 bytes
@@ -2730,7 +2737,7 @@ STATIC UINT8 ApplePanicDialog2XClut[ 201 ] =
 	0x7B, 0x7B, 0x7B, 0x78, 0x78, 0x78, 0x71, 0x71, 0x71
 };
 
-#else // BLACKMODE
+#else // !LEGACY_GREY_SUPPORT
 
 // Data in Tiamo's boot.efi = 126057 bytes
 // Data in Pike's boot .efi =  89707 bytes
@@ -5574,4 +5581,6 @@ STATIC UINT8 ApplePanicDialog2XClut[ 534 ] =
 	0xF6, 0x9C, 0x9C, 0x9C, 0x87, 0x87, 0x87, 0xCE, 0xCE, 0xCE, 0xDB, 0xDB, 0xDB, 0xE6, 0xE6, 0xE6, 0xFE, 0xFE, 0xFE, 0xFB, 0xFB, 0xFB
 };
 
-#endif
+#endif /* LEGACY_GREY_SUPPORT */
+
+#endif /* __PANICDIALOGDATA_H__ */

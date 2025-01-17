@@ -10,13 +10,13 @@
 
 #if defined(_MSC_VER)
 #pragma once
-#endif
+#endif /* _MSC_VER */
 
 #include "MachO.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 //
 // initialize phase 0
@@ -130,6 +130,6 @@ VOID BOOTAPI ARCH_WRITE_REGISTER_UINT32(UINT32* port, UINT32 value);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* __ARCHUTILS_H__ */

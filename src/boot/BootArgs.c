@@ -25,7 +25,7 @@ typedef struct _RAM_DMG_EXTENT_INFO
 	// length
 	//
 	UINT64																	Length;
-}RAM_DMG_EXTENT_INFO;
+} RAM_DMG_EXTENT_INFO;
 
 //
 // ram dmg header
@@ -61,10 +61,11 @@ typedef struct _RAM_DMG_HEADER
 	// signature 2
 	//
 	UINT64																	Signature2;
-}RAM_DMG_HEADER;
+} RAM_DMG_HEADER;
+
 #if defined(_MSC_VER)
 #include <poppack.h>
-#endif
+#endif /* _MSC_VER */
 
 //
 // global
@@ -81,7 +82,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 #if defined(_MSC_VER)
 	__try
 	{
-#endif
+#endif /* _MSC_VER */
 		//
 		// get block io protocol
 		//
@@ -89,9 +90,9 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiBlockIoProtocolGuid, (VOID**)(&blockIoProtocol))))
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return rootUUID;
-#endif
+#endif /* _MSC_VER */
 
 		//
 		// get disk io protocol
@@ -100,9 +101,9 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 		if(EFI_ERROR(EfiBootServices->HandleProtocol(deviceHandle, &EfiDiskIoProtocolGuid, (VOID**)(&diskIoProtocol))))
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return rootUUID;
-#endif
+#endif /* _MSC_VER */
 
 		//
 		// read volume header
@@ -111,9 +112,9 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 		if(EFI_ERROR(diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, 1024, sizeof(volumeHeader), volumeHeader)))
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return rootUUID;
-#endif
+#endif /* _MSC_VER */
 
 		//
 		// hfs+ volume
@@ -128,9 +129,9 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 			if(EFI_ERROR(diskIoProtocol->ReadDisk(diskIoProtocol, blockIoProtocol->Media->MediaId, volumeHeaderOffset, sizeof(volumeHeader), volumeHeader)))
 #if defined(_MSC_VER)
 				try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
                 return rootUUID;
-#endif
+#endif /* _MSC_VER */
 		}
 
 		//
@@ -142,9 +143,9 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 		else
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return rootUUID;
-#endif
+#endif /* _MSC_VER */
 
 		//
 		// just like AppleFileSystemDriver
@@ -206,7 +207,7 @@ STATIC CHAR8 CONST* BlpRootUUIDFromDisk(EFI_HANDLE deviceHandle, CHAR8* uuidBuff
 	__finally
 	{
 	}
-#endif
+#endif /* _MSC_VER */
 
 	return rootUUID;
 }
@@ -240,7 +241,7 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 #if defined(_MSC_VER)
 	__try
 	{
-#endif
+#endif /* _MSC_VER */
 		//
 		// get mem map device path
 		//
@@ -268,9 +269,9 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 		if(!ramDmgDevicePath)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return;
-#endif
+#endif /* _MSC_VER */
 
 		//
 		// check length
@@ -278,9 +279,9 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 		if(ramDmgDevicePath->EndingAddress + 1 - ramDmgDevicePath->StartingAddress < sizeof(RAM_DMG_HEADER))
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return;
-#endif
+#endif /* _MSC_VER */
 
 		//
 		// check header
@@ -289,9 +290,9 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 		if(ramDmgHeader->Signature != ramDmgHeader->Signature2 || ramDmgHeader->Signature != 0x544E5458444D4152ULL || ramDmgHeader->Version != 0x10000)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return;
-#endif
+#endif /* _MSC_VER */
 
 		//
 		// check size
@@ -299,9 +300,9 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 		if(ramDmgHeader->ExtentCount > ARRAYSIZE(ramDmgHeader->ExtentInfo) || !*ramDmgSize)
 #if defined(_MSC_VER)
 			try_leave(NOTHING);
-#else
+#else /* !_MSC_VER */
             return;
-#endif
+#endif /* _MSC_VER */
 
 		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-ramdmg-extents"), ramDmgHeader->ExtentInfo, ramDmgHeader->ExtentCount * sizeof(RAM_DMG_EXTENT_INFO), FALSE);
 		DevTreeAddProperty(chosenNode, CHAR8_CONST_STRING("boot-ramdmg-size"), ramDmgSize, sizeof(UINT64), FALSE);
@@ -311,7 +312,7 @@ STATIC VOID BlpAddRamDmgProperty(DEVICE_TREE_NODE* chosenNode, EFI_DEVICE_PATH_P
 	{
 
 	}
-#endif
+#endif /* _MSC_VER */
 }
 
 //

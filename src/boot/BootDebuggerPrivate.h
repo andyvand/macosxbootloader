@@ -10,7 +10,9 @@
 
 #if defined(_MSC_VER)
 #pragma once
-#endif
+#endif /* _MSC_VER */
+
+#include "macros.h"
 
 //
 // arch define
@@ -19,7 +21,7 @@
 #include "x64/ArchDefine.h"
 #elif defined(__i386__) || defined(_M_IX86)
 #include "x86/ArchDefine.h"
-#endif
+#endif /* I386 || X86_64 */
 
 typedef INT32                                                                NTSTATUS;
 
@@ -27,112 +29,112 @@ typedef INT32                                                                NTS
 // consts
 //
 #define EXCEPTION_MAXIMUM_PARAMETERS                                        15
-#define BREAKPOINT_TABLE_SIZE                                                32
-#define PACKET_MAX_SIZE                                                        4000
+#define BREAKPOINT_TABLE_SIZE                                               32
+#define PACKET_MAX_SIZE                                                     4000
 #define BREAKPOINT_BREAK                                                    0
 #define BREAKPOINT_PRINT                                                    1
-#define BREAKPOINT_PROMPT                                                    2
-#define BREAKPOINT_LOAD_SYMBOLS                                                3
-#define BREAKPOINT_UNLOAD_SYMBOLS                                            4
+#define BREAKPOINT_PROMPT                                                   2
+#define BREAKPOINT_LOAD_SYMBOLS                                             3
+#define BREAKPOINT_UNLOAD_SYMBOLS                                           4
 
-#define INITIAL_PACKET_ID                                                    0x80800000
-#define SYNC_PACKET_ID                                                        0x00000800
+#define INITIAL_PACKET_ID                                                   0x80800000
+#define SYNC_PACKET_ID                                                      0x00000800
 
-#define BREAKIN_PACKET                                                        0x62626262
-#define BREAKIN_PACKET_BYTE                                                    0x62
-#define PACKET_LEADER                                                        0x30303030
-#define PACKET_LEADER_BYTE                                                    0x30
-#define CONTROL_PACKET_LEADER                                                0x69696969
-#define CONTROL_PACKET_LEADER_BYTE                                            0x69
+#define BREAKIN_PACKET                                                      0x62626262
+#define BREAKIN_PACKET_BYTE                                                 0x62
+#define PACKET_LEADER                                                       0x30303030
+#define PACKET_LEADER_BYTE                                                  0x30
+#define CONTROL_PACKET_LEADER                                               0x69696969
+#define CONTROL_PACKET_LEADER_BYTE                                          0x69
 #define PACKET_TRAILING_BYTE                                                0xAA
 
-#define PACKET_TYPE_UNUSED                                                    0
-#define PACKET_TYPE_KD_STATE_CHANGE                                            1
-#define PACKET_TYPE_KD_STATE_MANIPULATE                                        2
-#define PACKET_TYPE_KD_DEBUG_IO                                                3
-#define PACKET_TYPE_KD_ACKNOWLEDGE                                            4
-#define PACKET_TYPE_KD_RESEND                                                5
+#define PACKET_TYPE_UNUSED                                                  0
+#define PACKET_TYPE_KD_STATE_CHANGE                                         1
+#define PACKET_TYPE_KD_STATE_MANIPULATE                                     2
+#define PACKET_TYPE_KD_DEBUG_IO                                             3
+#define PACKET_TYPE_KD_ACKNOWLEDGE                                          4
+#define PACKET_TYPE_KD_RESEND                                               5
 #define PACKET_TYPE_KD_RESET                                                6
-#define PACKET_TYPE_KD_STATE_CHANGE64                                        7
-#define PACKET_TYPE_KD_POLL_BREAKIN                                            8
-#define PACKET_TYPE_KD_TRACE_IO                                                9
-#define PACKET_TYPE_KD_CONTROL_REQUEST                                        10
-#define PACKET_TYPE_KD_FILE_IO                                                11
-#define PACKET_TYPE_MAX                                                        12
+#define PACKET_TYPE_KD_STATE_CHANGE64                                       7
+#define PACKET_TYPE_KD_POLL_BREAKIN                                         8
+#define PACKET_TYPE_KD_TRACE_IO                                             9
+#define PACKET_TYPE_KD_CONTROL_REQUEST                                      10
+#define PACKET_TYPE_KD_FILE_IO                                              11
+#define PACKET_TYPE_MAX                                                     12
 
-#define DbgKdMinimumStateChange                                                0x00003030
-#define DbgKdExceptionStateChange                                            0x00003030
-#define DbgKdLoadSymbolsStateChange                                            0x00003031
-#define DbgKdCommandStringStateChange                                        0x00003032
-#define DbgKdMaximumStateChange                                                0x00003033
+#define DbgKdMinimumStateChange                                             0x00003030
+#define DbgKdExceptionStateChange                                           0x00003030
+#define DbgKdLoadSymbolsStateChange                                         0x00003031
+#define DbgKdCommandStringStateChange                                       0x00003032
+#define DbgKdMaximumStateChange                                             0x00003033
 
 #define REPORT_INCLUDES_SEGS                                                0x0001
-#define REPORT_INCLUDES_CS                                                    0x0002
+#define REPORT_INCLUDES_CS                                                  0x0002
 
 #define KD_CONTINUE_ERROR                                                    0
-#define KD_CONTINUE_SUCCESS                                                    1
-#define KD_CONTINUE_PROCESSOR_RESELECTED                                    2
-#define KD_CONTINUE_NEXT_PROCESSOR                                            3
+#define KD_CONTINUE_SUCCESS                                                  1
+#define KD_CONTINUE_PROCESSOR_RESELECTED                                     2
+#define KD_CONTINUE_NEXT_PROCESSOR                                           3
 
-#define KDP_PACKET_RECEIVED                                                    0
-#define KDP_PACKET_TIMEOUT                                                    1
+#define KDP_PACKET_RECEIVED                                                  0
+#define KDP_PACKET_TIMEOUT                                                   1
 #define KDP_PACKET_RESEND                                                    2
 
-#define KD_BREAKPOINT_IN_USE                                                0x00000001
+#define KD_BREAKPOINT_IN_USE                                                 0x00000001
 #define KD_BREAKPOINT_NEEDS_WRITE                                            0x00000002
-#define KD_BREAKPOINT_SUSPENDED                                                0x00000004
-#define KD_BREAKPOINT_NEEDS_REPLACE                                            0x00000008
+#define KD_BREAKPOINT_SUSPENDED                                              0x00000004
+#define KD_BREAKPOINT_NEEDS_REPLACE                                          0x00000008
 
-#define DbgKdMinimumManipulate                                                0x00003130
+#define DbgKdMinimumManipulate                                               0x00003130
 #define DbgKdReadVirtualMemoryApi                                            0x00003130
-#define DbgKdWriteVirtualMemoryApi                                            0x00003131
-#define DbgKdGetContextApi                                                    0x00003132
-#define DbgKdSetContextApi                                                    0x00003133
-#define DbgKdWriteBreakPointApi                                                0x00003134
+#define DbgKdWriteVirtualMemoryApi                                           0x00003131
+#define DbgKdGetContextApi                                                   0x00003132
+#define DbgKdSetContextApi                                                   0x00003133
+#define DbgKdWriteBreakPointApi                                              0x00003134
 #define DbgKdRestoreBreakPointApi                                            0x00003135
-#define DbgKdContinueApi                                                    0x00003136
-#define DbgKdReadControlSpaceApi                                            0x00003137
+#define DbgKdContinueApi                                                     0x00003136
+#define DbgKdReadControlSpaceApi                                             0x00003137
 #define DbgKdWriteControlSpaceApi                                            0x00003138
-#define DbgKdReadIoSpaceApi                                                    0x00003139
-#define DbgKdWriteIoSpaceApi                                                0x0000313A
-#define DbgKdRebootApi                                                        0x0000313B
+#define DbgKdReadIoSpaceApi                                                  0x00003139
+#define DbgKdWriteIoSpaceApi                                                 0x0000313A
+#define DbgKdRebootApi                                                       0x0000313B
 #define DbgKdContinueApi2                                                    0x0000313C
-#define DbgKdReadPhysicalMemoryApi                                            0x0000313D
-#define DbgKdWritePhysicalMemoryApi                                            0x0000313E
+#define DbgKdReadPhysicalMemoryApi                                           0x0000313D
+#define DbgKdWritePhysicalMemoryApi                                          0x0000313E
 #define DbgKdQuerySpecialCallsApi                                            0x0000313F
-#define DbgKdSetSpecialCallApi                                                0x00003140
+#define DbgKdSetSpecialCallApi                                               0x00003140
 #define DbgKdClearSpecialCallsApi                                            0x00003141
 #define DbgKdSetInternalBreakPointApi                                        0x00003142
 #define DbgKdGetInternalBreakPointApi                                        0x00003143
-#define DbgKdReadIoSpaceExtendedApi                                            0x00003144
-#define DbgKdWriteIoSpaceExtendedApi                                        0x00003145
-#define DbgKdGetVersionApi                                                    0x00003146
+#define DbgKdReadIoSpaceExtendedApi                                          0x00003144
+#define DbgKdWriteIoSpaceExtendedApi                                         0x00003145
+#define DbgKdGetVersionApi                                                   0x00003146
 #define DbgKdWriteBreakPointExApi                                            0x00003147
-#define DbgKdRestoreBreakPointExApi                                            0x00003148
+#define DbgKdRestoreBreakPointExApi                                          0x00003148
 #define DbgKdCauseBugCheckApi                                                0x00003149
-#define DbgKdSwitchProcessor                                                0x00003150
-#define DbgKdPageInApi                                                        0x00003151
-#define DbgKdReadMachineSpecificRegister                                    0x00003152
+#define DbgKdSwitchProcessor                                                 0x00003150
+#define DbgKdPageInApi                                                       0x00003151
+#define DbgKdReadMachineSpecificRegister                                     0x00003152
 #define DbgKdWriteMachineSpecificRegister                                    0x00003153
-#define OldVlm1                                                                0x00003154
-#define OldVlm2                                                                0x00003155
-#define DbgKdSearchMemoryApi                                                0x00003156
-#define DbgKdGetBusDataApi                                                    0x00003157
-#define DbgKdSetBusDataApi                                                    0x00003158
-#define DbgKdCheckLowMemoryApi                                                0x00003159
-#define DbgKdClearAllInternalBreakpointsApi                                    0x0000315A
-#define DbgKdFillMemoryApi                                                    0x0000315B
-#define DbgKdQueryMemoryApi                                                    0x0000315C
-#define DbgKdSwitchPartition                                                0x0000315D
-#define DbgKdMaximumManipulate                                                0x0000315E
+#define OldVlm1                                                              0x00003154
+#define OldVlm2                                                              0x00003155
+#define DbgKdSearchMemoryApi                                                 0x00003156
+#define DbgKdGetBusDataApi                                                   0x00003157
+#define DbgKdSetBusDataApi                                                   0x00003158
+#define DbgKdCheckLowMemoryApi                                               0x00003159
+#define DbgKdClearAllInternalBreakpointsApi                                  0x0000315A
+#define DbgKdFillMemoryApi                                                   0x0000315B
+#define DbgKdQueryMemoryApi                                                  0x0000315C
+#define DbgKdSwitchPartition                                                 0x0000315D
+#define DbgKdMaximumManipulate                                               0x0000315E
 
-#define DbgKdPrintStringApi                                                    0x00003230
+#define DbgKdPrintStringApi                                                  0x00003230
 #define DbgKdGetStringApi                                                    0x00003231
 
-#define DbgKdPrintTraceApi                                                    0x00003330
+#define DbgKdPrintTraceApi                                                   0x00003330
 
-#define DbgKdCreateFileApi                                                    0x00003430
-#define DbgKdReadFileApi                                                    0x00003431
+#define DbgKdCreateFileApi                                                   0x00003430
+#define DbgKdReadFileApi                                                     0x00003431
 #define DbgKdWriteFileApi                                                    0x00003432
 #define DbgKdCloseFileApi                                                    0x00003433
 
@@ -142,33 +144,37 @@ typedef INT32                                                                NTS
 #define DBGKD_QUERY_MEMORY_VIRTUAL                                            0
 #define DBGKD_QUERY_MEMORY_PROCESS                                            0
 #define DBGKD_QUERY_MEMORY_SESSION                                            1
-#define DBGKD_QUERY_MEMORY_KERNEL                                            2
+#define DBGKD_QUERY_MEMORY_KERNEL                                             2
 
-#define DBGKD_QUERY_MEMORY_READ                                                0x01
-#define DBGKD_QUERY_MEMORY_WRITE                                            0x02
+#define DBGKD_QUERY_MEMORY_READ                                               0x01
+#define DBGKD_QUERY_MEMORY_WRITE                                              0x02
 #define DBGKD_QUERY_MEMORY_EXECUTE                                            0x04
-#define DBGKD_QUERY_MEMORY_FIXED                                            0x08
+#define DBGKD_QUERY_MEMORY_FIXED                                              0x08
 
 #define DBGKD_VERS_FLAG_MP                                                    0x0001
-#define DBGKD_VERS_FLAG_DATA                                                0x0002
-#define DBGKD_VERS_FLAG_PTR64                                                0x0004
-#define DBGKD_VERS_FLAG_NOMM                                                0x0008
-#define DBGKD_VERS_FLAG_HSS                                                    0x0010
+#define DBGKD_VERS_FLAG_DATA                                                  0x0002
+#define DBGKD_VERS_FLAG_PTR64                                                 0x0004
+#define DBGKD_VERS_FLAG_NOMM                                                  0x0008
+#define DBGKD_VERS_FLAG_HSS                                                   0x0010
 #define DBGKD_VERS_FLAG_PARTITIONS                                            0x0020
 
-#define NT_SUCCESS(S)                                                        (((NTSTATUS)(S)) >= 0)
+#define NT_SUCCESS(S)                                                         (((NTSTATUS)(S)) >= 0)
 #define STATUS_SUCCESS                                                        0
 #define STATUS_PENDING                                                        ((NTSTATUS)0x00000103)
-#define STATUS_DATATYPE_MISALIGNMENT                                        ((NTSTATUS)0x80000002)
-#define STATUS_BREAKPOINT                                                    ((NTSTATUS)0x80000003)
+#define STATUS_DATATYPE_MISALIGNMENT                                          ((NTSTATUS)0x80000002)
+#define STATUS_BREAKPOINT                                                     ((NTSTATUS)0x80000003)
 #define STATUS_UNSUCCESSFUL                                                    ((NTSTATUS)0xc0000001)
-#define STATUS_INVALID_PARAMETER                                            ((NTSTATUS)0xc000000d)
-#define STATUS_DEVICE_NOT_CONNECTED                                            ((NTSTATUS)0xc000009d)
+#define STATUS_INVALID_PARAMETER                                              ((NTSTATUS)0xc000000d)
+#define STATUS_DEVICE_NOT_CONNECTED                                           ((NTSTATUS)0xc000009d)
 
-#define KDP_TYPE_NONE                                                        0
-#define KDP_TYPE_COM                                                        1
-#define KDP_TYPE_1394                                                        2
-#define KDP_TYPE_USB                                                        3
+#define KDP_TYPE_NONE                                                         0
+#define KDP_TYPE_COM                                                          1
+#define KDP_TYPE_1394                                                         2
+#define KDP_TYPE_USB                                                          3
+
+#if defined(_MSC_VER)
+#include <pshpack1.h>
+#endif /* _MSC_VER */
 
 //
 // list entry
@@ -184,7 +190,7 @@ typedef struct _LIST_ENTRY
     // prev
     //
     struct _LIST_ENTRY*                                                        Blink;
-}LIST_ENTRY;
+} LIST_ENTRY GNUPACK;
 
 //
 // ansi string
@@ -205,7 +211,7 @@ typedef struct _STRING
     // buffer
     //
     CHAR8*                                                                    Buffer;
-}STRING;
+} STRING GNUPACK;
 
 //
 // unicode string
@@ -226,7 +232,7 @@ typedef struct _UNICODE_STRING
     // buffer
     //
     CHAR16*                                                                    Buffer;
-}UNICODE_STRING;
+} UNICODE_STRING GNUPACK;
 
 //
 // exception record
@@ -262,7 +268,7 @@ typedef struct _EXCEPTION_RECORD
     // info
     //
     UINTN                                                                    ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS];
-}EXCEPTION_RECORD;
+} EXCEPTION_RECORD GNUPACK;
 
 //
 // exception 64
@@ -298,7 +304,7 @@ typedef struct _EXCEPTION_RECORD64
     // info
     //
     UINT64                                                                    ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS];
-}EXCEPTION_RECORD64;
+} EXCEPTION_RECORD64 GNUPACK;
 
 typedef struct _SECTION_CHECKSUM
 {
@@ -311,7 +317,7 @@ typedef struct _SECTION_CHECKSUM
     // checksum
     //
     UINT32                                                                    CheckSum;
-}SECTION_CHECKSUM;
+} SECTION_CHECKSUM GNUPACK;
 
 //
 // loader data table entry
@@ -424,7 +430,7 @@ typedef struct _LDR_DATA_TABLE_ENTRY
     // static links
     //
     LIST_ENTRY                                                                StaticLinks;
-}LDR_DATA_TABLE_ENTRY;
+} LDR_DATA_TABLE_ENTRY GNUPACK;
 
 //
 // KD_PACKETS are the low level data format used in KD.
@@ -474,7 +480,7 @@ typedef struct _KD_PACKET
     // checksum
     //
     UINT32                                                                    Checksum;
-}KD_PACKET;
+} KD_PACKET GNUPACK;
 
 //
 // exception 64
@@ -490,7 +496,7 @@ typedef struct _DBGKM_EXCEPTION64
     // first chance
     //
     UINT32                                                                    FirstChance;
-}DBGKM_EXCEPTION64;
+} DBGKM_EXCEPTION64 GNUPACK;
 
 //
 // symbols info
@@ -516,7 +522,7 @@ typedef struct _KD_SYMBOLS_INFO
     // size of image
     //
     UINT32                                                                    SizeOfImage;
-}KD_SYMBOLS_INFO,*PKD_SYMBOLS_INFO;
+} KD_SYMBOLS_INFO, *PKD_SYMBOLS_INFO GNUPACK;
 
 //
 // load symbols
@@ -552,7 +558,7 @@ typedef struct _DBGKD_LOAD_SYMBOLS64
     // unload
     //
     BOOLEAN                                                                    UnloadSymbols;
-}DBGKD_LOAD_SYMBOLS64;
+} DBGKD_LOAD_SYMBOLS64 GNUPACK;
 
 //
 // wait state change
@@ -606,7 +612,7 @@ typedef struct _DBGKD_WAIT_STATE_CHANGE64
     // control report
     //
     DBGKD_CONTROL_REPORT                                                    ControlReport;
-}DBGKD_WAIT_STATE_CHANGE64;
+} DBGKD_WAIT_STATE_CHANGE64 GNUPACK;
 
 //
 // debug print string
@@ -617,7 +623,7 @@ typedef struct _DBGKD_PRINT_STRING
     // length
     //
     UINT32                                                                    LengthOfString;
-}DBGKD_PRINT_STRING;
+} DBGKD_PRINT_STRING GNUPACK;
 
 //
 // debug get string
@@ -633,7 +639,7 @@ typedef struct _DBGKD_GET_STRING
     // read string length
     //
     UINT32                                                                    LengthOfStringRead;
-}DBGKD_GET_STRING;
+} DBGKD_GET_STRING GNUPACK;
 
 //
 // debug io
@@ -670,7 +676,7 @@ typedef struct _DBGKD_DEBUG_IO
         //
         DBGKD_GET_STRING                                                    GetString;
     }u;
-}DBGKD_DEBUG_IO;
+} DBGKD_DEBUG_IO GNUPACK;
 
 //
 // read memory
@@ -691,7 +697,7 @@ typedef struct _DBGKD_READ_MEMORY64
     // actual count
     //
     UINT32                                                                    ActualBytesRead;
-}DBGKD_READ_MEMORY64;
+} DBGKD_READ_MEMORY64 GNUPACK;
 
 //
 // write memory
@@ -712,7 +718,7 @@ typedef struct _DBGKD_WRITE_MEMORY64
     // actual count
     //
     UINT32                                                                    ActualBytesWritten;
-}DBGKD_WRITE_MEMORY64;
+} DBGKD_WRITE_MEMORY64 GNUPACK;
 
 //
 // get context
@@ -723,7 +729,7 @@ typedef struct _DBGKD_GET_CONTEXT
     // dummy
     //
     UINT32                                                                    Unused;
-}DBGKD_GET_CONTEXT;
+} DBGKD_GET_CONTEXT GNUPACK;
 
 //
 // set context
@@ -734,7 +740,7 @@ typedef struct _DBGKD_SET_CONTEXT
     // flags
     //
     UINT32                                                                    ContextFlags;
-}DBGKD_SET_CONTEXT;
+} DBGKD_SET_CONTEXT GNUPACK;
 
 //
 // write breakpoint
@@ -750,7 +756,7 @@ typedef struct _DBGKD_WRITE_BREAKPOINT64
     // handle
     //
     UINT32                                                                    BreakPointHandle;
-}DBGKD_WRITE_BREAKPOINT64;
+} DBGKD_WRITE_BREAKPOINT64 GNUPACK;
 
 //
 // restore breakpoint
@@ -761,7 +767,7 @@ typedef struct _DBGKD_RESTORE_BREAKPOINT
     // handle
     //
     UINT32                                                                    BreakPointHandle;
-}DBGKD_RESTORE_BREAKPOINT;
+} DBGKD_RESTORE_BREAKPOINT GNUPACK;
 
 //
 // continue
@@ -772,7 +778,7 @@ typedef struct _DBGKD_CONTINUE
     // status
     //
     NTSTATUS                                                                ContinueStatus;
-}DBGKD_CONTINUE;
+} DBGKD_CONTINUE GNUPACK;
 
 //
 // continue2
@@ -799,7 +805,7 @@ typedef struct _DBGKD_CONTINUE2
         //
         UINT32                                                                Reserved[7];
     };
-}DBGKD_CONTINUE2;
+} DBGKD_CONTINUE2 GNUPACK;
 
 //
 // read/write io
@@ -820,7 +826,7 @@ typedef struct _DBGKD_READ_WRITE_IO64
     // value
     //
     UINT32                                                                    DataValue;
-} DBGKD_READ_WRITE_IO64;
+} DBGKD_READ_WRITE_IO64 GNUPACK;
 
 //
 // read/write io ex
@@ -856,7 +862,7 @@ typedef struct _DBGKD_READ_WRITE_IO_EXTENDED64
     // value
     //
     UINT32                                                                    DataValue;
-}DBGKD_READ_WRITE_IO_EXTENDED64;
+} DBGKD_READ_WRITE_IO_EXTENDED64 GNUPACK;
 
 //
 // read/write msr
@@ -877,7 +883,7 @@ typedef struct _DBGKD_READ_WRITE_MSR
     // data hi
     //
     UINT32                                                                    DataValueHigh;
-}DBGKD_READ_WRITE_MSR;
+} DBGKD_READ_WRITE_MSR GNUPACK;
 
 //
 // query special calls
@@ -888,7 +894,7 @@ typedef struct _DBGKD_QUERY_SPECIAL_CALLS
     // count
     //
     UINT32                                                                    NumberOfSpecialCalls;
-}DBGKD_QUERY_SPECIAL_CALLS;
+} DBGKD_QUERY_SPECIAL_CALLS GNUPACK;
 
 //
 // set special call
@@ -899,7 +905,7 @@ typedef struct _DBGKD_SET_SPECIAL_CALL64
     // call
     //
     UINT64                                                                    SpecialCall;
-}DBGKD_SET_SPECIAL_CALL64;
+} DBGKD_SET_SPECIAL_CALL64 GNUPACK;
 
 //
 // set internal bp
@@ -915,7 +921,7 @@ typedef struct _DBGKD_SET_INTERNAL_BREAKPOINT64
     // flags
     //
     UINT32                                                                    Flags;
-}DBGKD_SET_INTERNAL_BREAKPOINT64;
+} DBGKD_SET_INTERNAL_BREAKPOINT64 GNUPACK;
 
 //
 // get internal breakpoint
@@ -956,7 +962,7 @@ typedef struct _DBGKD_GET_INTERNAL_BREAKPOINT64
     // total instructions
     //
     UINT32                                                                    TotalInstructions;
-}DBGKD_GET_INTERNAL_BREAKPOINT64;
+} DBGKD_GET_INTERNAL_BREAKPOINT64 GNUPACK;
 
 //
 // get version64
@@ -1033,7 +1039,7 @@ typedef struct _DBGKD_GET_VERSION64
     // there will always be an entry for the debugger.
     //
     UINT64                                                                    DebuggerDataList;
-}DBGKD_GET_VERSION64;
+} DBGKD_GET_VERSION64 GNUPACK;
 
 //
 // breakpoint ex
@@ -1049,7 +1055,7 @@ typedef struct _DBGKD_BREAKPOINTEX
     // continue status
     //
     NTSTATUS                                                                ContinueStatus;
-}DBGKD_BREAKPOINTEX;
+} DBGKD_BREAKPOINTEX GNUPACK;
 
 //
 // search memory
@@ -1081,7 +1087,7 @@ typedef struct _DBGKD_SEARCH_MEMORY
     // pattern length
     //
     UINT32                                                                    PatternLength;
-}DBGKD_SEARCH_MEMORY;
+} DBGKD_SEARCH_MEMORY GNUPACK;
 
 //
 // get set bus data
@@ -1112,7 +1118,7 @@ typedef struct _DBGKD_GET_SET_BUS_DATA
     // length
     //
     UINT32                                                                    Length;
-}DBGKD_GET_SET_BUS_DATA;
+} DBGKD_GET_SET_BUS_DATA GNUPACK;
 
 //
 // fill memory
@@ -1138,7 +1144,7 @@ typedef struct _DBGKD_FILL_MEMORY
     // pattern length
     //
     UINT16                                                                    PatternLength;
-}DBGKD_FILL_MEMORY;
+} DBGKD_FILL_MEMORY GNUPACK;
 
 //
 // query memory
@@ -1164,7 +1170,7 @@ typedef struct _DBGKD_QUERY_MEMORY
     // flags
     //
     UINT32                                                                    Flags;
-}DBGKD_QUERY_MEMORY;
+} DBGKD_QUERY_MEMORY GNUPACK;
 
 //
 // switch partition
@@ -1175,7 +1181,7 @@ typedef struct _DBGKD_SWITCH_PARTITION
     // partition
     //
     UINT32                                                                    Partition;
-}DBGKD_SWITCH_PARTITION;
+} DBGKD_SWITCH_PARTITION GNUPACK;
 
 //
 // manipulate state
@@ -1317,7 +1323,7 @@ typedef struct _DBGKD_MANIPULATE_STATE64
         //
         DBGKD_SWITCH_PARTITION                                                SwitchPartition;
     };
-}DBGKD_MANIPULATE_STATE64;
+} DBGKD_MANIPULATE_STATE64 GNUPACK;
 
 //
 // create remote file,unicode filename follows as additional data.
@@ -1358,7 +1364,7 @@ typedef struct _DBGKD_CREATE_FILE
     // file length
     //
     UINT64                                                                    Length;
-}DBGKD_CREATE_FILE;
+} DBGKD_CREATE_FILE GNUPACK;
 
 //
 // read file
@@ -1380,7 +1386,7 @@ typedef struct _DBGKD_READ_FILE
     // length
     //
     UINT32                                                                    Length;
-}DBGKD_READ_FILE;
+} DBGKD_READ_FILE GNUPACK;
 
 //
 // write file
@@ -1401,7 +1407,7 @@ typedef struct _DBGKD_WRITE_FILE
     // length
     //
     UINT32                                                                    Length;
-}DBGKD_WRITE_FILE;
+} DBGKD_WRITE_FILE GNUPACK;
 
 //
 // close file
@@ -1412,7 +1418,7 @@ typedef struct _DBGKD_CLOSE_FILE
     // handle
     //
     UINT64                                                                    Handle;
-}DBGKD_CLOSE_FILE;
+} DBGKD_CLOSE_FILE GNUPACK;
 
 //
 // remote file io
@@ -1456,7 +1462,7 @@ typedef struct _DBGKD_FILE_IO
         //
         DBGKD_CLOSE_FILE                                                    CloseFile;
     };
-}DBGKD_FILE_IO;
+} DBGKD_FILE_IO GNUPACK;
 
 
 //
@@ -1479,7 +1485,11 @@ typedef struct _BREAKPOINT_ENTRY
     //
     KDP_BREAKPOINT_TYPE                                                        Content;
 
-}BREAKPOINT_ENTRY;
+} BREAKPOINT_ENTRY GNUPACK;
+
+#ifdef _MSC_VER
+#include <poppack.h>
+#endif
 
 //
 // typedef
@@ -1490,7 +1500,7 @@ typedef VOID (*BdSendPacketRoutine)(UINT32 packetType, struct _STRING* messageHe
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 //
 // report exception state change
@@ -1621,6 +1631,6 @@ extern UINT32																BdRetryCount;
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* __BOOTDEBUGGERPRIVATE_H__ */

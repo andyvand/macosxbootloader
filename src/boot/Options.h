@@ -5,7 +5,12 @@
 //	purpose:	option
 //********************************************************************
 
+#ifndef __OPTIONS_H__
+#define __OPTIONS_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER*/
 
 #define BOOT_MODE_NORMAL													0x000000
 #define BOOT_MODE_SAFE														0x000001
@@ -53,3 +58,5 @@ VOID BlSetBootMode(UINT32 setValue, UINT32 clearValue);
 // setup kernel command line
 //
 CHAR8* BlSetupKernelCommandLine(CHAR8 CONST* bootOptions, CHAR8 CONST* bootArgsVariable, CHAR8 CONST* kernelFlags);
+
+#endif /* __OPTIONS_H__ */

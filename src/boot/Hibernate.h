@@ -5,7 +5,14 @@
 //	purpose:	hibernate
 //********************************************************************
 
+#ifndef __HIBERNATE_H__
+#define __HIBERNATE_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
+
+#include "macros.h"
 
 #define HIBERNATE_PROGRESS_COUNT											19
 #define HIBERNATE_PROGRESS_SAVE_UNDER_SIZE									38
@@ -16,6 +23,10 @@
 #define HIBERNATE_PROGRESS_DARK_GRAY										92
 #define HIBERNATE_PROGRESS_MID_GRAY											174
 #define HIBERNATE_PROGRESS_LIGHT_GRAY										230
+
+#ifdef _MSC_VER
+#include <pshpack1.h>
+#endif /* MSC_VER */
 
 //
 // preview
@@ -56,7 +67,13 @@ typedef struct _HIBERNATE_PREVIEW
 	// reserved
 	//
 	UINT32																	ReservedK[8];
-}HIBERNATE_PREVIEW;
+} HIBERNATE_PREVIEW GNUPACK;
+
+ASSERT_TRUE(sizeof(HIBERNATE_PREVIEW) == 84);
+
+#ifdef _MSC_VER
+#include <poppack.h>
+#endif /* MSC_VER */
 
 //
 // start resume from hiberate
@@ -67,3 +84,5 @@ BOOLEAN HbStartResumeFromHibernate(UINT8* coreStorageVolumeKeyIdent);
 // continue resume
 //
 VOID HbContinueResumeFromHibernate(UINT8* coreStorageVolumeKey, UINTN coreStorageVolumeKeyLength);
+
+#endif /* __HIBERNATE_H__ */

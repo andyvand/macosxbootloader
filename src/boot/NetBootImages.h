@@ -7,6 +7,13 @@
 //	Note:		The data was copied from Apple's boot.efi
 //********************************************************************
 
+#ifndef __NETBOOTIMAGES_H__
+#define __NETBOOTIMAGES_H__
+
+#ifdef _MSC_VER
+#pragma once
+#endif /* _MSC_VER */
+
 #if LEGACY_GREY_SUPPORT
 
 //
@@ -854,7 +861,7 @@ STATIC UINT8 NetBoot2XClut[ 231 ] =
 	0x7F, 0x8B, 0x8B, 0x8B, 0x90, 0x90, 0x90
 };
 
-#else
+#else /* !LEGACY_GREY_SUPPORT */
 
 //
 // LZVN packed data for white NetBoot images (18 frames of 32 x 32 pixels, total 32 x 576 pixels)
@@ -1575,4 +1582,6 @@ STATIC UINT8 NetBootBlack2XClut[ 765 ] =
 	0xA1, 0xA1, 0x19, 0x19, 0x19, 0x3B, 0x3B, 0x3B, 0x8F, 0x8F, 0x8F, 0x52, 0x52, 0x52, 0x28, 0x28, 0x28, 0x94, 0x94, 0x94, 0xB5, 0xB5, 0xB5, 0x3A, 0x3A, 0x3A, 0x5F, 0x5F, 0x5F
 };
 
-#endif
+#endif /* LEGACY_GREY_SUPPORT */
+
+#endif /* __NETBOOTIMAGES_H__ */

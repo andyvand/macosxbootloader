@@ -5,11 +5,19 @@
 //	purpose:	load kernel
 //********************************************************************
 
-#pragma once
+#ifndef __LOADKERNEL_H__
+#define __LOADKERNEL_H__
 
-#define CPU_ARCH_NONE														0x00000000
-#define CPU_ARCH_X86														0x00000007
-#define CPU_ARCH_X64														0x01000007
+#ifdef _MSC_VER
+#pragma once
+#endif /* _MSC_VER */
+
+typedef enum _CPU_ARCH
+{
+    CPU_ARCH_NONE = 0x00000000,
+    CPU_ARCH_X86  = 0x00000007,
+    CPU_ARCH_X64  = 0x01000007
+} CPU_ARCH;
 
 //
 // load kernel cache
@@ -65,3 +73,5 @@ VOID LdrSetupKernelPath(EFI_DEVICE_PATH_PROTOCOL* filePath, CHAR8* fileName);
 // setup ramdisk path
 //
 VOID LdrSetupRamDiskPath(EFI_DEVICE_PATH_PROTOCOL* filePath, CHAR8* fileName);
+
+#endif /* __LOADKERNEL_H__ */

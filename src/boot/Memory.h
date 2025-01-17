@@ -5,7 +5,12 @@
 //	purpose:	memory
 //********************************************************************
 
+#ifndef __MEMORY_H__
+#define __MEMORY_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 //
 // initialize
@@ -71,3 +76,5 @@ VOID MmGetKernelPhysicalRange(UINT64* lowerAddress, UINT64* upperAddress);
 // get kernel virtual start
 //
 UINT64 MmGetKernelVirtualStart();
+
+#endif /* __MEMORY_H__ */

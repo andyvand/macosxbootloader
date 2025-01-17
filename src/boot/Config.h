@@ -5,7 +5,14 @@
 //	purpose:	config
 //********************************************************************
 
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
+
+#include "macros.h"
 
 //
 // define
@@ -20,6 +27,10 @@
 #define XML_TAG_FALSE														7
 #define XML_TAG_TRUE														8
 #define XML_TAG_ARRAY														9
+
+#ifdef _MSC_VER
+#include <pshpack1.h>
+#endif /* _MSC_VER */
 
 //
 // xml tag
@@ -60,7 +71,11 @@ typedef struct _XML_TAG
 	// next tag
 	//
 	struct _XML_TAG*														NextTag;
-}XML_TAG;
+} XML_TAG GNUPACK;
+
+#ifdef _MSC_VER
+#include <poppack.h>
+#endif /* _MSC_VER */
 
 //
 // get value for key
@@ -106,3 +121,5 @@ CHAR8 CONST* CmSerializeValueForKey(CHAR8 CONST* keyName, UINTN* valueLength);
 // free tag
 //
 VOID CmFreeTag(XML_TAG* theTag);
+
+#endif /* __CONFIG_H__ */

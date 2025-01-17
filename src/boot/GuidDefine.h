@@ -5,7 +5,12 @@
 //	purpose:	guid define
 //********************************************************************
 
+#ifndef __GUIDDEFINE_H__
+#define __GUIDDEFINE_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 #include EFI_GUID_DEFINITION(Acpi)
 #include EFI_GUID_DEFINITION(SmBios)
@@ -87,3 +92,5 @@ extern EFI_GUID																AppleSMCProtocolGuid;
 extern EFI_GUID																AppleFileVaultVariableGuid;
 
 BOOLEAN isEfiNullGuid(EFI_GUID* aGuid);
+
+#endif /* __GUIDDEFINE_H__ */

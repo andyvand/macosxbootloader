@@ -5,249 +5,201 @@
 //	purpose:	boot arg
 //********************************************************************
 
+#ifndef __BOOTARGS_H__
+#define __BOOTARGS_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
+
+#include "macros.h"
 
 //
 // video
 //
 #if defined(_MSC_VER)
 #include <pshpack1.h>
-#endif
+#endif /* _MSC_VER */
 
-typedef struct _BOOT_VIDEO
+#ifndef BOOT_LINE_LENGTH
+#define BOOT_LINE_LENGTH 1024
+#endif /* BOOT_LINE_LENGTH */
+
+#ifndef BOOT_STRING_LEN
+#define BOOT_STRING_LEN  BOOT_LINE_LENGTH
+#endif /* BOOT_STRING_LEN */
+
+typedef enum _CONSOLE_MODE
 {
-	//
-	// vram base address
-	//
-	UINT32																	BaseAddress;
+    GRAPHICS_NONE = 0,
+    GRAPHICS_MODE = 1,
+    FB_TEXT_MODE  = 2
+} CONSOLE_MODE;
 
-	//
-	// mode,1 = graph,2 = text
-	//
-	UINT32																	DisplayMode;
+/* Boot argument structure - passed into Mach kernel at boot time.
+ * "Revision" can be incremented for compatible changes
+ */
+/* Snapshot constants of previous revisions that are supported */
+typedef enum _BOOTARGS_VERSION
+{
+    kBootArgsRevision      = 0,
+    kBootArgsRevision2_0   = 0,
+    kBootArgsRevision1     = 1,
+    kBootArgsVersion1      = 1,
+    kBootArgsVersion2      = 2,
+    kBootArgsVersion       = 2
+} BOOTARGS_VERSION;
 
-	//
-	// bytes per row
-	//
-	UINT32																	BytesPerRow;
+/*
+ * Types of boot driver that may be loaded by the booter.
+ */
+typedef enum _BOOT_DRIVER_TYPE {
+    kBootDriverTypeInvalid = 0,
+    kBootDriverTypeKEXT    = 1,
+    kBootDriverTypeMKEXT   = 2
+} BOOT_DRIVER_TYPE;
 
-	//
-	// horz res
-	//
-	UINT32																	HorzRes;
+typedef enum _EFI_TYPES {
+    kEfiReservedMemoryType      = 0,
+    kEfiLoaderCode              = 1,
+    kEfiLoaderData              = 2,
+    kEfiBootServicesCode        = 3,
+    kEfiBootServicesData        = 4,
+    kEfiRuntimeServicesCode     = 5,
+    kEfiRuntimeServicesData     = 6,
+    kEfiConventionalMemory      = 7,
+    kEfiUnusableMemory          = 8,
+    kEfiACPIReclaimMemory       = 9,
+    kEfiACPIMemoryNVS           = 10,
+    kEfiMemoryMappedIO          = 11,
+    kEfiMemoryMappedIOPortSpace = 12,
+    kEfiPalCode                 = 13,
+    kEfiMaxMemoryType           = 14
+} EFI_TYPES;
 
-	//
-	// vert res
-	//
-	UINT32																	VertRes;
+typedef enum _BOOTARGS_EFI_MODE
+{
+    kBootArgsEfiModeNone  = 0,
+    kBootArgsEfiMode16    = 16,
+    kBootArgsEfiMode32    = 32,
+    kBootArgsEfiMode64    = 64
+} BOOTARGS_EFI_MODE;
 
-	//
-	// color depth
-	//
-	UINT32																	ColorDepth;
-}BOOT_VIDEO;
+/* Bitfields for boot_args->flags */
+typedef enum _BOOTARGS_FLAGS
+{
+    kBootArgsFlagNone               =       0,      // 0
+    kBootArgsFlagRebootOnPanic      = (1 << 0),     // 1
+    kBootArgsFlagHiDPI              = (1 << 1),     // 2
+    kBootArgsFlagBlack              = (1 << 2),     // 4
+    kBootArgsFlagCSRActiveConfig    = (1 << 3),     // 8
+    kBootArgsFlagCSRConfigMode      = (1 << 4),     // 16
+    kBootArgsFlagCSRBoot            = (1 << 5),     // 32
+    kBootArgsFlagBlackBg            = (1 << 6),     // 64
+    kBootArgsFlagLoginUI            = (1 << 7),     // 128
+    kBootArgsFlagInstallUI          = (1 << 8),     // 256
+    kBootArgsFlagRecoveryBoot       = (1 << 10),    // 1024
+    kBootArgsFlagAll                = (kBootArgsFlagRebootOnPanic | kBootArgsFlagHiDPI | kBootArgsFlagBlack | kBootArgsFlagCSRActiveConfig | kBootArgsFlagCSRConfigMode | kBootArgsFlagCSRBoot | kBootArgsFlagBlackBg | kBootArgsFlagLoginUI | kBootArgsFlagInstallUI | kBootArgsFlagRecoveryBoot)
+} BOOTARGS_FLAGS;
+
+/* Struct describing an image passed in by the booter */
+typedef struct _BOOT_ICON_ELEMENT {
+    UINT32    width;
+    UINT32    height;
+    INT32     y_offset_from_center;
+    UINT32    data_size;
+    UINT32    __reserved1[4];
+    UINT8     data[0];
+} BOOT_ICON_ELEMENT GNUPACK;
+
+typedef struct _BOOT_VIDEO  {
+    UINT32    DisplayMode;    /* Display Code (if Applicable */
+    UINT32    BytesPerRow;    /* Number of bytes per pixel row */
+    UINT32    HorzRes;    /* Width */
+    UINT32    VertRes;    /* Height */
+    UINT32    ColorDepth;    /* Pixel Depth */
+    UINT32    Reserved[7];    /* Reserved */
+    UINT64    BaseAddress;    /* Base address of video memory */
+} BOOT_VIDEO GNUPACK;
+
+ASSERT_TRUE(sizeof(BOOT_VIDEO) == 56);
+
+typedef struct _BOOT_VIDEO_V1 {
+    UINT32    BaseAddress;    /* Base address of video memory */
+    UINT32    DisplayMode;    /* Display Code (if Applicable */
+    UINT32    BytesPerRow;    /* Number of bytes per pixel row */
+    UINT32    HorzRes;    /* Width */
+    UINT32    VertRes;    /* Height */
+    UINT32    ColorDepth;    /* Pixel Depth */
+} BOOT_VIDEO_V1 GNUPACK;
+
+ASSERT_TRUE(sizeof(BOOT_VIDEO_V1) == 24);
 
 //
 // boot arg
 //
-typedef struct _BOOT_ARGS
-{
-	//
-	// revision
-	//
-	UINT16																	Revision;
+typedef struct _BOOT_ARGS {
+    UINT16        Revision;    /* Revision of boot_args structure */
+    UINT16        Version;    /* Version of boot_args structure */
 
-	//
-	// version
-	//
-	UINT16																	Version;
+    UINT8         EfiMode;    /* 32 = 32-bit, 64 = 64-bit */
+    UINT8         DebugMode;  /* Bit field with behavior changes */
+    UINT16        Flags;
 
-	//
-	// efi mode
-	//
-	UINT8																	EfiMode;
+    CHAR8         CommandLine[BOOT_LINE_LENGTH];    /* Passed in command line */
 
-	//
-	// debug mode
-	//
-	UINT8																	DebugMode;
+    UINT32        MemoryMap;  /* Physical address of memory map */
+    UINT32        MemoryMapSize;
+    UINT32        MemoryMapDescriptorSize;
+    UINT32        MemoryMapDescriptorVersion;
 
-	//
-	// flags
-	//
-	UINT16																	Flags;
+    BOOT_VIDEO_V1 BootVideoV1;    /* Video Information */
 
-	//
-	// command line
-	//
-	CHAR8																	CommandLine[1024];
+    UINT32        DeviceTree;      /* Physical address of flattened device tree */
+    UINT32        DeviceTreeLength; /* Length of flattened tree */
 
-	//
-	// memory map physical address < 4GB
-	//
-	UINT32																	MemoryMap;
+    UINT32        KernelAddress;            /* Physical address of beginning of kernel text */
+    UINT32        KernelSize;            /* Size of combined kernel text+data+efi */
 
-	//
-	// memory map size
-	//
-	UINT32																	MemoryMapSize;
+    UINT32        EfiRuntimeServicesPageStart; /* physical address of defragmented runtime pages */
+    UINT32        EfiRuntimeServicesPageCount;
+    UINT64        EfiRuntimeServicesVirtualPageStart; /* virtual address of defragmented runtime pages */
 
-	//
-	// memory map descriptor size
-	//
-	UINT32																	MemoryMapDescriptorSize;
+    UINT32        EfiSystemTable;   /* physical address of system table in runtime area */
+    UINT32        ASLRDisplacement;
 
-	//
-	// memory map descriptor version
-	//
-	UINT32																	MemoryMapDescriptorVersion;
+    UINT32        PerformanceDataStart; /* physical address of log */
+    UINT32        PerformanceDataSize;
 
-	//
-	// video
-	//
-	BOOT_VIDEO																BootVideo;
+    UINT32        KeyStoreDataStart; /* physical address of key store data */
+    UINT32        KeyStoreDataSize;
+    UINT64        BootMemStart;
+    UINT64        BootMemSize;
+    UINT64        PhysicalMemorySize;
+    UINT64        FSBFrequency;
+    UINT64        PCIConfigSpaceBaseAddress;
+    UINT32        PCIConfigSpaceStartBusNumber;
+    UINT32        PCIConfigSpaceEndBusNumber;
+    UINT32        CsrActiveConfig;
+    UINT32        CsrCapabilities;
+    UINT32        Boot_SMC_plimit;
+    UINT16        BootProgressMeterStart;
+    UINT16        BootProgressMeterEnd;
 
-	//
-	// device tree physical address < 4GB
-	//
-	UINT32																	DeviceTree;
+    BOOT_VIDEO    BootVideo;        /* Video Information */
 
-	//
-	// device tree length
-	//
-	UINT32																	DeviceTreeLength;
+    UINT32        ApfsDataStart; /* Physical address of apfs volume key structure */
+    UINT32        ApfsDataSize;
 
-	//
-	// kernel start physical address < 4GB
-	//
-	UINT32																	KernelAddress;
+    UINT32        __reserved4[710];
+} BOOT_ARGS GNUPACK;
 
-	//
-	// kernel size
-	//
-	UINT32																	KernelSize;
-
-	//
-	// efi runtime page start physical address
-	//
-	UINT32																	EfiRuntimeServicesPageStart;
-
-	//
-	// efi runtime page count
-	//
-	UINT32																	EfiRuntimeServicesPageCount;
-
-	//
-	// efi runtime page start virtual address
-	//
-	UINT64																	EfiRuntimeServicesVirtualPageStart;
-
-	//
-	// system table physical address
-	//
-	UINT32																	EfiSystemTable;
-
-	//
-	// ASLR displacement
-	//
-	UINT32																	ASLRDisplacement;
-
-	//
-	// performance data start
-	//
-	UINT32																	PerformanceDataStart;
-
-	//
-	// performance data size
-	//
-	UINT32																	PerformanceDataSize;
-
-	//
-	// key store data start
-	//
-	UINT32																	KeyStoreDataStart;
-
-	//
-	// key store data size
-	//
-	UINT32																	KeyStoreDataSize;
-
-	//
-	// boot mem start
-	//
-	UINT64																	BootMemStart;
-
-	//
-	// boot mem size
-	//
-	UINT64																	BootMemSize;
-
-	//
-	// physical memory size
-	//
-	UINT64																	PhysicalMemorySize;
-
-	//
-	// FSB frequencey
-	//
-	UINT64																	FSBFrequency;
-
-	//
-	// pci config space base address
-	//
-	UINT64																	PCIConfigSpaceBaseAddress;
-
-	//
-	// pci config space start bus number
-	//
-	UINT32																	PCIConfigSpaceStartBusNumber;
-
-	//
-	// pci config space end bus number
-	//
-	UINT32																	PCIConfigSpaceEndBusNumber;
-
-#if (TARGET_OS == EL_CAPITAN)
-	//
-	//
-	//
-	UINT32																	CsrActiveConfig;
-
-	//
-	//
-	//
-	UINT32																	CsrCapabilities;
-
-	//
-	//
-	//
-	UINT32																	Boot_SMC_plimit;
-
-	//
-	//
-	//
-	UINT16																	BootProgressMeterStart;
-
-	//
-	//
-	//
-	UINT16																	BootProgressMeterEnd;
-
-	//
-	// padding
-	//
-	UINT32																	Reserved4[726];
-#else // #if (TARGET_OS == EL_CAPITAN)
-	//
-	// padding
-	//
-	UINT32																	Reserved4[730];
-#endif // #if (TARGET_OS == EL_CAPITAN)
-}BOOT_ARGS;
+/* BOOT_ARGS Assert */
+ASSERT_TRUE(sizeof(BOOT_ARGS) == 4096);
 
 #if defined(_MSC_VER)
 #include <poppack.h>
-#endif
+#endif /* _MSC_VER */
 
 //
 // add memory range
@@ -269,9 +221,11 @@ EFI_STATUS BlFinalizeBootArgs(BOOT_ARGS* bootArgs, CHAR8 CONST* kernelCommandLin
 // Read csr-active-config from NVRAM
 //
 EFI_STATUS BlInitCSRState(BOOT_ARGS* bootArgs);
-#endif
+#endif /* (TARGET_OS == EL_CAPITAN) */
 
 //
 // Mimic boot.efi and set boot.efi info properties.
 //
 EFI_STATUS BlAddBooterInfo(DEVICE_TREE_NODE* chosenNode);
+
+#endif /* __BOOTARGS_H__ */

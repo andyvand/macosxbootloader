@@ -99,8 +99,8 @@ else
 DEBUGFLAGS=-g3 -DDEBUG -D_DEBUG -fstandalone-debug
 endif
 
-CC=../../Prebuilt/clang
-CXX=../../Prebuilt/clang
+CC="$(PREBUILT)/clang"
+CXX="$(PREBUILT)/clang"
 LD=ld
 AR=ar
 STRIP = strip
@@ -169,7 +169,7 @@ MTOC="$(PREBUILT)/objconv" -ed2022 -fwin64 -xs -nu
 endif
 endif
 
-NASM="nasm"
+NASM="$(PREBUILT)/nasm"
 
 ### Flags ###
 

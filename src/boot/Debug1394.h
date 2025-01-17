@@ -5,7 +5,12 @@
 //	purpose:	debug over 1394
 //********************************************************************
 
+#ifndef __DEBUG1394_H__
+#define __DEBUG1394_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif
 
 #include "BootDebuggerPrivate.h"
 
@@ -28,3 +33,5 @@ UINT32 Bd1394ReceivePacket(UINT32 packetType, STRING* messageHeader, STRING* mes
 // close debug device
 //
 EFI_STATUS Bd1394CloseDebuggerDevice();
+
+#endif /* __DEBUG1394_H__ */

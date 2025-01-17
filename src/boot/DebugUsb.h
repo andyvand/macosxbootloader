@@ -5,7 +5,12 @@
 //	purpose:	debug over usb
 //********************************************************************
 
+#ifndef __DEBUGUSB_H__
+#define __DEBUGUSB_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 #include "BootDebuggerPrivate.h"
 
@@ -28,3 +33,5 @@ UINT32 BdUsbReceivePacket(UINT32 packetType, STRING* messageHeader, STRING* mess
 // close debug device
 //
 EFI_STATUS BdUsbCloseDebuggerDevice();
+
+#endif /* __DEBUGUSB_H__ */

@@ -5,7 +5,18 @@
 //	purpose:	md5
 //********************************************************************
 
+#ifndef __MD5_H__
+#define __MD5_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
+
+#include "macros.h"
+
+#ifdef _MSC_VER
+#include <pshpack1.h>
+#endif /* _MSC_VER */
 
 //
 // context
@@ -26,7 +37,11 @@ typedef struct _MD5_CONTEXT
 	// input buffer
 	//
 	UINT8																	InputBuffer[64];
-}MD5_CONTEXT;
+} MD5_CONTEXT GNUPACK;
+
+#ifdef _MSC_VER
+#include <poppack.h>
+#endif /* _MSC_VER */
 
 //
 // init
@@ -42,3 +57,5 @@ VOID MD5Update(MD5_CONTEXT* md5Context, VOID CONST* byteBuffer, UINT32 bufferLen
 // finish
 //
 VOID MD5Final(UINT8* md5Result, MD5_CONTEXT* md5Context);
+
+#endif /* __MD5_H__ */

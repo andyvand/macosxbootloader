@@ -5,7 +5,18 @@
 //	purpose:	device tree
 //********************************************************************
 
+#ifndef __DEVICETREE_H__
+#define __DEVICETREE_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
+
+#include "macros.h"
+
+#ifdef _MSC_VER
+#include <pshpack1.h>
+#endif /* _MSC_VER */
 
 //
 // device tree property
@@ -36,7 +47,7 @@ typedef struct _DEVICE_TREE_PROPERTY
 	// next property
 	//
 	struct _DEVICE_TREE_PROPERTY*											Next;
-}DEVICE_TREE_PROPERTY;
+} DEVICE_TREE_PROPERTY GNUPACK;
 
 //
 // device tree node
@@ -62,7 +73,11 @@ typedef struct _DEVICE_TREE_NODE
 	// next node
 	//
 	struct _DEVICE_TREE_NODE*												Next;
-}DEVICE_TREE_NODE;
+} DEVICE_TREE_NODE GNUPACK;
+
+#ifdef _MSC_VER
+#include <poppack.h>
+#endif /* _MSC_VER */
 
 //
 // initialize
@@ -103,3 +118,5 @@ VOID DevTreeFinalize();
 // flatten
 //
 EFI_STATUS DevTreeFlatten(VOID** flattenBuffer, UINT32* bufferLength);
+
+#endif /* __DEVICETREE_H__ */

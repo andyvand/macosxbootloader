@@ -10,9 +10,14 @@
 
 #ifdef _MSC_VER
 #pragma once
-#endif
+#endif /* _MSC_VER */
 
 #include "FileIo.h"
+#include "macros.h"
+
+#ifdef _MSC_VER
+#include <pshpack1.h>
+#endif /* _MSC_VER */
 
 //
 // loaded mach-o info
@@ -73,7 +78,13 @@ typedef struct _MACH_O_LOADED_INFO
 	//
 	//
 	UINT64																	IdlePML4VirtualAddress;
-}MACH_O_LOADED_INFO;
+} MACH_O_LOADED_INFO GNUPACK;
+
+ASSERT_TRUE(sizeof(MACH_O_LOADED_INFO) == 88);
+
+#ifdef _MSC_VER
+#include <poppack.h>
+#endif /* _MSC_VER */
 
 //
 // get thin fat info

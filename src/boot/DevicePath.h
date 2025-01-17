@@ -5,7 +5,12 @@
 //	purpose:	device path
 //********************************************************************
 
+#ifndef __DEVICEPATH_H__
+#define __DEVICEPATH_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 //
 // get device path size
@@ -66,3 +71,5 @@ UINT32 DevPathGetPartitionNumber(EFI_DEVICE_PATH_PROTOCOL* devicePath);
 // get partition handle by number
 //
 EFI_HANDLE DevPathGetPartitionHandleByNumber(EFI_DEVICE_PATH_PROTOCOL* referencePath, UINT32 number);
+
+#endif /* __DEVICEPATH_H__ */

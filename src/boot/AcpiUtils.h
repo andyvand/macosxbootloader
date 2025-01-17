@@ -5,7 +5,12 @@
 //	purpose:	acpi utils
 //********************************************************************
 
+#ifndef __ACPIUTILS_H__
+#define __ACPIUTILS_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 //
 // get fadt
@@ -36,3 +41,5 @@ UINTN AcpiAdjustMemoryMap(EFI_MEMORY_DESCRIPTOR* memoryMap, UINTN memoryMapSize,
 // checksum8 from AppleSMBIOS.kext
 //
 UINT8 Checksum8(VOID * start, unsigned int length);
+
+#endif /* __ACPIUTILS_H__ */

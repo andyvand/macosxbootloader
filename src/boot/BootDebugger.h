@@ -10,7 +10,7 @@
 
 #if defined(_MSC_VER)
 #pragma once
-#endif
+#endif /* _MSC_VER */
 
 //
 // initialize boot debugger
@@ -18,7 +18,7 @@
 #ifdef __cplusplus
 extern "C"
 {
-#endif
+#endif /* __cplusplus */
 
 EFI_STATUS BdInitialize(CHAR8 CONST* loaderOptions);
 
@@ -54,6 +54,6 @@ EFI_STATUS BdFinalize();
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* __BOOTDEBUGGER_H__ */

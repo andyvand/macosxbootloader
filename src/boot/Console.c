@@ -1290,6 +1290,90 @@ EFI_STATUS CsInitializeBootVideo(BOOT_VIDEO* bootVideo)
 	return CspFrameBufferAddress ? EFI_SUCCESS : EFI_DEVICE_ERROR;
 }
 
+EFI_STATUS CsInitializeBootVideoV1(BOOT_VIDEO_V1* bootVideo)
+{
+    //
+    // get info
+    //
+    if (!CspFrameBufferAddress)
+    {
+        //
+        // check graphics output protocol
+        //
+        EFI_GRAPHICS_OUTPUT_PROTOCOL* graphicsOutputProtocol                = NULL;
+
+        if (!EFI_ERROR(EfiBootServices->HandleProtocol(EfiSystemTable->ConsoleOutHandle, &EfiGraphicsOutputProtocolGuid, (VOID**)(&graphicsOutputProtocol))))
+        {
+            CspFrameBufferAddress                                            = graphicsOutputProtocol->Mode->FrameBufferBase;
+
+            if (CspFrameBufferAddress)
+            {
+                CspColorDepth                                                = 0;
+                CspFrameBufferSize                                            = graphicsOutputProtocol->Mode->FrameBufferSize;
+                CspHorzRes                                                    = graphicsOutputProtocol->Mode->Info->HorizontalResolution;
+                CspVertRes                                                    = graphicsOutputProtocol->Mode->Info->VerticalResolution;
+
+                if (graphicsOutputProtocol->Mode->Info->PixelFormat == PixelBitMask)
+                {
+                    UINT32 colorMask                                        = graphicsOutputProtocol->Mode->Info->PixelInformation.BlueMask;
+                    colorMask                                                |= graphicsOutputProtocol->Mode->Info->PixelInformation.GreenMask;
+                    colorMask                                                |= graphicsOutputProtocol->Mode->Info->PixelInformation.RedMask;
+
+                    for (UINTN i = 0; i < 32; i++, colorMask >>= 1)
+                    {
+                        if (colorMask & 1)
+                            CspColorDepth                                    += 1;
+                    }
+
+                    CspColorDepth                                            = (CspColorDepth + 7) & ~7;
+                }
+                else if (graphicsOutputProtocol->Mode->Info->PixelFormat != PixelBltOnly)
+                {
+                    CspColorDepth                                            = 32;
+                }
+
+                if (!CspColorDepth)
+                {
+                    CspFrameBufferSize                                        = 0;
+                    CspFrameBufferAddress                                    = 0;
+                    CspHorzRes                                                = 0;
+                    CspVertRes                                                = 0;
+                }
+                else
+                {
+                    CspBytesPerRow                                            = graphicsOutputProtocol->Mode->Info->PixelsPerScanLine * (CspColorDepth >> 3);
+                }
+            }
+        }
+
+        //
+        // check device protocol?
+        //
+        if (!CspFrameBufferAddress)
+        {
+            APPLE_GRAPH_INFO_PROTOCOL* graphInfoProtocol                    = NULL;
+
+            if (!EFI_ERROR(EfiBootServices->LocateProtocol(&AppleGraphInfoProtocolGuid, 0, (VOID**)(&graphInfoProtocol))))
+            {
+                if (EFI_ERROR(graphInfoProtocol->GetInfo(graphInfoProtocol, &CspFrameBufferAddress, &CspFrameBufferSize, &CspBytesPerRow, &CspHorzRes, &CspVertRes, &CspColorDepth)))
+                {
+                    CspFrameBufferAddress                                    = 0;
+                }
+            }
+        }
+    }
+
+    if (bootVideo)
+    {
+        bootVideo->BaseAddress                                                = (UINT32)(CspFrameBufferAddress);
+        bootVideo->BytesPerRow                                                = CspBytesPerRow;
+        bootVideo->ColorDepth                                                = CspColorDepth;
+        bootVideo->HorzRes                                                    = CspHorzRes;
+        bootVideo->VertRes                                                    = CspVertRes;
+    }
+
+    return CspFrameBufferAddress ? EFI_SUCCESS : EFI_DEVICE_ERROR;
+}
 //
 // print string
 //
@@ -1708,6 +1792,15 @@ EFI_STATUS CsSetupDeviceTree(BOOT_ARGS* bootArgs)
 		// setup display mode
 		//
 		bootArgs->BootVideo.DisplayMode										= BlTestBootMode(BOOT_MODE_GRAPH) ? 1 : 2;
+
+        CsInitializeBootVideoV1(&bootArgs->BootVideoV1);
+
+        if (!bootArgs->BootVideoV1.BaseAddress)
+        {
+            memset(&bootArgs->BootVideoV1, 0, sizeof(bootArgs->BootVideoV1));
+        }
+
+        bootArgs->BootVideoV1.DisplayMode                                        = BlTestBootMode(BOOT_MODE_GRAPH) ? 1 : 2;
 
 		//
 		// hi-dpi mode

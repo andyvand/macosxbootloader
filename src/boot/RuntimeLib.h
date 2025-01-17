@@ -5,25 +5,33 @@
 //	purpose:	runtime lib
 //********************************************************************
 
+#ifndef __RUNTIMELIB_H__
+#define __RUNTIMELIB_H__
+
+#ifdef _MSC_VER
 #pragma once
+#endif /* _MSC_VER */
 
 //
 // define
 //
+#ifndef isspace
 #define isspace(ch)															((ch) == ' ' || (ch) == '\t' || (ch) == '\r' || (ch) == '\n')
+#endif /* isspace */
 
 #ifdef __cplusplus
 extern "C"
 {
-#endif
+#endif /* __cplusplus*/
 
 	//
 	// allocate from stack
 	//
 	VOID* BOOTAPI _alloca(UINTN bufferLength);
+
 #if defined(_MSC_VER)
-	#pragma intrinsic(_alloca)
-#endif
+#pragma intrinsic(_alloca)
+#endif /* _MSC_VER */
 
 	//
 	// memcpy
@@ -117,5 +125,6 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
+#endif /* __RUNTIMELIB_H__ */
